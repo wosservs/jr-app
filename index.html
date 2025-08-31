@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
+<title>Romaneio • Login</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://cdn.jsdelivr.net/npm/picocss@2.0.0-alpha1/css/pico.min.css" rel="stylesheet">
+<style>
+  :root { --pico-font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, "Helvetica Neue", Arial, "Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol", sans-serif; }
+  body{display:grid;place-items:center;min-height:100vh}
+  .card{max-width:520px;width:100%}
+  .brand{display:flex;gap:.6rem;align-items:center}
+  .brand span{font-size:1.4rem;font-weight:700}
+  .muted{font-size:.9rem;opacity:.8}
+  .error{background:#3b0f13;border:1px solid #5b1b22;color:#fdd;border-radius:.6rem;padding:.6rem .8rem}
+  .ok{background:#0f3b1c;border:1px solid #1b5b2b;color:#dff;border-radius:.6rem;padding:.6rem .8rem}
+</style>
+</head>
+<body>
+
+<main class="container">
+  <article class="card">
+    <header class="brand">
+      <span>🚚</span><span>Romaneio</span>
+      <span class="muted" style="margin-left:auto"><a href="#" id="theme">🌙/☀️</a></span>
+    </header>
+
+    <form id="frmLogin">
+      <label>Usuário
+        <input type="text" id="usuario" placeholder="admin" value="admin" required>
+      </label>
+      <label>Senha
+        <input type="password" id="senha" placeholder="••••••" value="123456" required>
+      </label>
+      <button type="submit">Entrar</button>
+    </form>
+
+    <details style="margin-top:.8rem">
+      <summary>Testar conexão</summary>
+      <small class="muted">Se falhar aqui, o backend não está acessível pelo navegador.</small>
+      <div id="echoBox" style="margin-top:.4rem"></div>
+      <button id="btnEcho">Rodar /echo</button>
+    </details>
+
+    <div id="msg" style="margin-top:.8rem"></div>
+  </article>
+</main>
+
+<script>
+const API_BASE = "https://script.google.com/macros/s/AKfycbyrDoEP82oJDj2wTIX491414Qf5e-YaDZJHYMAgmWfiddVKCw7WP4oQwrVtEouYxL-NvQ/exec";
+
+const $ = (q)=>document.querySelector(q);
+const msg = (html, ok=false)=>{ const m=$("#msg"); m.className= ok?"ok":"error"; m.innerHTML=html; if(!html) m.className=""; };
+
+$("#frmLogin").addEventListener("submit", async (ev)=>{
+  ev.preventDefault(); msg("");
+  try{
+    const usuario = $("#usuario").value.trim();
+    const senha   = $("#senha").value.trim();
+    const r = await fetch(API_BASE+"?path=/login", {
+      method:"POST",
+      headers:{ "Content-Type":"application/json;charset=utf-8" },
+      body: JSON.stringify({usuario, senha})
+    });
+    const j = await r.json();
+    if(j.error){ msg(j.error); return; }
+    localStorage.setItem("session", JSON.stringify(j.session));
+    location.href = "app.html#rom";
+  }catch(e){
+    msg("Erro de rede: "+e);
+  }
+});
+
+$("#btnEcho").addEventListener("click", async ()=>{
+  $("#echoBox").innerText = "Testando...";
+  try{
+    const r = await fetch(API_BASE+"?path=/echo", { method:"POST", headers:{ "Content-Type":"application/json" }, body:"{}" });
+    const j = await r.json();
+    $("#echoBox").innerText = JSON.stringify(j, null, 2);
+  }catch(e){
+    $("#echoBox").innerText = "Falhou: "+e;
+  }
+});
+
+// tema
+(() => {
+  const k="rom_theme";
+  const cur = localStorage.getItem(k)||"dark";
+  document.documentElement.setAttribute("data-theme",cur);
+  $("#theme").addEventListener("click",(e)=>{
+    e.preventDefault();
+    const t = (localStorage.getItem(k)||"dark")==="dark"?"light":"dark";
+    localStorage.setItem(k,t);
+    document.documentElement.setAttribute("data-theme",t);
+  });
+})();
+</script>
+</body>
+</html>
