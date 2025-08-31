@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
+<title>Romaneio • Painel</title>
+<link href="https://cdn.jsdelivr.net/npm/picocss@2.0.0-alpha1/css/pico.min.css" rel="stylesheet">
+<style>
+  .wrap{max-width:1100px;margin:auto}
+  .row{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
+  @media(max-width:960px){ .row{grid-template-columns:repeat(6,1fr)} }
+  @media(max-width:600px){ .row{grid-template-columns:repeat(2,1fr)} }
+  .col-4{grid-column:span 4} .col-6{grid-column:span 6} .col-12{grid-column:span 12}
+  .pill{padding:.3rem .6rem;border-radius:999px;background:#0f3b1c;border:1px solid #1b5b2b;color:#dff;font-size:.8rem}
+  .thumbs{display:flex;gap:8px;flex-wrap:wrap}
+  .thumbs img{width:90px;height:90px;object-fit:cover;border-radius:8px;border:1px solid #444}
+  .error{background:#3b0f13;border:1px solid #5b1b22;color:#fdd;border-radius:.6rem;padding:.6rem .8rem}
+  .ok{background:#0f3b1c;border:1px solid #1b5b2b;color:#dff;border-radius:.6rem;padding:.6rem .8rem}
+</style>
+</head>
+<body>
+<nav class="container-fluid">
+  <ul>
+    <li><strong>🚚 Romaneio</strong> <small id="who" class="pill"></small></li>
+  </ul>
+  <ul>
+    <li><a href="#rom" role="button" class="contrast">Enviar Romaneio</a></li>
+    <li><a href="#" id="theme">🌙/☀️</a></li>
+    <li><a href="#" id="logout" role="button" class="secondary">Sair</a></li>
+  </ul>
+</nav>
+
+<main class="container wrap">
+  <article>
+    <h2>Enviar Romaneio</h2>
+    <form id="frmRom">
+      <div class="row">
+        <div class="col-4">
+          <label>ROM
+            <input type="number" id="rom" placeholder="Ex.: 21" required>
+          </label>
+        </div>
+        <div class="col-4">
+          <label>Data
+            <input type="date" id="data">
+          </label>
+        </div>
+        <div class="col-12">
+          <label>Observações
+            <input type="text" id="obs" placeholder="Ex.: Doca 3, até 16h">
+          </label>
+        </div>
+
+        <div class="col-12"><h4>Cliente</h4></div>
+        <div class="col-4"><label>Telefone <input id="cli_tel" placeholder="85999999999" required></label></div>
+        <div class="col-4"><label>Nome <input id="cli_nome" placeholder="Nome do cliente" required></label></div>
+        <div class="col-4"><label>Cidade/UF <input id="cli_cidade" placeholder="Fortaleza/CE" required></label></div>
+
+        <div class="col-12"><h4>Fornecedor</h4></div>
+        <div class="col-4"><label>Telefone <input id="for_tel" placeholder="85999999999" required></label></div>
+        <div class="col-4"><label>Nome <input id="for_nome" placeholder="Nome do fornecedor" required></label></div>
+        <div class="col-4"><label>Cidade/UF <input id="for_cidade" placeholder="Maracanaú/CE" required></label></div>
+
+        <div class="col-12"><h4>Itens</h4></div>
+        <div class="col-12">
+          <table role="grid" id="tblItens">
+            <thead><tr><th style="width:40%">Tipo</th><th style="width:30%">Tamanho</th><th style="width:20%">Qtd</th><th style="width:10%"></th></tr></thead>
+            <tbody></tbody>
+          </table>
+          <button id="addItem" type="button">+ Item</button>
+          <small>Total: <b id="tot">0</b></small>
+        </div>
+
+        <div class="col-12"><h4>Fotos</h4></div>
+        <div class="col-12">
+          <input type="file" id="fotos" accept="image/*" multiple>
+          <div class="thumbs" id="thumbs"></div>
+          <small class="muted">Você pode selecionar várias imagens. Pré-visualização acima.</small>
+        </div>
+
+        <div class="col-12">
+          <button type="submit">Enviar</button>
+          <button type="reset" class="secondary" id="limpar">Limpar</button>
+        </div>
+      </div>
+    </form>
+    <div id="msg"></div>
+  </article>
+</main>
+
+<script>
+const API_BASE = "https://script.google.com/macros/s/AKfycbyrDoEP82oJDj2wTIX491414Qf5e-YaDZJHYMAgmWfiddVKCw7WP4oQwrVtEouYxL-NvQ/exec";
+const $ = (q)=>document.querySelector(q);
+const msg = (html, ok=false)=>{ const m=$("#msg"); m.className= ok?"ok":"error"; m.innerHTML=html; if(!html) m.className=""; };
+const SKEY="session";
+
+function needSession(){
+  const raw = localStorage.getItem(SKEY);
+  if(!raw){ location.href="index.html"; return null; }
+  try{
+    const s = JSON.parse(raw);
+    $("#who").innerText = s.usuario||"";
+    return s;
+  }catch(_){ localStorage.removeItem(SKEY); location.href="index.html"; }
+}
+const SESSION = needSession();
+
+// tema
+(() => {
+  const k="rom_theme";
+  const cur = localStorage.getItem(k)||"dark";
+  document.documentElement.setAttribute("data-theme",cur);
+  $("#theme").addEventListener("click",(e)=>{
+    e.preventDefault();
+    const t = (localStorage.getItem(k)||"dark")==="dark"?"light":"dark";
+    localStorage.setItem(k,t);
+    document.documentElement.setAttribute("data-theme",t);
+  });
+})();
+
+$("#logout").addEventListener("click", async (e)=>{
+  e.preventDefault();
+  try { await fetch(API_BASE+"?path=/logout", { method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify({token:SESSION.token}) }); } catch(_){}
+  localStorage.removeItem(SKEY);
+  location.href = "index.html";
+});
+
+// data default hoje
+(()=>{ const d = new Date(); const s = d.toISOString().slice(0,10); $("#data").value = s; })();
+
+// itens dinâmicos
+const tbody = $("#tblItens tbody");
+function totaliza(){
+  let t=0; tbody.querySelectorAll("input[name='qtd']").forEach(i=> t += Number(i.value||0));
+  $("#tot").innerText = t;
+}
+function addRow(tipo="", tam="", qtd=1){
+  const tr = document.createElement("tr");
+  tr.innerHTML = `
+    <td><input name="tipo" placeholder="Caixa" value="${tipo}"></td>
+    <td><input name="tam" placeholder="P/M/G" value="${tam}"></td>
+    <td><input name="qtd" type="number" min="1" value="${qtd}"></td>
+    <td><button type="button" class="secondary">Remover</button></td>`;
+  tr.querySelector("button").onclick = ()=>{ tr.remove(); totaliza(); };
+  tr.querySelector("input[name='qtd']").oninput = totaliza;
+  tbody.appendChild(tr);
+  totaliza();
+}
+$("#addItem").onclick = ()=>addRow("Caixa","P",1);
+addRow("Caixa","P",1);
+
+// fotos (pré-visualização)
+const selFotos = $("#fotos"), thumbs=$("#thumbs");
+let fotosSelecionadas = []; // File[]
+selFotos.addEventListener("change", ()=>{
+  thumbs.innerHTML = "";
+  fotosSelecionadas = Array.from(selFotos.files||[]);
+  fotosSelecionadas.forEach(f=>{
+    const url = URL.createObjectURL(f);
+    const img = document.createElement("img");
+    img.src = url; img.title = f.name;
+    thumbs.appendChild(img);
+  });
+});
+
+// envia romaneio
+$("#frmRom").addEventListener("submit", async (ev)=>{
+  ev.preventDefault(); msg("");
+  if(!SESSION){ msg("Sessão inválida"); return; }
+
+  // monta payload
+  const itens = Array.from(tbody.querySelectorAll("tr")).map(tr=>{
+    const tipo = tr.querySelector("input[name='tipo']").value.trim();
+    const tam  = tr.querySelector("input[name='tam']").value.trim();
+    const qtd  = Number(tr.querySelector("input[name='qtd']").value||0);
+    return {tipo,tamanho:tam,qtd};
+  }).filter(i=>i.qtd>0);
+
+  // fotos => base64 (dataURL)
+  async function fileToDataURL(file){
+    return await new Promise((resolve,reject)=>{
+      const r = new FileReader();
+      r.onload = ()=> resolve(r.result);
+      r.onerror = reject;
+      r.readAsDataURL(file);
+    });
+  }
+  const fotos = [];
+  for (const f of fotosSelecionadas){
+    const dataUrl = await fileToDataURL(f);
+    fotos.push({ data: dataUrl });
+  }
+
+  const payload = {
+    token: SESSION.token,
+    rom: Number($("#rom").value),
+    data: $("#data").value,
+    obs: $("#obs").value,
+    cliente: { tel: $("#cli_tel").value, nome: $("#cli_nome").value, local: $("#cli_cidade").value },
+    fornecedor: { tel: $("#for_tel").value, nome: $("#for_nome").value, local: $("#for_cidade").value },
+    itens, fotos
+  };
+
+  try{
+    const r = await fetch(API_BASE+"?path=/rom/create", {
+      method:"POST",
+      headers:{ "Content-Type":"application/json;charset=utf-8" },
+      body: JSON.stringify(payload)
+    });
+    const j = await r.json();
+    if(j.error){ msg(j.error); return; }
+
+    // Popup com comprovante (código)
+    alert(`Romaneio enviado!\nCódigo: ${j.cod}`);
+
+    msg(`Enviado com sucesso! Código <b>${j.cod}</b>. 
+         <a href="${j.pdfUrl}" target="_blank">Abrir PDF</a> • 
+         <a href="${j.whatsappUrl}" target="_blank">WhatsApp</a>`, true);
+  }catch(e){
+    msg("Erro de rede: "+e);
+  }
+});
+
+$("#limpar").addEventListener("click", ()=>{
+  thumbs.innerHTML=""; fotosSelecionadas=[];
+});
+</script>
+</body>
+</html>
