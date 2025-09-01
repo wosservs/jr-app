@@ -1,304 +1,295 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Romaneio • Painel</title>
-  <meta name="color-scheme" content="dark light" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    const themeSaved = localStorage.getItem("theme") || "dark";
-    if (themeSaved === "dark") document.documentElement.classList.add("dark");
-  </script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Romaneio • Painel</title>
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<style>
+  :root{
+    --bg:#0b1220; --card:#0e1728; --text:#e5e9f0; --muted:#9aa3b2; --primary:#2563eb; --danger:#ef4444; --ok:#16a34a; --input:#0f172a; --ring:#3b82f6;
+  }
+  .light{
+    --bg:#f6f7fb; --card:#ffffff; --text:#0b1220; --muted:#5c6470; --primary:#2563eb; --danger:#dc2626; --ok:#16a34a; --input:#f1f5f9; --ring:#3b82f6;
+  }
+  *{box-sizing:border-box;font-family:Inter,system-ui,Segoe UI,Roboto,Arial}
+  body{margin:0;background:var(--bg);color:var(--text)}
+  header{position:sticky;top:0;background:var(--card);z-index:10;box-shadow:0 2px 14px rgba(0,0,0,.25)}
+  .wrap{max-width:1080px;margin:0 auto;padding:14px 16px;display:flex;align-items:center;gap:12px}
+  .brand{font-weight:700}
+  nav{margin-left:auto;display:flex;gap:8px}
+  .btn{padding:10px 12px;border-radius:10px;border:0;background:#334155;color:#fff;cursor:pointer}
+  .btn.primary{background:var(--primary)}
+  .btn.danger{background:var(--danger)}
+  .btn.ok{background:var(--ok)}
+  main{max-width:1080px;margin:18px auto;padding:0 16px}
+  .card{background:var(--card);border-radius:14px;padding:16px;margin-bottom:16px}
+  label{font-size:14px;color:var(--muted)}
+  select,input,textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid transparent;background:var(--input);color:var(--text);outline:none}
+  select:focus,input:focus,textarea:focus{border-color:var(--ring);box-shadow:0 0 0 3px rgba(59,130,246,.25)}
+  .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
+  .col-4{grid-column:span 4}
+  .col-3{grid-column:span 3}
+  .col-6{grid-column:span 6}
+  .col-12{grid-column:span 12}
+  @media (max-width:900px){ .col-3,.col-4,.col-6{grid-column:span 12} }
+  .thumbs{display:flex;gap:10px;flex-wrap:wrap}
+  .thumb{width:120px;height:120px;object-fit:cover;border-radius:10px;border:1px solid rgba(255,255,255,.1)}
+  .muted{color:var(--muted);font-size:13px}
+  /* progress */
+  #progress{position:fixed;left:0;top:0;height:3px;width:0;background:var(--primary);z-index:9999;transition:width .25s}
+</style>
 </head>
-<body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 min-h-screen">
-  <!-- Navbar -->
-  <header class="sticky top-0 z-50 bg-white/70 dark:bg-slate-900/60 backdrop-blur border-b border-slate-200 dark:border-slate-800">
-    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <span class="text-2xl">🚚</span>
-        <div class="text-lg font-semibold">Romaneio</div>
-        <span id="userBadge" class="ml-3 text-xs px-2 py-1 rounded-lg border border-slate-300 dark:border-slate-700 opacity-80"></span>
+<body>
+<div id="progress"></div>
+
+<header>
+  <div class="wrap">
+    <div class="brand">🚚 Romaneio</div>
+    <nav>
+      <button id="btn-theme" class="btn">🌙/☀️</button>
+      <button id="btn-hard" class="btn">↻ Atualizar</button>
+      <button id="btn-logout" class="btn danger">Sair</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="card">
+    <h3 style="margin:0 0 8px">Enviar Romaneio</h3>
+    <div class="grid">
+      <div class="col-3">
+        <label>ROM</label>
+        <input id="rom" placeholder="Ex.: 21">
       </div>
-      <nav class="hidden md:flex items-center gap-2">
-        <a href="#rom" class="px-3 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800">Enviar Romaneio</a>
-        <a href="#roms" class="px-3 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800">Romaneios</a>
-        <a href="#clientes" class="px-3 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800">Clientes</a>
-        <a href="#users" class="px-3 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800">Usuários</a>
-        <button id="btnTheme" class="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700">🌙</button>
-        <button id="btnSair" class="px-3 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white">Sair</button>
-      </nav>
-      <button class="md:hidden rounded-xl border border-slate-300 dark:border-slate-700 px-3 py-2" id="btnMenu">☰</button>
+      <div class="col-3">
+        <label>Data</label>
+        <input id="data" type="date">
+      </div>
+      <div class="col-6">
+        <label>Observações</label>
+        <input id="obs" placeholder="Ex.: Doca 3, até 16h">
+      </div>
+
+      <div class="col-6">
+        <label>Telefone do Cliente</label>
+        <input id="cli_tel" placeholder="85999999999">
+      </div>
+      <div class="col-3">
+        <label>Nome do Cliente</label>
+        <input id="cli_nome" placeholder="Nome do cliente">
+      </div>
+      <div class="col-3">
+        <label>Cidade/UF</label>
+        <input id="cli_local" placeholder="Fortaleza/CE">
+      </div>
+
+      <div class="col-6">
+        <label>Telefone do Fornecedor</label>
+        <input id="for_tel" placeholder="85999999999">
+      </div>
+      <div class="col-3">
+        <label>Nome do Fornecedor</label>
+        <input id="for_nome" placeholder="Nome do fornecedor">
+      </div>
+      <div class="col-3">
+        <label>Cidade/UF</label>
+        <input id="for_local" placeholder="Maracanaú/CE">
+      </div>
+
+      <div class="col-12"><hr style="border-color:rgba(255,255,255,.1)"></div>
+
+      <div class="col-4">
+        <label>Tipo</label>
+        <select id="item_tipo">
+          <option>Caixa</option>
+          <option>Saco</option>
+          <option>Palete</option>
+          <option>Outro</option>
+        </select>
+      </div>
+      <div class="col-4">
+        <label>Tamanho</label>
+        <select id="item_tam">
+          <option>P</option><option>M</option><option>G</option><option>Outro</option>
+        </select>
+      </div>
+      <div class="col-3">
+        <label>Qtd</label>
+        <input id="item_qtd" type="number" min="1" value="1">
+      </div>
+      <div class="col-1" style="display:flex;align-items:flex-end">
+        <button id="btn-add-item" class="btn">+ Item</button>
+      </div>
+
+      <div class="col-12">
+        <div id="items" class="muted">Nenhum item adicionado.</div>
+      </div>
+
+      <div class="col-12">
+        <label>Fotos</label>
+        <input id="fotos" type="file" accept="image/*" multiple>
+        <div class="muted">Você pode selecionar várias imagens. Pré-visualização abaixo.</div>
+        <div id="thumbs" class="thumbs" style="margin-top:8px"></div>
+      </div>
+
+      <div class="col-12" style="display:flex;gap:10px;margin-top:12px">
+        <button id="btn-send" class="btn primary">Enviar</button>
+        <button id="btn-clear" class="btn">Limpar</button>
+      </div>
+
+      <div class="col-12">
+        <div id="msg" class="muted"></div>
+      </div>
     </div>
-  </header>
+  </div>
 
-  <!-- Conteúdo -->
-  <main class="max-w-6xl mx-auto p-4 space-y-6">
-    <!-- Avisos -->
-    <div id="alert" class="hidden rounded-xl p-3 border"></div>
+  <div class="card">
+    <h3 style="margin:0 0 8px">Romanéios</h3>
+    <div class="muted">Lista/relatórios entram aqui numa próxima etapa.</div>
+  </div>
+</main>
 
-    <!-- Seção: Enviar Romaneio (resumo, campos principais) -->
-    <section id="rom" class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 backdrop-blur p-4">
-      <h2 class="text-xl font-semibold mb-4">Enviar Romaneio</h2>
+<script>
+/* ======= CONFIG ======= */
+const API_BASE = "https://script.google.com/macros/s/AKfycbyrDoEP82oJDj2wTIX491414Qf5e-YaDZJHYMAgmWfiddVKCw7WP4oQwrVtEouYxL-NvQ/exec"; // <- sua URL /exec
 
-      <form id="frmRom" class="grid md:grid-cols-2 gap-4">
-        <div>
-          <label class="block text-sm mb-1">ROM</label>
-          <input id="romNum" type="number" min="1" required
-                 class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2">
-        </div>
+/* ======= THEME ======= */
+function applyTheme(){
+  const t = localStorage.getItem("theme") || "dark";
+  if(t==="light") document.documentElement.classList.add("light");
+  else document.documentElement.classList.remove("light");
+}
+applyTheme();
+document.getElementById("btn-theme").onclick = ()=>{
+  const cur = localStorage.getItem("theme") || "dark";
+  const nx = cur==="dark"?"light":"dark";
+  localStorage.setItem("theme", nx);
+  applyTheme();
+};
 
-        <div>
-          <label class="block text-sm mb-1">Data</label>
-          <input id="data" type="date" required
-                 class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2">
-        </div>
+/* ======= HARD REFRESH ======= */
+document.getElementById("btn-hard").onclick = ()=>{
+  const q = new URLSearchParams(location.search);
+  q.set("v", Date.now());
+  location.href = location.pathname + "?" + q.toString() + (location.hash||"");
+};
 
-        <div class="md:col-span-2">
-          <label class="block text-sm mb-1">Observações</label>
-          <textarea id="obs" rows="2"
-                 class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2"></textarea>
-        </div>
+/* ======= PROGRESS ======= */
+const progress = {
+  el: document.getElementById("progress"),
+  start(){ this.el.style.width="10%"; requestAnimationFrame(()=> this.el.style.width="70%"); },
+  end(){ this.el.style.width="100%"; setTimeout(()=> this.el.style.width="0", 250); }
+};
 
-        <!-- Cliente -->
-        <div class="md:col-span-2 grid md:grid-cols-3 gap-4">
-          <div>
-            <label class="block text-sm mb-1">Telefone (cliente)</label>
-            <input id="cliTel" class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2" placeholder="85999999999">
-          </div>
-          <div>
-            <label class="block text-sm mb-1">Nome do cliente</label>
-            <input id="cliNome" class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2">
-          </div>
-          <div>
-            <label class="block text-sm mb-1">Cidade/UF</label>
-            <input id="cliLocal" class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2" placeholder="Fortaleza/CE">
-          </div>
-        </div>
+/* ======= SESSION ======= */
+let SESSION=null;
+try{ SESSION=JSON.parse(localStorage.getItem("session")||"null"); }catch(_){}
+if(!SESSION || !SESSION.token){ location.href="index.html?v="+Date.now(); }
 
-        <!-- Fornecedor -->
-        <div class="md:col-span-2 grid md:grid-cols-3 gap-4">
-          <div>
-            <label class="block text-sm mb-1">Telefone (fornecedor)</label>
-            <input id="forTel" class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2" placeholder="85999999999">
-          </div>
-          <div>
-            <label class="block text-sm mb-1">Nome do fornecedor</label>
-            <input id="forNome" class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2">
-          </div>
-          <div>
-            <label class="block text-sm mb-1">Cidade/UF</label>
-            <input id="forLocal" class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2" placeholder="Maracanaú/CE">
-          </div>
-        </div>
+/* ======= helpers ======= */
+const $ = s => document.querySelector(s);
+const msg = $("#msg");
+function setMsg(t, ok=false){
+  msg.textContent = t||"";
+  msg.style.color = ok? "var(--ok)" : "var(--muted)";
+}
 
-        <!-- Itens (simples – 1 linha por item) -->
-        <div class="md:col-span-2">
-          <label class="block text-sm mb-2">Itens</label>
-          <div id="itens" class="space-y-2"></div>
-          <button type="button" id="btnAddItem"
-            class="mt-2 rounded-xl border border-slate-300 dark:border-slate-700 px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800">
-            + Adicionar item
-          </button>
-        </div>
+/* ======= default date ======= */
+(function(){
+  const d = new Date();
+  const y=d.getFullYear(), m=("0"+(d.getMonth()+1)).slice(-2), dd=("0"+d.getDate()).slice(-2);
+  $("#data").value = `${y}-${m}-${dd}`;
+})();
 
-        <!-- Fotos (várias) -->
-        <div class="md:col-span-2">
-          <label class="block text-sm mb-1">Fotos</label>
-          <input id="fotos" type="file" accept="image/*" multiple
-                 class="block w-full text-sm file:mr-3 file:rounded-xl file:border-0 file:bg-slate-200 dark:file:bg-slate-800 file:px-3 file:py-2 file:text-slate-900 dark:file:text-slate-100">
-          <p class="text-xs opacity-70 mt-1">Você pode selecionar várias imagens. Pré-visualização após selecionar.</p>
-          <div id="preview" class="mt-3 grid grid-cols-3 md:grid-cols-6 gap-2"></div>
-        </div>
+/* ======= items ======= */
+const items = [];
+function renderItems(){
+  if(!items.length){ $("#items").textContent="Nenhum item adicionado."; return; }
+  $("#items").innerHTML = items.map((i,idx)=>`• ${i.tipo} ${i.tamanho} — ${i.qtd} <a href="#" data-i="${idx}" class="rm">[remover]</a>`).join("<br>");
+  $("#items").querySelectorAll(".rm").forEach(a=> a.onclick=(e)=>{ e.preventDefault(); items.splice(a.dataset.i,1); renderItems(); });
+}
+$("#btn-add-item").onclick = ()=>{
+  const tipo = $("#item_tipo").value, tamanho=$("#item_tam").value, qtd= Number($("#item_qtd").value||0);
+  if(qtd<=0) return;
+  items.push({tipo,tamanho,qtd});
+  renderItems();
+};
 
-        <div class="md:col-span-2 flex gap-2">
-          <button class="rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2" type="submit">Enviar</button>
-          <button class="rounded-xl border border-slate-300 dark:border-slate-700 px-4 py-2" type="reset">Limpar</button>
-        </div>
-      </form>
-    </section>
+/* ======= fotos preview ======= */
+const fotosSel = []; // {name, dataUrl}
+$("#fotos").addEventListener("change", async (ev)=>{
+  fotosSel.length = 0;
+  $("#thumbs").innerHTML="";
+  const files = Array.from(ev.target.files||[]);
+  for(const f of files){
+    const dataUrl = await fileToDataUrl(f);
+    fotosSel.push({name:f.name, dataUrl});
+    const img = new Image(); img.src=dataUrl; img.className="thumb";
+    $("#thumbs").appendChild(img);
+  }
+});
+function fileToDataUrl(file){
+  return new Promise(res=>{ const r = new FileReader(); r.onload = ()=> res(r.result); r.readAsDataURL(file); });
+}
 
-    <!-- Outras seções (placeholders só pra navegação) -->
-    <section id="roms" class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 backdrop-blur p-4">
-      <h2 class="text-xl font-semibold mb-2">Romaneios</h2>
-      <p class="opacity-70 text-sm">Lista/relatórios entram aqui numa próxima etapa.</p>
-    </section>
-
-    <section id="clientes" class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 backdrop-blur p-4">
-      <h2 class="text-xl font-semibold mb-2">Clientes</h2>
-      <p class="opacity-70 text-sm">Cadastro/edição de clientes entra aqui (próxima etapa).</p>
-    </section>
-
-    <section id="users" class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 backdrop-blur p-4">
-      <h2 class="text-xl font-semibold mb-2">Usuários</h2>
-      <p class="opacity-70 text-sm">Lista/cadastro de usuários (próxima etapa). Permissões serão respeitadas via <code>/whoami</code> + <code>perms</code>.</p>
-    </section>
-  </main>
-
-  <script>
-    // ==================== CONFIG ====================
-    const API_BASE = "https://script.google.com/macros/s/AKfycbyrDoEP82oJDj2wTIX491414Qf5e-YaDZJHYMAgmWfiddVKCw7WP4oQwrVtEouYxL-NvQ/exec";
-    // =================================================
-    const $ = (sel) => document.querySelector(sel);
-
-    // UI helpers
-    function alertError(text){
-      const a = $("#alert");
-      a.className = "rounded-xl p-3 border border-rose-600/30 bg-rose-600/10 text-rose-700 dark:text-rose-300";
-      a.textContent = text;
-      a.classList.remove("hidden");
-    }
-    function alertOk(text){
-      const a = $("#alert");
-      a.className = "rounded-xl p-3 border border-emerald-600/30 bg-emerald-600/10 text-emerald-700 dark:text-emerald-300";
-      a.textContent = text;
-      a.classList.remove("hidden");
-    }
-    function alertHide(){ $("#alert").classList.add("hidden"); }
-
-    // Tema
-    $("#btnTheme").addEventListener("click", ()=>{
-      const to = document.documentElement.classList.contains("dark") ? "light" : "dark";
-      localStorage.setItem("theme", to);
-      document.documentElement.classList.toggle("dark", to==="dark");
-      $("#btnTheme").textContent = to==="dark" ? "🌙" : "☀️";
+/* ======= API ======= */
+async function post(path, body){
+  progress.start();
+  try{
+    const r = await fetch(API_BASE+"?path="+encodeURIComponent(path), {
+      method:"POST",
+      headers:{"Content-Type":"application/json;charset=utf-8"},
+      body: JSON.stringify(Object.assign({}, body||{}, {token:SESSION.token}))
     });
+    return await r.json();
+  }finally{ progress.end(); }
+}
 
-    // Sessão
-    const sess = (function(){
-      try{ return JSON.parse(localStorage.getItem("rom.session")||"null"); }catch(_){ return null; }
-    })();
+/* ======= send ======= */
+$("#btn-send").onclick = async ()=>{
+  setMsg("");
+  const rom = $("#rom").value.trim();
+  const data = $("#data").value;
+  const obs  = $("#obs").value.trim();
+  const cliente = { tel:$("#cli_tel").value.trim(), nome:$("#cli_nome").value.trim(), local:$("#cli_local").value.trim() };
+  const fornecedor = { tel:$("#for_tel").value.trim(), nome:$("#for_nome").value.trim(), local:$("#for_local").value.trim() };
 
-    if(!sess || !sess.token){
-      location.replace("./index.html");
-    }else{
-      $("#userBadge").textContent = `${sess.usuario} • ${sess.role || "-"}`;
-      $("#btnTheme").textContent = (localStorage.getItem("theme")||"dark")==="dark" ? "🌙" : "☀️";
-    }
+  if(!rom || !cliente.tel || !cliente.nome || !cliente.local || !fornecedor.tel || !fornecedor.nome || !fornecedor.local){
+    setMsg("Preencha os campos obrigatórios (ROM, cliente e fornecedor)."); return;
+  }
+  if(!items.length){ setMsg("Adicione pelo menos um item."); return; }
 
-    // Sair
-    $("#btnSair").addEventListener("click", async ()=>{
-      try{
-        await fetch(API_BASE+"?path=/logout", {
-          method:"POST", headers:{ "Content-Type":"text/plain;charset=utf-8" },
-          body: JSON.stringify({token: sess.token}), mode:"cors"
-        });
-      }catch(_){}
-      localStorage.removeItem("rom.session");
-      location.replace("./index.html");
-    });
+  const fotos = fotosSel.map(f=>({ name:f.name, data:f.dataUrl })); // base64 inline
+  const payload = { rom, data, obs, cliente, fornecedor, itens:items, fotos };
+  const j = await post("/rom/create", payload);
 
-    // Carrega data de hoje
-    (function setHoje(){
-      const d = new Date();
-      const pad = (n)=> String(n).padStart(2, "0");
-      const iso = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-      $("#data").value = iso;
-    })();
+  if(j && j.ok){
+    setMsg(`Enviado! Código: ${j.cod}  •  PDF: ${j.pdfUrl}`, true);
+    if(confirm("Abrir PDF do romaneio?")) window.open(j.pdfUrl, "_blank");
+    if(confirm("Compartilhar no WhatsApp?")) window.open(j.whatsappUrl, "_blank");
+    clearForm();
+  }else{
+    setMsg(j && j.error ? j.error : "Falha no envio");
+  }
+};
 
-    // Itens dinâmicos (mínimo viável)
-    const itensBox = $("#itens");
-    function makeItemRow(){
-      const row = document.createElement("div");
-      row.className = "grid grid-cols-12 gap-2";
-      row.innerHTML = `
-        <select class="col-span-5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2">
-          <option value="caixa">Caixa</option>
-          <option value="saco">Saco</option>
-          <option value="fardo">Fardo</option>
-          <option value="palete">Palete</option>
-        </select>
-        <select class="col-span-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2">
-          <option value="P">P</option>
-          <option value="M">M</option>
-          <option value="G">G</option>
-        </select>
-        <input type="number" min="1" value="1" class="col-span-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2">
-        <button type="button" class="col-span-1 rounded-xl bg-rose-600 hover:bg-rose-700 text-white">✕</button>
-      `;
-      const btnX = row.querySelector("button");
-      btnX.addEventListener("click", ()=> row.remove());
-      return row;
-    }
-    $("#btnAddItem").addEventListener("click", ()=> itensBox.appendChild(makeItemRow()));
-    // um item inicial
-    itensBox.appendChild(makeItemRow());
+function clearForm(){
+  $("#rom").value=""; $("#obs").value="";
+  ["cli_tel","cli_nome","cli_local","for_tel","for_nome","for_local"].forEach(id=> $("#"+id).value="");
+  items.length=0; renderItems();
+  fotosSel.length=0; $("#thumbs").innerHTML=""; $("#fotos").value="";
+}
+$("#btn-clear").onclick = clearForm;
 
-    // Pré-visualização das fotos
-    const preview = $("#preview");
-    $("#fotos").addEventListener("change", (ev)=>{
-      preview.innerHTML = "";
-      for(const file of ev.target.files){
-        const url = URL.createObjectURL(file);
-        const img = document.createElement("img");
-        img.src = url;
-        img.className = "w-full h-24 object-cover rounded-lg border border-slate-200 dark:border-slate-800";
-        preview.appendChild(img);
-      }
-    });
-
-    // Envio do romaneio (mínimo viável com as regras do backend)
-    $("#frmRom").addEventListener("submit", async (ev)=>{
-      ev.preventDefault(); alertHide();
-
-      const rom     = Number($("#romNum").value);
-      const data    = $("#data").value; // yyyy-mm-dd
-      const obs     = $("#obs").value.trim();
-
-      const cliente = {
-        tel:  $("#cliTel").value.trim(),
-        nome: $("#cliNome").value.trim(),
-        local:$("#cliLocal").value.trim(),
-      };
-      const fornecedor = {
-        tel:  $("#forTel").value.trim(),
-        nome: $("#forNome").value.trim(),
-        local:$("#forLocal").value.trim(),
-      };
-
-      // itens
-      const itens = [];
-      itensBox.querySelectorAll(":scope > div").forEach(div=>{
-        const [tipoEl, tamEl, qtdEl] = div.querySelectorAll("select, input");
-        itens.push({ tipo:tipoEl.value, tamanho:tamEl.value, qtd:Number(qtdEl.value||0) });
-      });
-
-      // fotos => base64 dataURL
-      const files = $("#fotos").files;
-      const fotos = [];
-      for (const f of files){
-        const b64 = await fileToDataURL(f);
-        fotos.push({ data: b64 });
-      }
-
-      const payload = { token: sess.token, rom, data, obs, cliente, fornecedor, itens, fotos };
-
-      try{
-        const r = await fetch(API_BASE+"?path=/rom/create", {
-          method:"POST",
-          headers: { "Content-Type":"text/plain;charset=utf-8" },
-          body: JSON.stringify(payload),
-          mode:"cors",
-        });
-        const j = await r.json();
-        if(j.error){ alertError(j.error); return; }
-        // sucesso
-        alertOk(`Romaneio enviado! Código: ${j.cod}`);
-        // opcional: abrir PDF em nova guia
-        if(j.pdfUrl) window.open(j.pdfUrl, "_blank");
-      }catch(e){
-        alertError("Falha ao enviar: "+e);
-      }
-    });
-
-    function fileToDataURL(file){
-      return new Promise((res,rej)=>{
-        const reader = new FileReader();
-        reader.onload = ()=> res(reader.result);
-        reader.onerror = rej;
-        reader.readAsDataURL(file);
-      });
-    }
-  </script>
+/* ======= logout ======= */
+$("#btn-logout").onclick = async ()=>{
+  try{ await post("/logout", {}); }catch(_){}
+  localStorage.removeItem("session");
+  location.href = "index.html?v="+Date.now();
+};
+</script>
 </body>
 </html>
