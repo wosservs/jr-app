@@ -1,181 +1,295 @@
 <!doctype html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Romaneio • Painel</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root{ --bg:#0b1220; --card:#0f172a; --muted:#8ea1c0; --text:#eaf0ff; --primary:#3b82f6; --danger:#ef4444; --ok:#22c55e; --shadow:0 8px 28px rgba(0,0,0,.25) }
-    [data-theme="light"]{ --bg:#f6f7fb; --card:#ffffff; --muted:#4b5563; --text:#111827; --primary:#2563eb; --danger:#dc2626; --ok:#16a34a; --shadow:0 8px 24px rgba(2,6,23,.08) }
-    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 Inter,system-ui}
-    header{position:sticky;top:0;background:linear-gradient(180deg,var(--bg),rgba(0,0,0,0));padding:16px 18px;z-index:2}
-    .bar{display:flex;gap:10px;align-items:center;justify-content:space-between}
-    .pill{background:var(--card);color:var(--text);border:1px solid rgba(148,163,184,.25);padding:10px 14px;border-radius:999px;cursor:pointer}
-    .container{max-width:1040px;margin:0 auto;padding:0 16px 48px}
-    h2{margin:8px 0 16px}
-    .card{background:var(--card);border-radius:16px;padding:18px;box-shadow:var(--shadow);margin:14px 0}
-    .grid{display:grid;grid-template-columns:1fr 1fr 120px 64px;gap:10px}
-    select,input,textarea{width:100%;background:transparent;border:1px solid rgba(148,163,184,.25);color:var(--text);border-radius:10px;padding:10px}
-    .btn{appearance:none;border:0;border-radius:12px;padding:12px 16px;cursor:pointer;font-weight:600}
-    .btn-primary{background:var(--primary);color:#fff}
-    .btn-ghost{background:transparent;color:var(--text);border:1px solid rgba(148,163,184,.25)}
-    .btn-danger{background:var(--danger);color:#fff}
-    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .w-180{width:180px}
-    .muted{color:var(--muted)}
-    .preview{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
-    .preview img{width:140px;height:100px;object-fit:cover;border-radius:8px;border:1px solid rgba(148,163,184,.25)}
-    .spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin 1s linear infinite;vertical-align:-3px;margin-right:8px}
-    @keyframes spin{to{transform:rotate(360deg)}}
-    .alert{margin-top:12px;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.35);color:#fecaca;padding:10px;border-radius:10px}
-    .ok{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.35);color:#bbf7d0}
-  </style>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Romaneio • Painel</title>
+<style>
+:root{
+  --bg:#0b1320; --card:#121b2e; --muted:#8793ab; --text:#eaf1ff; --line:rgba(255,255,255,.08);
+  --primary:#4c8dff; --primary-600:#3a74d6; --danger:#ff6b6b; --ok:#19c37d;
+}
+*{box-sizing:border-box} html,body{height:100%}
+body{margin:0;background:#0b1320;color:var(--text);font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial}
+a{color:inherit}
+.nav{
+  position:sticky; top:0; z-index:50; background:rgba(9,16,31,.7); backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line); padding:12px 16px; display:flex; align-items:center; gap:10px;
+}
+.brand{display:flex; align-items:center; gap:8px; font-weight:800}
+.badge{padding:6px 10px; background:#0f1729; border:1px solid var(--line); border-radius:10px; font-size:12px}
+.sp{flex:1}
+.btn{appearance:none;border:0;border-radius:12px;padding:10px 14px;background:#1a2340;color:#dfe8ff;cursor:pointer}
+.btn:hover{filter:brightness(1.06)}
+.btn-primary{background:var(--primary)}
+.btn-danger{background:#ff5d5d}
+.container{max-width:1120px;margin:16px auto;padding:0 16px}
+.card{background:#121b2e;border:1px solid var(--line);border-radius:16px;padding:16px;margin:16px 0}
+h2{margin:0 0 10px}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.fld{display:flex;flex-direction:column;gap:6px}
+input,select,textarea{
+  background:#0f1729;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14px
+}
+.small{font-size:12px;color:var(--muted)}
+.item-row{display:grid;grid-template-columns:1.4fr 1fr .8fr 46px;gap:10px;align-items:center;margin-top:10px}
+.thumb{width:90px;height:90px;object-fit:cover;border-radius:10px;border:1px solid var(--line)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.chip{background:#0f1729;border:1px solid var(--line); padding:8px 10px;border-radius:999px;font-size:12px}
+.progress{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:60}
+.box{background:#111a2d;border:1px solid var(--line);border-radius:16px;padding:18px;min-width:320px; text-align:center}
+.bar{height:8px;background:#0f1729;border-radius:999px;overflow:hidden;margin-top:12px}
+.bar>div{height:100%;width:0%;background:linear-gradient(90deg,#63a4ff,#4c8dff);transition:width .2s}
+.ok{color:var(--ok)} .err{color:var(--danger)}
+hr{border:none;border-top:1px solid var(--line);margin:14px 0}
+</style>
 </head>
 <body>
-<header>
-  <div class="bar">
-    <div class="row">
-      <strong>🚚 Romaneio</strong>
-      <span id="who" class="muted"></span>
+  <div class="nav">
+    <div class="brand">🚚 <span>Romaneio</span></div>
+    <span id="who" class="badge">—</span>
+    <div class="sp"></div>
+    <a class="btn" href="#" id="tabRom">Enviar Romaneio</a>
+    <a class="btn" href="#" id="tabList">Romaneios</a>
+    <a class="btn" href="#" id="tabCli">Clientes</a>
+    <a class="btn" href="#" id="tabUsr">Usuários</a>
+    <button id="btnTheme" class="btn" title="Tema">🌙/🌞</button>
+    <button id="btnReload" class="btn" title="Atualizar">⟳ Atualizar</button>
+    <button id="btnOut" class="btn btn-danger">Sair</button>
+  </div>
+
+  <div class="container" id="sectionRom">
+    <div class="card">
+      <div class="small" id="stamp"></div>
+      <h2>Itens</h2>
+
+      <!-- Itens -->
+      <div id="items"></div>
+      <div style="margin-top:8px">
+        <button class="btn" id="btnAddItem">+ Adicionar item</button>
+        <span class="chip">Total: <b id="totalQtd">0</b></span>
+      </div>
     </div>
-    <div class="row">
-      <button class="pill" id="themeBtn">🌙/🌞</button>
-      <button class="pill" id="refreshBtn">⟳ Atualizar</button>
-      <button class="pill" id="logoutBtn">Sair</button>
+
+    <!-- Fotos -->
+    <div class="card">
+      <h2>Fotos</h2>
+      <div class="small">Você pode selecionar múltiplas imagens. Pré-visualização abaixo.</div>
+      <input id="inFotos" type="file" accept="image/*" multiple style="margin-top:8px"/>
+      <div id="previews" class="chips"></div>
+      <div style="margin-top:12px; display:flex; gap:10px">
+        <button id="btnSend" class="btn btn-primary">Enviar</button>
+        <button id="btnClear" class="btn">Limpar</button>
+      </div>
+      <div id="status" class="small"></div>
+    </div>
+
+    <!-- Cliente / Fornecedor -->
+    <div class="card">
+      <h2>Cliente & Fornecedor</h2>
+      <div class="grid2">
+        <div class="fld"><label>ROM</label><input id="rom" type="number" placeholder="Ex.: 21"/></div>
+        <div class="fld"><label>Data</label><input id="data" type="date"/></div>
+      </div>
+      <hr>
+      <div class="grid2">
+        <div class="fld"><label>Cliente • Telefone</label><input id="cli_tel" placeholder="(85) 9 9999-9999"/></div>
+        <div class="fld"><label>Cliente • Nome</label><input id="cli_nome" placeholder="Nome do cliente"/></div>
+      </div>
+      <div class="fld"><label>Cliente • Cidade/UF</label><input id="cli_local" placeholder="Ex.: Fortaleza/CE"/></div>
+      <hr>
+      <div class="grid2">
+        <div class="fld"><label>Fornecedor • Telefone</label><input id="for_tel" placeholder="(85) 9 9999-9999"/></div>
+        <div class="fld"><label>Fornecedor • Nome</label><input id="for_nome" placeholder="Nome do fornecedor"/></div>
+      </div>
+      <div class="fld"><label>Fornecedor • Cidade/UF</label><input id="for_local" placeholder="Ex.: Maracanaú/CE"/></div>
+      <div class="fld"><label>Observações</label><textarea id="obs" rows="3" placeholder="Ex.: Doca 3, às 16h"></textarea></div>
     </div>
   </div>
-</header>
 
-<div class="container">
-  <div class="card">
-    <h2>Itens</h2>
-    <div id="itens"></div>
-    <button class="btn btn-ghost" id="addItem">+ Adicionar item</button>
+  <!-- Seções futuras (placeholder) -->
+  <div class="container" id="sectionList" style="display:none">
+    <div class="card"><h2>Romaneios</h2><div class="small">Lista/relatórios entram aqui numa próxima etapa.</div></div>
+  </div>
+  <div class="container" id="sectionCli" style="display:none">
+    <div class="card"><h2>Clientes</h2><div class="small">Cadastro básico numa próxima etapa.</div></div>
+  </div>
+  <div class="container" id="sectionUsr" style="display:none">
+    <div class="card"><h2>Usuários</h2><div class="small">Gestão de usuários/perfis numa próxima etapa.</div></div>
   </div>
 
-  <div class="card">
-    <h2>Fotos</h2>
-    <input id="fotos" type="file" multiple accept="image/*">
-    <div class="muted">Você pode selecionar várias imagens. Pré-visualização abaixo.</div>
-    <div id="preview" class="preview"></div>
+  <!-- overlay progresso -->
+  <div class="progress" id="overlay">
+    <div class="box">
+      <div id="overlayTxt">Enviando…</div>
+      <div class="bar"><div id="overlayBar"></div></div>
+    </div>
   </div>
-
-  <div class="row">
-    <button id="sendBtn" class="btn btn-primary">Enviar</button>
-    <button id="clearBtn" class="btn btn-ghost">Limpar</button>
-  </div>
-
-  <div id="msg"></div>
-</div>
 
 <script>
-  // ===== CONFIG =====
-  const API_BASE = "https://script.google.com/macros/s/AKfycbyrDoEP82oJDj2wTIX491414Qf5e-YaDZJHYMAgmWfiddVKCw7WP4oQwrVtEouYxL-NvQ/exec";
+/* ====== CONFIG ====== */
+const API_BASE = "https://script.google.com/macros/s/AKfycbyrDoEP82oJDj2wTIX491414Qf5e-YaDZJHYMAgmWfiddVKCw7WP4oQwrVtEouYxL-NvQ/exec";
 
-  // ===== THEME =====
-  function setTheme(t){ document.documentElement.setAttribute('data-theme', t); localStorage.setItem('theme', t); }
-  setTheme(localStorage.getItem('theme')||'dark');
-  document.getElementById('themeBtn').onclick=()=> setTheme((localStorage.getItem('theme')||'dark')==='dark'?'light':'dark');
-  document.getElementById('refreshBtn').onclick=()=> location.href='./app.html?v='+Date.now();
+/* ====== UTILS ====== */
+const qs = s=>document.querySelector(s);
+const fmtDate = d => new Date(d||Date.now()).toISOString().slice(0,10);
+const toast = (t,cls)=>{ const el=qs("#status"); el.className="small "+(cls||""); el.textContent=t; };
+const overlay = (v, txt, p)=>{ const o=qs("#overlay"); o.style.display= v?"flex":"none"; qs("#overlayTxt").textContent = txt||""; if(typeof p==="number") qs("#overlayBar").style.width = (p*100)+"%"; };
+const getSession = ()=>{ try{return JSON.parse(localStorage.getItem("rom_session")||"{}");}catch(_){return{}}; };
 
-  // ===== SESSÃO =====
-  const sess = JSON.parse(localStorage.getItem('rom_session')||'{}');
-  if(!sess || !sess.token){ location.href='./index.html?v='+Date.now(); }
-  document.getElementById('who').textContent = (sess.usuario||'')+' • '+(new Date(sess.expira||'').toLocaleString()||'');
+/* ====== THEME / RELOAD / TABS ====== */
+qs("#btnTheme").onclick = ()=>{ const k="rom_theme"; localStorage.setItem(k,(localStorage.getItem(k)==="dark"?"light":"dark")); location.reload(); };
+qs("#btnReload").onclick = ()=> location.href = "app.html?v="+Date.now();
 
-  // ===== UTILS/API =====
-  const msg = (html,ok)=>{ const el=document.getElementById('msg'); el.className="alert"+(ok?" ok":""); el.innerHTML=html; }
-  const wait = (el,doing=true)=>{ el.disabled=doing; el.innerHTML = doing?'<span class="spinner"></span>Aguarde…':el._label }
+const showTab = (id)=>{ ["Rom","List","Cli","Usr"].forEach(s=>qs("#section"+s).style.display = (s===id?"block":"none")); };
+qs("#tabRom").onclick = (e)=>{e.preventDefault();showTab("Rom");};
+qs("#tabList").onclick= (e)=>{e.preventDefault();showTab("List");};
+qs("#tabCli").onclick = (e)=>{e.preventDefault();showTab("Cli");};
+qs("#tabUsr").onclick = (e)=>{e.preventDefault();showTab("Usr");};
 
-  async function api(path, body={}){
-    body.token = (sess && sess.token) || '';
-    const r = await fetch(API_BASE+'?path='+encodeURIComponent(path), {
-      method:'POST',
-      headers:{ 'Content-Type':'text/plain;charset=utf-8' }, // <- evita preflight
-      body: JSON.stringify(body)
-    });
-    return r.json();
-  }
+/* ====== API ====== */
+async function apiPost(path, data){
+  const r = await fetch(API_BASE + "?path=" + encodeURIComponent(path), {
+    method:"POST", headers:{ "Content-Type":"text/plain;charset=utf-8" },
+    body: JSON.stringify(data||{}), mode:"cors", credentials:"omit",
+  });
+  if(!r.ok) throw new Error("HTTP "+r.status);
+  return await r.json();
+}
 
-  // ===== ITENS UI =====
-  const itensEl = document.getElementById('itens');
-  function itemRow(o={tipo:'Caixa', tamanho:'P', qtd:1}){
-    const div=document.createElement('div'); div.className='grid'; div.innerHTML=`
-      <select class="tipo">
-        <option>Caixa</option><option>Sacola</option><option>Pacote</option><option>Palete</option>
+/* ====== SESSION header ====== */
+(function(){
+  const s = getSession();
+  if(!s?.token){ location.href="index.html"; return; }
+  qs("#who").textContent = `${s.usuario} • ${new Date().toLocaleString()}`;
+  qs("#data").value = fmtDate();
+  qs("#stamp").textContent = "Conectado • " + new Date().toLocaleString();
+})();
+qs("#btnOut").onclick = async ()=>{
+  try{ await apiPost("/logout",{ token:getSession().token }); }catch(_){}
+  localStorage.removeItem("rom_session"); location.href="index.html";
+};
+
+/* ====== ITENS ====== */
+const itemsEl = qs("#items");
+const totalQtdEl = qs("#totalQtd");
+const tipos = ["Caixa","Pacote","Fardo","Volume","Saco","Palete"];
+const tamanhos = ["P","M","G","GG"];
+let items = [];
+
+function renderItems(){
+  itemsEl.innerHTML = "";
+  let total = 0;
+  items.forEach((it,idx)=>{
+    total += Number(it.qtd||0);
+    const row = document.createElement("div");
+    row.className="item-row";
+    row.innerHTML = `
+      <select class="it-tipo">
+        ${tipos.map(t=>`<option ${it.tipo===t?"selected":""}>${t}</option>`).join("")}
       </select>
-      <select class="tam">
-        <option>P</option><option>M</option><option>G</option>
+      <select class="it-tamanho">
+        ${tamanhos.map(t=>`<option ${it.tamanho===t?"selected":""}>${t}</option>`).join("")}
       </select>
-      <input class="qtd" type="number" value="${o.qtd||1}" min="1">
-      <button class="btn btn-danger rem">×</button>
-    `;
-    div.querySelector('.tipo').value = o.tipo||'Caixa';
-    div.querySelector('.tam').value  = (o.tamanho||'P').toUpperCase();
-    div.querySelector('.rem').onclick=()=> div.remove();
-    itensEl.appendChild(div);
-  }
-  document.getElementById('addItem').onclick=()=> itemRow();
-  itemRow(); // 1 inicial
+      <input class="it-qtd" type="number" min="1" value="${it.qtd||1}">
+      <button class="btn btn-danger it-x">✕</button>`;
+    row.querySelector(".it-tipo").onchange = e=>{items[idx].tipo=e.target.value;};
+    row.querySelector(".it-tamanho").onchange = e=>{items[idx].tamanho=e.target.value;};
+    row.querySelector(".it-qtd").oninput = e=>{items[idx].qtd=Number(e.target.value||0); updateTotal();};
+    row.querySelector(".it-x").onclick = ()=>{ items.splice(idx,1); renderItems(); };
+    itemsEl.appendChild(row);
+  });
+  totalQtdEl.textContent = total;
+}
+function updateTotal(){ totalQtdEl.textContent = items.reduce((s,i)=>s+Number(i.qtd||0),0); }
 
-  // ===== Fotos base64 + preview =====
-  const fotosInput = document.getElementById('fotos');
-  const preview    = document.getElementById('preview');
-  let fotosData = [];
-  fotosInput.onchange = async (ev)=>{
-    fotosData = [];
-    preview.innerHTML = '';
-    const files = Array.from(ev.target.files||[]);
-    for(const f of files){
-      const b64 = await fileToDataURL(f);
-      fotosData.push({name:f.name, data:b64});
-      const img = new Image(); img.src = b64; preview.appendChild(img);
-    }
-  }
-  function fileToDataURL(file){
-    return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); });
-  }
+qs("#btnAddItem").onclick = ()=>{ items.push({tipo:"Caixa", tamanho:"P", qtd:1}); renderItems(); };
+/* começa com 1 item */
+items = [{tipo:"Caixa", tamanho:"P", qtd:1}];
+renderItems();
 
-  // ===== Enviar =====
-  document.getElementById('sendBtn').onclick = async ()=>{
-    const b = document.getElementById('sendBtn'); b._label=b._label||b.textContent; wait(b,true); msg('');
-    try{
-      const itens = Array.from(itensEl.querySelectorAll('.grid')).map(row=>({
-        tipo: row.querySelector('.tipo').value,
-        tamanho: row.querySelector('.tam').value,
-        qtd: Number(row.querySelector('.qtd').value||0)
-      })).filter(i=>i.qtd>0);
+/* ====== FOTOS & PREVIEW ====== */
+let fotosFiles = [];
+qs("#inFotos").addEventListener("change", (ev)=>{
+  fotosFiles = Array.from(ev.target.files||[]);
+  const p = qs("#previews"); p.innerHTML="";
+  fotosFiles.forEach(f=>{
+    const img = document.createElement("img");
+    img.className="thumb";
+    img.src = URL.createObjectURL(f);
+    p.appendChild(img);
+  });
+});
 
-      if(!itens.length){ msg('Informe ao menos 1 item'); wait(b,false); return; }
+/* ====== ENVIAR ====== */
+qs("#btnSend").onclick = async ()=>{
+  const sess = getSession(); if(!sess?.token){ location.href="index.html"; return; }
 
-      const r = await api('/rom/create', {
-        rom: '', data: '', obs:'',
-        cliente:{tel:'',nome:'',local:''},
-        fornecedor:{tel:'',nome:'',local:''},
-        itens, fotos: fotosData
-      });
+  // validações básicas
+  const rom = Number(qs("#rom").value||0);
+  if(!rom){ toast("Informe o ROM","err"); return; }
+  if(items.reduce((s,i)=>s+Number(i.qtd||0),0)<=0){ toast("Nenhum item informado","err"); return; }
 
-      if(r.error){ msg('Erro: '+r.error); wait(b,false); return; }
-
-      msg(`OK • Cod: <b>${r.cod}</b> • <a target="_blank" href="${r.pdfUrl}">PDF</a> • <a target="_blank" href="${r.whatsappUrl}">WhatsApp</a>`, true);
-      fotosInput.value=''; preview.innerHTML=''; fotosData=[];
-      itensEl.innerHTML=''; itemRow();
-    }catch(e){ msg('Falha no envio: '+e.message); }
-    finally{ wait(b,false); }
+  // monta corpo
+  const body = {
+    token:sess.token,
+    rom,
+    data: qs("#data").value || fmtDate(),
+    obs:  qs("#obs").value || "",
+    cliente:{
+      tel:  qs("#cli_tel").value,  nome: qs("#cli_nome").value,
+      local:qs("#cli_local").value
+    },
+    fornecedor:{
+      tel:  qs("#for_tel").value,  nome: qs("#for_nome").value,
+      local:qs("#for_local").value
+    },
+    itens: items.map(i=>({tipo:i.tipo, tamanho:i.tamanho, qtd:Number(i.qtd||0)}))
   };
 
-  document.getElementById('clearBtn').onclick = ()=>{
-    itensEl.innerHTML=''; itemRow(); fotosInput.value=''; preview.innerHTML=''; fotosData=[];
-    msg('');
-  };
+  // converte fotos em base64 dataURL (sem abrir Google)
+  overlay(true,"Preparando imagens…",.05);
+  const fotos = [];
+  for(let i=0;i<fotosFiles.length;i++){
+    const f = fotosFiles[i];
+    const dataUrl = await fileToDataURL(f);
+    fotos.push({name:f.name, dataUrl});
+    overlay(true,`Convertendo ${i+1}/${fotosFiles.length}…`, (i+1)/fotosFiles.length*.5 + .05);
+  }
+  body.fotos = fotos;
 
-  document.getElementById('logoutBtn').onclick = async ()=>{
-    try{ await api('/logout',{}); }catch(_){}
-    localStorage.removeItem('rom_session'); location.href='./index.html?v='+Date.now();
-  };
+  try{
+    overlay(true,"Enviando…",.65);
+    const r = await apiPost("/rom/create", body);
+    overlay(true,"Finalizando…",.95);
+    if(r.error){ overlay(false); toast(r.error,"err"); return; }
+    overlay(false);
+    toast(`OK! Código ${r.cod}. PDF gerado.`, "ok");
+    // limpa somente fotos
+    qs("#inFotos").value=""; fotosFiles=[]; qs("#previews").innerHTML="";
+  }catch(e){
+    overlay(false); toast("Erro ao enviar: "+e.message,"err");
+  }
+};
+
+qs("#btnClear").onclick = ()=>{
+  items = [{tipo:"Caixa", tamanho:"P", qtd:1}]; renderItems();
+  qs("#inFotos").value=""; fotosFiles=[]; qs("#previews").innerHTML="";
+  ["cli_tel","cli_nome","cli_local","for_tel","for_nome","for_local","obs","rom"].forEach(id=>qs("#"+id).value="");
+  qs("#data").value = fmtDate();
+  toast("");
+};
+
+/* helpers */
+function fileToDataURL(file){
+  return new Promise((res,rej)=>{
+    const fr = new FileReader();
+    fr.onerror = () => rej(new Error("Falha ao ler imagem"));
+    fr.onload  = () => res(fr.result);
+    fr.readAsDataURL(file);
+  });
+}
 </script>
 </body>
 </html>
