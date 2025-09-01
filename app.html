@@ -1,365 +1,284 @@
 <!doctype html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Romanéio • Painel</title>
-<link rel="icon" href="data:,">
-<style>
-  :root{
-    --bg:#0b1420;--panel:#0f1a2a;--card:#0c1726;--line:#1c2941;
-    --text:#e7eef6;--sub:#9fb0c3;--pri:#3b82f6;--ok:#10b981;--err:#ef4444;--warn:#f59e0b;
-    --shadow:0 10px 30px rgba(0,0,0,.35); --r:14px;
-  }
-  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
-  .wrap{max-width:1100px;margin:22px auto;padding:0 16px}
-  .top{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:12px}
-  .brand{display:flex;gap:8px;align-items:center;background:var(--panel);border:1px solid var(--line);padding:10px 14px;border-radius:12px;box-shadow:var(--shadow)}
-  .brand b{font-size:16px}
-  .btn{background:var(--pri);color:#fff;border:none;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer}
-  .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--text)}
-  .btn.ok{background:var(--ok)} .btn.err{background:var(--err)}
-  .tabs{display:flex;gap:8px;margin:8px 0 14px}
-  .tab{background:var(--card);border:1px solid var(--line);color:var(--sub);padding:8px 12px;border-radius:999px;cursor:pointer}
-  .tab.active{background:var(--pri);color:#fff;border-color:transparent}
-  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px;box-shadow:var(--shadow);margin-bottom:14px}
-  h1{margin:0 0 10px;font-size:18px}
-  h2{margin:0 0 10px;font-size:16px;color:#cfe0f2}
-  label{display:block;margin:8px 0 6px;font-size:12px;color:var(--sub)}
-  input,select,textarea{width:100%;background:var(--card);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px 12px;outline:none}
-  input:focus,select:focus,textarea:focus{border-color:#3b82f6}
-  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .row3{display:grid;grid-template-columns:1.2fr 1fr 110px;gap:10px}
-  .badge{display:inline-flex;gap:8px;align-items:center;background:#0c2238;border:1px solid var(--line);color:#c2d1e2;border-radius:999px;padding:6px 10px;font-size:12px}
-  .items{display:flex;flex-direction:column;gap:10px;margin-top:8px}
-  .item{display:grid;grid-template-columns:1.1fr 1fr 110px 40px;gap:10px}
-  .item .del{background:var(--err);border:none;border-radius:8px;color:#fff;font-weight:900}
-  .thumbs{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
-  .thumbs img{height:80px;width:auto;border-radius:8px;border:1px solid var(--line)}
-  .actions{display:flex;gap:10px;align-items:center;margin-top:10px}
-  .bar{position:fixed;left:0;top:0;height:3px;background:var(--pri);width:0%;transition:width .2s ease;z-index:9999}
-  .table{width:100%;border-collapse:collapse;margin-top:10px}
-  .table th,.table td{padding:10px;border-bottom:1px solid var(--line);text-align:left}
-  .empty{padding:14px;border:1px dashed var(--line);border-radius:12px;background:var(--card);color:var(--sub);text-align:center}
-  @media (max-width:860px){ .row,.row3{grid-template-columns:1fr} .item{grid-template-columns:1fr 1fr 110px 40px}}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Romaneio • Painel</title>
+  <style>
+    :root{
+      --bg:#0b1522; --panel:#0e1a2a; --card:#0f1d30; --muted:#8aa3c2; --txt:#eaf2ff;
+      --primary:#3b82f6; --ok:#16a34a; --warn:#f59e0b; --err:#ef4444; --ring:rgba(59,130,246,.2);
+    }
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--txt);font:500 15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+    header{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:14px 18px;background:var(--panel);position:sticky;top:0;z-index:3}
+    .title{display:flex;gap:10px;align-items:center;font-weight:800}
+    .muted{color:var(--muted)} .chip{padding:6px 10px;border-radius:999px;background:#0c1a2a;border:1px solid #1c2a40}
+    .btn{appearance:none;border:0;cursor:pointer;border-radius:12px;height:40px;padding:0 14px;font-weight:700}
+    .btn.primary{background:var(--primary);color:white}
+    .btn.ghost{background:transparent;border:1px solid #1d2a41;color:#d5e7ff}
+    main{padding:18px;max-width:1100px;margin:auto}
+    .card{background:var(--card);border:1px solid #15253b;border-radius:16px;padding:16px;margin-bottom:16px}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    label{font-size:13px;color:#bfd3ef;margin:6px 0;display:block}
+    input,select,textarea{width:100%;height:42px;border-radius:12px;border:1px solid transparent;background:#0d192a;color:var(--txt);padding:0 12px;outline:none}
+    input:focus,select:focus,textarea:focus{border-color:var(--primary);box-shadow:0 0 0 6px var(--ring)}
+    .bar{height:4px;background:#0e1928;border-radius:999px;overflow:hidden;margin:12px 0 0;display:none}
+    .bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--primary),#22c55e);transition:width .25s}
+    .thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .thumbs img{height:78px;width:auto;border-radius:8px;border:1px solid #1d2a41}
+    .items{display:grid;grid-template-columns:2fr 2fr 1fr auto;gap:10px;align-items:end}
+    .tag{display:inline-flex;gap:8px;align-items:center}
+  </style>
 </head>
 <body>
-<div class="bar" id="bar"></div>
 
-<div class="wrap">
-  <div class="top">
-    <div class="brand">🚚 <b>Romanéio</b></div>
-    <div style="display:flex;gap:8px;align-items:center">
-      <span class="badge" id="who">...</span>
-      <button class="btn ghost" id="btnRefresh">⟳ Atualizar</button>
-      <button class="btn err" id="btnLogout">Sair</button>
-    </div>
+<header>
+  <div class="title">
+    <span>🚚 Romaneio</span>
+    <span class="chip muted" id="who">…</span>
   </div>
-
-  <div class="tabs">
-    <div class="tab active" id="tabNew">Novo</div>
-    <div class="tab" id="tabList">Romanéios</div>
+  <div style="display:flex;gap:8px">
+    <button class="btn ghost" id="refresh">⟳ Atualizar</button>
+    <button class="btn ghost" id="logout">Sair</button>
   </div>
+</header>
 
-  <!-- NOVO -->
-  <section id="pageNew">
-    <div class="panel">
-      <h1>Cliente & Fornecedor</h1>
-      <div class="row">
-        <div>
-          <label>ROM</label>
-          <input id="rom" placeholder="Ex.: 21" autocomplete="off">
-        </div>
-        <div>
-          <label>Data</label>
-          <input id="data" type="date">
-        </div>
+<main>
+
+  <!-- Cliente & Fornecedor -->
+  <section class="card">
+    <h3>Cliente & Fornecedor</h3>
+    <div class="row">
+      <div>
+        <label>ROM</label>
+        <input id="rom" placeholder="Ex.: 21" />
+      </div>
+      <div>
+        <label>Data</label>
+        <input id="data" type="date" />
       </div>
 
-      <div class="row">
-        <div>
-          <label>Cliente • Telefone</label>
-          <input id="cli_tel" placeholder="(85) 9 9999-9999" inputmode="numeric">
-        </div>
-        <div>
-          <label>Cliente • Nome</label>
-          <input id="cli_nome" placeholder="Nome do cliente">
-        </div>
+      <div>
+        <label>Cliente • Telefone</label>
+        <input id="cliTel" placeholder="(85) 9 8888-8888" />
+      </div>
+      <div>
+        <label>Cliente • Nome</label>
+        <input id="cliNome" placeholder="Nome do cliente" />
       </div>
 
-      <div class="row">
-        <div>
-          <label>Cliente • Cidade/UF</label>
-          <input id="cli_local" placeholder="Fortaleza/CE">
-        </div>
-        <div>
-          <label>Fornecedor • Telefone</label>
-          <input id="for_tel" placeholder="(85) 3333-3333" inputmode="numeric">
-        </div>
+      <div>
+        <label>Cliente • Cidade/UF</label>
+        <input id="cliCidade" placeholder="Fortaleza/CE" />
+      </div>
+      <div>
+        <label>Fornecedor • Telefone</label>
+        <input id="forTel" placeholder="(85) 3333-3333" />
       </div>
 
-      <div class="row">
-        <div>
-          <label>Fornecedor • Nome</label>
-          <input id="for_nome" placeholder="Nome do fornecedor">
-        </div>
-        <div>
-          <label>Fornecedor • Cidade/UF</label>
-          <input id="for_local" placeholder="Maracanaú/CE">
-        </div>
+      <div>
+        <label>Fornecedor • Nome</label>
+        <input id="forNome" placeholder="Nome do fornecedor" />
+      </div>
+      <div>
+        <label>Fornecedor • Cidade/UF</label>
+        <input id="forCidade" placeholder="Maracanaú/CE" />
       </div>
     </div>
+  </section>
 
-    <div class="panel">
-      <h1>Itens</h1>
-      <div class="items" id="items"></div>
-      <div class="actions">
+  <!-- Itens -->
+  <section class="card">
+    <h3>Itens</h3>
+    <div id="itens"></div>
+    <div class="items" style="margin-top:10px">
+      <div>
+        <label>Tipo</label>
+        <select id="tipo">
+          <option>Caixa</option>
+          <option>Saco</option>
+          <option>Pallet</option>
+          <option>Outro</option>
+        </select>
+      </div>
+      <div>
+        <label>Tamanho</label>
+        <select id="tamanho">
+          <option>P</option><option>M</option><option>G</option><option>GG</option>
+        </select>
+      </div>
+      <div>
+        <label>Qtd</label>
+        <input id="qtd" type="number" min="1" value="1" />
+      </div>
+      <div>
         <button class="btn ghost" id="addItem">+ Adicionar item</button>
-        <span class="badge" id="totalItens">Total: 0</span>
       </div>
     </div>
-
-    <div class="panel">
-      <h1>Fotos</h1>
-      <input type="file" id="file" accept="image/*" multiple>
-      <div class="thumbs" id="thumbs"></div>
-      <div class="actions">
-        <button class="btn ok" id="btnEnviar">Enviar</button>
-        <button class="btn ghost" id="btnLimpar">Limpar</button>
-      </div>
-    </div>
+    <div class="muted" id="tot">Total: 0</div>
   </section>
 
-  <!-- LISTA -->
-  <section id="pageList" style="display:none">
-    <div class="panel">
-      <h1>Romanéios</h1>
-      <div class="row">
-        <div>
-          <label>ROM</label>
-          <select id="fRom"></select>
-        </div>
-        <div>
-          <label>Cidade do Cliente</label>
-          <select id="fCidade"></select>
-        </div>
-      </div>
-      <div class="actions">
-        <button class="btn" id="btnFiltrar">Filtrar</button>
-        <button class="btn ghost" id="btnPdf">Exportar PDF</button>
-      </div>
-      <div id="grid"></div>
-    </div>
+  <!-- Fotos -->
+  <section class="card">
+    <h3>Fotos</h3>
+    <input id="fotos" type="file" accept="image/*" multiple />
+    <div class="thumbs" id="thumbs"></div>
   </section>
-</div>
+
+  <!-- Enviar -->
+  <section class="card">
+    <div style="display:flex;gap:10px;align-items:center">
+      <button class="btn primary" id="enviar">Enviar Romaneio</button>
+      <div class="tag muted" id="status">Pronto</div>
+    </div>
+    <div class="bar" id="bar"><i></i></div>
+    <div class="muted" id="msg"></div>
+  </section>
+
+</main>
 
 <script>
-/* ================= CONFIG ================= */
-const API_BASE = "https://script.google.com/macros/s/AKfycbyrDoEP82oJDj2wTIX491414Qf5e-YaDZJHYMAgmWfiddVKCw7WP4oQwrVtEouYxL-NvQ/exec"; // <— TROQUE PELO SEU /exec
-const token = localStorage.getItem('token')||'';
-const bar = p=>{document.getElementById('bar').style.width=p+'%'; setTimeout(()=>{if(p===100)document.getElementById('bar').style.width='0%'},180)};
+  // === CONFIG ===
+  const API_BASE = "https://script.google.com/macros/s/AKfycbyrDoEP82oJDj2wTIX491414Qf5e-YaDZJHYMAgmWfiddVKCw7WP4oQwrVtEouYxL-NvQ/exec";
 
-async function api(path, payload={}){
-  bar(25);
-  const r = await fetch(API_BASE+"?path="+encodeURIComponent(path),{
-    method:"POST", headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({...payload, token})
-  });
-  bar(65);
-  const js = await r.json().catch(()=>({error:'bad json'}));
-  bar(100);
-  if(js.error) throw new Error(js.error);
-  return js;
-}
+  // === token: URL (?t=), sessionStorage, localStorage ===
+  (function ensureToken(){
+    const qs = new URLSearchParams(location.search);
+    const urlT = qs.get('t');
+    if (urlT) { localStorage.setItem('token', urlT); sessionStorage.setItem('token', urlT); }
+  })();
+  const TOKEN =
+    new URLSearchParams(location.search).get('t') ||
+    sessionStorage.getItem('token') ||
+    localStorage.getItem('token') || '';
 
-/* ============= UTIL ============= */
-const onlyDigits = s => String(s||'').replace(/\D/g,'');
-const fmtPhone = v=>{
-  v = onlyDigits(v);
-  if(v.length<=10) return v.replace(/^(\d{2})(\d{4})(\d{0,4}).*/,'($1) $2-$3');
-  return v.replace(/^(\d{2})(\d{1})(\d{4})(\d{0,4}).*/,'($1) $2 $3-$4');
-}
-const todayStr = ()=>{
-  const d = new Date();
-  d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); // corrige TZ
-  return d.toISOString().slice(0,10);
-}
+  // === helpers ===
+  const $ = sel => document.querySelector(sel);
+  const bar = $("#bar"), barFill = $("#bar>i");
+  function loading(on=true){ bar.style.display = on?'block':'none'; requestAnimationFrame(()=> barFill.style.width = on?'95%':'0'); }
+  function say(t){ $("#msg").textContent = t||''; }
+  function setStatus(t){ $("#status").textContent = t; }
 
-/* ============= LOGIN / WHOAMI ============= */
-(async()=>{
-  try{
-    const w = await api('/whoami');
-    if(!w.session){ location.href='index.html'; return; }
-    document.getElementById('who').textContent = `${w.session.usuario} • ${new Date(w.session.expira).toLocaleTimeString()}`;
-  }catch(e){
-    alert('Sessão inválida. Faça login.'); location.href='index.html';
+  async function post(path, body){
+    const r = await fetch(API_BASE + "?path=" + encodeURIComponent(path), {
+      method: "POST",
+      headers: {"Content-Type":"application/json;charset=utf-8"},
+      body: JSON.stringify(Object.assign({token:TOKEN}, body||{}))
+    });
+    return r.json();
   }
-})();
 
-/* ============= TABS ============= */
-const pageNew  = document.getElementById('pageNew');
-const pageList = document.getElementById('pageList');
-const tabNew   = document.getElementById('tabNew');
-const tabList  = document.getElementById('tabList');
-
-tabNew.onclick = ()=>{ tabNew.classList.add('active'); tabList.classList.remove('active'); pageNew.style.display=''; pageList.style.display='none'; }
-tabList.onclick= ()=>{ tabList.classList.add('active'); tabNew.classList.remove('active'); pageList.style.display=''; pageNew.style.display='none'; loadFilters(); loadList(); }
-
-/* ============= CAMPOS ============= */
-const rom = document.getElementById('rom');
-const data = document.getElementById('data');
-const cli_tel = document.getElementById('cli_tel');
-const cli_nome= document.getElementById('cli_nome');
-const cli_local=document.getElementById('cli_local');
-const for_tel = document.getElementById('for_tel');
-const for_nome= document.getElementById('for_nome');
-const for_local=document.getElementById('for_local');
-data.value = todayStr();
-
-[cli_tel,for_tel].forEach(i=>{
-  i.addEventListener('input',()=> i.value = fmtPhone(i.value));
-  i.addEventListener('blur',()=> tryLookup(i===cli_tel?'cliente':'fornecedor'));
-});
-
-/* tenta auto-preencher a partir do telefone (opcional) */
-async function tryLookup(tipo){
-  const tel = tipo==='cliente'? cli_tel.value : for_tel.value;
-  const nd  = onlyDigits(tel);
-  if(nd.length<10) return;
-  try{
-    const r = await api('/contatos/lookup', {tipo, tel: nd});
-    if(r && r.nome){
-      if(tipo==='cliente'){ cli_nome.value=r.nome||''; cli_local.value=r.cidade_uf||''; }
-      else{ for_nome.value=r.nome||''; for_local.value=r.cidade_uf||''; }
+  // === sessão ===
+  (async()=>{
+    try{
+      if(!TOKEN) throw new Error('sem-token');
+      const w = await post("/whoami",{});
+      if(!w.session) throw new Error('invalid');
+      $("#who").textContent = `${w.session.usuario} • ${new Date(w.session.expira).toLocaleTimeString()}`;
+    }catch(e){
+      location.href = "index.html";
     }
-  }catch(_){ /* silencioso se não existir */ }
-}
+  })();
 
-/* ============= ITENS ============= */
-const itemsEl = document.getElementById('items');
-const totalItensEl = document.getElementById('totalItens');
+  // === data default hoje ===
+  (function setHoje(){
+    const d=new Date();
+    const iso = d.toISOString().slice(0,10);
+    $("#data").value = iso;
+  })();
 
-function addItem(tipo='Caixa', tam='P', qtd=1){
-  const div = document.createElement('div'); div.className='item';
-  div.innerHTML = `
-    <select class="it_tipo">
-      <option>Caixa</option><option>Saco</option><option>Pç</option><option>Outro</option>
-    </select>
-    <select class="it_tam">
-      <option>P</option><option>M</option><option>G</option><option>GG</option>
-    </select>
-    <input type="number" min="1" class="it_qtd" value="${qtd}">
-    <button class="del">×</button>
-  `;
-  div.querySelector('.it_tipo').value = tipo;
-  div.querySelector('.it_tam').value  = tam;
-  div.querySelector('.it_qtd').addEventListener('input',sumItems);
-  div.querySelector('.del').onclick = ()=>{ div.remove(); sumItems(); };
-  itemsEl.appendChild(div); sumItems();
-}
-function sumItems(){
-  const t = [...itemsEl.querySelectorAll('.it_qtd')].reduce((a,i)=>a+(+i.value||0),0);
-  totalItensEl.textContent = `Total: ${t}`;
-}
-document.getElementById('addItem').onclick = ()=> addItem();
-addItem();
-
-/* ============= FOTOS ============= */
-const file = document.getElementById('file');
-const thumbs = document.getElementById('thumbs');
-let fotosData = [];
-
-file.addEventListener('change', async ()=>{
-  thumbs.innerHTML=''; fotosData=[];
-  for(const f of [...file.files]){
-    const dataUrl = await toDataURL(f);
-    fotosData.push({dataUrl});
-    const im = document.createElement('img'); im.src = dataUrl; thumbs.appendChild(im);
+  // === máscara simples telefone ===
+  function maskTel(el){
+    el.addEventListener('input', ()=>{
+      let v = el.value.replace(/\D/g,'').slice(0,11);
+      if(v.length>2) v='('+v.slice(0,2)+') '+v.slice(2);
+      if(v.length>10) v=v.slice(0,10)+'-'+v.slice(10);
+      el.value=v;
+    });
   }
-});
-function toDataURL(f){ return new Promise((res,rej)=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.onerror=rej; fr.readAsDataURL(f); }); }
+  ["cliTel","forTel"].forEach(id=>maskTel($("#"+id)));
 
-/* ============= ENVIAR ============= */
-document.getElementById('btnEnviar').onclick = async ()=>{
-  try{
-    const ndCli = onlyDigits(cli_tel.value);
-    const ndFor = onlyDigits(for_tel.value);
+  // === itens ===
+  const itens = [];
+  function renderItens(){
+    const c = $("#itens");
+    c.innerHTML = itens.map(i=>`<div class="tag">• ${i.tipo} ${i.tamanho} — ${i.qtd}</div>`).join('')||'<span class="muted">Nenhum item</span>';
+    $("#tot").textContent = "Total: " + itens.reduce((s,i)=>s+Number(i.qtd||0),0);
+  }
+  $("#addItem").onclick = ()=>{
+    const it = {
+      tipo: $("#tipo").value,
+      tamanho: $("#tamanho").value,
+      qtd: Number($("#qtd").value||0)
+    };
+    if(it.qtd>0) itens.push(it);
+    renderItens();
+  };
+  renderItens();
 
-    if(!rom.value.trim()) return alert('ROM é obrigatório');
-    if(!ndCli||ndCli.length<10) return alert('Telefone do cliente inválido');
-    if(!cli_nome.value.trim()||!cli_local.value.trim()) return alert('Preencha nome e cidade/UF do cliente');
-    if(!ndFor||ndFor.length<10) return alert('Telefone do fornecedor inválido');
-    if(!for_nome.value.trim()||!for_local.value.trim()) return alert('Preencha nome e cidade/UF do fornecedor');
+  // === fotos preview -> base64 (data URLs) ===
+  const fotos = [];
+  $("#fotos").addEventListener('change', async (e)=>{
+    fotos.length = 0; $("#thumbs").innerHTML = '';
+    const files = Array.from(e.target.files||[]);
+    for(const f of files){
+      const b64 = await fileToDataURL(f);
+      fotos.push({ dataUrl:b64 });
+      const img = document.createElement('img'); img.src = b64; $("#thumbs").appendChild(img);
+    }
+  });
+  function fileToDataURL(file){
+    return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); });
+  }
 
-    const itens = [...itemsEl.querySelectorAll('.item')].map(li=>({
-      tipo: li.querySelector('.it_tipo').value,
-      tamanho: li.querySelector('.it_tam').value,
-      qtd: +li.querySelector('.it_qtd').value||0
-    })).filter(i=>i.qtd>0);
-    if(!itens.length) return alert('Inclua pelo menos 1 item');
+  // === enviar ===
+  $("#enviar").onclick = async ()=>{
+    // validações mínimas
+    const rom = $("#rom").value.trim();
+    const data = $("#data").value;
+    const cliTel = $("#cliTel").value.trim();
+    const cliNome = $("#cliNome").value.trim();
+    const cliCidade = $("#cliCidade").value.trim();
+    const forTel = $("#forTel").value.trim();
+    const forNome = $("#forNome").value.trim();
+    const forCidade = $("#forCidade").value.trim();
 
-    const payload = {
-      rom: rom.value.trim(),
-      data: data.value,
-      cliente: { tel: ndCli, nome: cli_nome.value.trim(), local: cli_local.value.trim() },
-      fornecedor: { tel: ndFor, nome: for_nome.value.trim(), local: for_local.value.trim() },
-      itens, fotos: fotosData
+    if(!rom || !cliTel || !cliNome || !cliCidade || !forTel || !forNome || !forCidade){
+      say("Preencha os dados de cliente e fornecedor."); return;
+    }
+    if(itens.length===0){ say("Adicione ao menos 1 item."); return; }
+
+    const body = {
+      rom, data,
+      cliente:{ tel:cliTel, nome:cliNome, local:cliCidade },
+      fornecedor:{ tel:forTel, nome:forNome, local:forCidade },
+      itens, fotos
     };
 
-    const r = await api('/rom/create', payload);
-    alert('Romaneio enviado!');
-    if(r.whatsappUrl && confirm('Abrir WhatsApp?')) window.open(r.whatsappUrl,'_blank');
-    if(r.pdfUrl && confirm('Abrir PDF?')) window.open(r.pdfUrl,'_blank');
-    clearForm();
-  }catch(e){
-    alert('Erro: '+e.message);
-  }
-};
+    try{
+      setStatus("Enviando…"); loading(true); say('');
+      const r = await post("/rom/create", body);
+      if(r.error){ say("Erro: "+r.error); setStatus("Erro"); return; }
 
-function clearForm(){
-  [rom,cli_tel,cli_nome,cli_local,for_tel,for_nome,for_local].forEach(i=>i.value='');
-  data.value=todayStr();
-  itemsEl.innerHTML=''; addItem();
-  file.value=''; thumbs.innerHTML=''; fotosData=[];
-}
-document.getElementById('btnLimpar').onclick = clearForm;
+      setStatus("Enviado");
+      say(`Romaneio ${r.cod} criado. PDF gerado.`);
+      if(r.whatsappUrl){
+        // abre pop de compartilhamento
+        const ok = confirm("Abrir WhatsApp para enviar o comprovante?");
+        if(ok) window.open(r.whatsappUrl, "_blank");
+      }
+      // limpar estado
+      itens.length=0; renderItens(); $("#thumbs").innerHTML=''; $("#fotos").value='';
+    }catch(e){
+      setStatus("Erro"); say("Erro de rede: "+e.message);
+    }finally{
+      loading(false);
+    }
+  };
 
-/* ============= LISTA / FILTRO / PDF ============= */
-const fRom=document.getElementById('fRom'), fCidade=document.getElementById('fCidade'), grid=document.getElementById('grid');
-
-async function loadFilters(){
-  try{
-    const r = await api('/rom/filters',{});
-    fRom.innerHTML = '<option value="">Todos</option>' + (r.roms||[]).map(n=>`<option>${n}</option>`).join('');
-    fCidade.innerHTML = '<option value="">Todas</option>' + (r.cidades||[]).map(c=>`<option>${c}</option>`).join('');
-  }catch(e){ alert('Falha ao carregar filtros'); }
-}
-async function loadList(){
-  try{
-    const r = await api('/rom/list',{ rom:fRom.value||'', cidade:fCidade.value||'' });
-    const rows = r.rows||[];
-    if(!rows.length){ grid.innerHTML = '<div class="empty">Nenhum romaneio encontrado.</div>'; return; }
-    grid.innerHTML = `<table class="table"><thead><tr>
-      <th>Data</th><th>ROM</th><th>Cliente</th><th>Cidade</th><th>Fornecedor</th><th>Item</th><th>Qtd</th>
-    </tr></thead><tbody>`+
-    rows.map(x=>`<tr>
-      <td>${x.data||''}</td><td>${x.rom||''}</td><td>${x.cli_nome||''}</td>
-      <td>${x.cli_cidade_uf||''}</td><td>${x.for_nome||''}</td><td>${x.itens||''}</td><td>${x.total_qtd||''}</td>
-    </tr>`).join('')+`</tbody></table>`;
-  }catch(e){ alert('Falha ao listar: '+e.message); }
-}
-document.getElementById('btnFiltrar').onclick = loadList;
-document.getElementById('btnPdf').onclick = async ()=>{
-  try{
-    const r = await api('/rom/pdf',{ rom:fRom.value||'', cidade:fCidade.value||'' });
-    if(r.pdfUrl) window.open(r.pdfUrl,'_blank');
-  }catch(e){ alert('Falha ao exportar PDF: '+e.message); }
-};
-
-/* ============= TOPO ============= */
-document.getElementById('btnRefresh').onclick = ()=> location.reload();
-document.getElementById('btnLogout').onclick = async ()=>{ try{await api('/logout',{});}catch(_){} localStorage.removeItem('token'); location.href='index.html'; };
+  // === ações topo ===
+  $("#refresh").onclick = ()=> location.reload(true);
+  $("#logout").onclick = ()=>{ localStorage.removeItem('token'); sessionStorage.removeItem('token'); location.href="index.html"; };
 </script>
 </body>
 </html>
