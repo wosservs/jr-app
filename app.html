@@ -1,57 +1,141 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Romaneio • Painel</title>
-  <style>
-    :root{
-      --bg:#0b1522; --panel:#0e1a2a; --card:#0f1d30; --muted:#8aa3c2; --txt:#eaf2ff;
-      --primary:#3b82f6; --ok:#16a34a; --warn:#f59e0b; --err:#ef4444; --ring:rgba(59,130,246,.2);
-    }
-    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--txt);font:500 15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
-    header{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:14px 18px;background:var(--panel);position:sticky;top:0;z-index:3}
-    .title{display:flex;gap:10px;align-items:center;font-weight:800}
-    .muted{color:var(--muted)} .chip{padding:6px 10px;border-radius:999px;background:#0c1a2a;border:1px solid #1c2a40}
-    .btn{appearance:none;border:0;cursor:pointer;border-radius:12px;height:40px;padding:0 14px;font-weight:700}
-    .btn.primary{background:var(--primary);color:white}
-    .btn.ghost{background:transparent;border:1px solid #1d2a41;color:#d5e7ff}
-    main{padding:18px;max-width:1100px;margin:auto}
-    .card{background:var(--card);border:1px solid #15253b;border-radius:16px;padding:16px;margin-bottom:16px}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    label{font-size:13px;color:#bfd3ef;margin:6px 0;display:block}
-    input,select,textarea{width:100%;height:42px;border-radius:12px;border:1px solid transparent;background:#0d192a;color:var(--txt);padding:0 12px;outline:none}
-    input:focus,select:focus,textarea:focus{border-color:var(--primary);box-shadow:0 0 0 6px var(--ring)}
-    .bar{height:4px;background:#0e1928;border-radius:999px;overflow:hidden;margin:12px 0 0;display:none}
-    .bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--primary),#22c55e);transition:width .25s}
-    .thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-    .thumbs img{height:78px;width:auto;border-radius:8px;border:1px solid #1d2a41}
-    .items{display:grid;grid-template-columns:2fr 2fr 1fr auto;gap:10px;align-items:end}
-    .tag{display:inline-flex;gap:8px;align-items:center}
-  </style>
+<meta charset="UTF-8" />
+<title>Romaneio • Painel</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
+
+<style>
+  :root{
+    --bg:#0b1320; --card:#111a2d; --muted:#a3aed0; --text:#e8ecff;
+    --accent:#2563eb; --accent-2:#1d4ed8; --error:#ef4444; --ok:#22c55e;
+    --input:#1a2439; --border:#23314f; --shadow:rgba(0,0,0,.45);
+    --chip:#0f1628;
+  }
+  .light{
+    --bg:#f3f6ff; --card:#fff; --muted:#55607a; --text:#111827;
+    --accent:#2563eb; --accent-2:#1d4ed8; --error:#b91c1c; --ok:#16a34a;
+    --input:#f2f5ff; --border:#d7def1; --shadow:rgba(0,0,0,.08);
+    --chip:#eef3ff;
+  }
+
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    background:var(--bg); color:var(--text);
+  }
+
+  .container{max-width:1120px; margin:0 auto; padding:18px}
+  .top{
+    display:flex; align-items:center; gap:12px; justify-content:space-between;
+  }
+  .brand{display:flex; align-items:center; gap:.6rem; font-weight:700; font-size:1.2rem}
+  .brand .emj{filter: drop-shadow(0 1px 0 #0003)}
+  .actions{display:flex; gap:8px}
+
+  .btn{
+    display:inline-flex; align-items:center; gap:.45rem;
+    background:var(--card); color:var(--text);
+    border:1px solid var(--border); border-radius:999px;
+    padding:.45rem .8rem; font-size:.9rem; cursor:pointer;
+    box-shadow:0 2px 6px var(--shadow);
+  }
+  .btn:hover{filter:brightness(1.03)}
+  .btn.primary{ background:var(--accent); border-color:var(--accent); color:#fff; }
+  .btn.primary:hover{ background:var(--accent-2); }
+  .btn.danger{ background:#ef44441a; border-color:#ef44444d; color:#fecaca; }
+  .btn.ghost{ background:transparent }
+
+  .tabs{display:flex; gap:8px; margin-top:14px}
+  .chip{
+    background:var(--chip); border:1px solid var(--border);
+    color:var(--text); border-radius:999px; padding:.35rem .8rem; cursor:pointer;
+  }
+  .chip.active{ background:var(--accent); border-color:var(--accent); color:#fff; }
+
+  .card{
+    margin-top:14px; background:var(--card); border:1px solid var(--border);
+    border-radius:14px; padding:18px; box-shadow:0 10px 30px var(--shadow);
+    position:relative; overflow:hidden;
+  }
+  .progress{
+    position:absolute; top:0; left:0; height:3px; width:0%;
+    background: linear-gradient(90deg, #60a5fa, #22d3ee, #22c55e);
+    transition:width .25s ease;
+  }
+
+  h2{margin:0 0 10px; font-size:1.1rem; color:var(--muted)}
+  label{display:block; margin:.6rem 0 .25rem; color:var(--muted); font-size:.9rem}
+  input, select{
+    width:100%; padding:.64rem .7rem; border-radius:10px;
+    border:1px solid var(--border); background:var(--input); color:var(--text);
+    outline:none;
+  }
+  input:focus, select:focus{border-color:#6aa3ff; box-shadow:0 0 0 3px #2563eb22}
+  .grid{display:grid; gap:12px}
+  .g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+  @media (max-width:900px){ .g2,.g3{grid-template-columns:1fr} }
+
+  .row{display:flex; gap:10px; margin-top:14px; flex-wrap:wrap}
+  .row .btn{justify-content:center}
+
+  .item-row{display:grid; grid-template-columns:2fr 1fr 100px 42px; gap:8px}
+  .thumbs{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px}
+  .thumbs img{width:86px; height:86px; object-fit:cover; border-radius:10px; border:1px solid var(--border)}
+
+  .stat{margin-top:6px; font-size:.85rem; color:var(--muted)}
+  .ok{color:var(--ok)} .err{color:var(--error)}
+
+  /* Lista Romaneios */
+  .filters{display:grid; gap:10px; grid-template-columns:1fr 1fr auto}
+  .tbl{width:100%; border-collapse:collapse; margin-top:12px}
+  .tbl th, .tbl td{border-bottom:1px solid var(--border); padding:8px 10px; text-align:left; font-size:.92rem}
+  .tbl th{color:var(--muted); font-weight:600}
+
+  /* Modal */
+  .modal-back{
+    position:fixed; inset:0; background:rgba(0,0,0,.5); display:none;
+    align-items:center; justify-content:center; z-index:50;
+  }
+  .modal{
+    background:var(--card); border:1px solid var(--border); color:var(--text);
+    width:min(520px, 92vw); border-radius:14px; padding:18px; box-shadow:0 18px 50px var(--shadow);
+  }
+  .modal h3{margin:0 0 10px}
+  .modal .row{margin-top:10px}
+  .modal .btn{flex:1}
+</style>
 </head>
 <body>
-
-<header>
-  <div class="title">
-    <span>🚚 Romaneio</span>
-    <span class="chip muted" id="who">…</span>
+<div class="container">
+  <div class="top">
+    <div class="brand"><span class="emj">🚚</span> Romaneio</div>
+    <div class="actions">
+      <button id="theme" class="btn" title="Tema">🌙/🌞</button>
+      <button id="logout" class="btn danger">Sair</button>
+    </div>
   </div>
-  <div style="display:flex;gap:8px">
-    <button class="btn ghost" id="refresh">⟳ Atualizar</button>
-    <button class="btn ghost" id="logout">Sair</button>
+
+  <div class="tabs">
+    <button class="chip active" data-tab="novo">Novo</button>
+    <button class="chip" data-tab="roms">Romaneios</button>
   </div>
-</header>
 
-<main>
+  <!-- NOVO ROMANEIO -->
+  <section class="card" id="tab-novo">
+    <div class="progress" id="bar"></div>
 
-  <!-- Cliente & Fornecedor -->
-  <section class="card">
-    <h3>Cliente & Fornecedor</h3>
-    <div class="row">
+    <h2>Cliente & Fornecedor</h2>
+    <div class="grid g2">
       <div>
         <label>ROM</label>
-        <input id="rom" placeholder="Ex.: 21" />
+        <input id="rom" type="number" placeholder="Ex.: 21" />
       </div>
       <div>
         <label>Data</label>
@@ -60,225 +144,384 @@
 
       <div>
         <label>Cliente • Telefone</label>
-        <input id="cliTel" placeholder="(85) 9 8888-8888" />
+        <input id="cli_tel" type="tel" placeholder="(85) 9 9999-9999" />
       </div>
       <div>
         <label>Cliente • Nome</label>
-        <input id="cliNome" placeholder="Nome do cliente" />
+        <input id="cli_nome" type="text" placeholder="Nome do cliente" />
       </div>
 
       <div>
         <label>Cliente • Cidade/UF</label>
-        <input id="cliCidade" placeholder="Fortaleza/CE" />
+        <input id="cli_local" list="cidades" placeholder="Fortaleza/CE" />
       </div>
       <div>
         <label>Fornecedor • Telefone</label>
-        <input id="forTel" placeholder="(85) 3333-3333" />
+        <input id="for_tel" type="tel" placeholder="(85) 3333-3333" />
       </div>
 
       <div>
         <label>Fornecedor • Nome</label>
-        <input id="forNome" placeholder="Nome do fornecedor" />
+        <input id="for_nome" type="text" placeholder="Nome do fornecedor" />
       </div>
       <div>
         <label>Fornecedor • Cidade/UF</label>
-        <input id="forCidade" placeholder="Maracanaú/CE" />
+        <input id="for_local" list="cidades" placeholder="Maracanaú/CE" />
       </div>
     </div>
-  </section>
 
-  <!-- Itens -->
-  <section class="card">
-    <h3>Itens</h3>
+    <datalist id="cidades">
+      <option value="Fortaleza/CE"></option>
+      <option value="Maracanaú/CE"></option>
+      <option value="Caucaia/CE"></option>
+    </datalist>
+
+    <h2 style="margin-top:16px">Itens</h2>
     <div id="itens"></div>
-    <div class="items" style="margin-top:10px">
-      <div>
-        <label>Tipo</label>
-        <select id="tipo">
-          <option>Caixa</option>
-          <option>Saco</option>
-          <option>Pallet</option>
-          <option>Outro</option>
-        </select>
-      </div>
-      <div>
-        <label>Tamanho</label>
-        <select id="tamanho">
-          <option>P</option><option>M</option><option>G</option><option>GG</option>
-        </select>
-      </div>
-      <div>
-        <label>Qtd</label>
-        <input id="qtd" type="number" min="1" value="1" />
-      </div>
-      <div>
-        <button class="btn ghost" id="addItem">+ Adicionar item</button>
-      </div>
+    <div class="row">
+      <button id="addItem" class="btn">+ Adicionar item</button>
+      <div class="stat">Total: <b id="totalQtd">0</b></div>
     </div>
-    <div class="muted" id="tot">Total: 0</div>
-  </section>
 
-  <!-- Fotos -->
-  <section class="card">
-    <h3>Fotos</h3>
+    <h2 style="margin-top:16px">Fotos</h2>
     <input id="fotos" type="file" accept="image/*" multiple />
     <div class="thumbs" id="thumbs"></div>
-  </section>
 
-  <!-- Enviar -->
-  <section class="card">
-    <div style="display:flex;gap:10px;align-items:center">
-      <button class="btn primary" id="enviar">Enviar Romaneio</button>
-      <div class="tag muted" id="status">Pronto</div>
+    <div class="row">
+      <button id="enviar" class="btn primary">Enviar</button>
+      <button id="limpar" class="btn">Limpar</button>
     </div>
-    <div class="bar" id="bar"><i></i></div>
-    <div class="muted" id="msg"></div>
+
+    <div class="stat" id="status">–</div>
   </section>
 
-</main>
+  <!-- LISTA ROMANEIOS -->
+  <section class="card" id="tab-roms" style="display:none">
+    <h2>Romaneios</h2>
+    <div class="filters">
+      <select id="f-rom">
+        <option value="">Todos os ROMs</option>
+      </select>
+      <select id="f-city">
+        <option value="">Todas as cidades</option>
+      </select>
+      <button id="export" class="btn">Exportar PDF</button>
+    </div>
+
+    <table class="tbl" id="romTable">
+      <thead>
+        <tr>
+          <th>Data</th><th>ROM</th><th>Cliente</th><th>Cidade</th><th>Fornecedor</th><th>Itens</th><th>Total</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="stat" id="romInfo">Carregando…</div>
+  </section>
+</div>
+
+<!-- MODAL -->
+<div class="modal-back" id="mb">
+  <div class="modal">
+    <h3>Romaneio enviado ✅</h3>
+    <div class="stat" id="mMsg">Tudo certo!</div>
+    <div class="row">
+      <a id="mPdf" class="btn" target="_blank" rel="noopener">Abrir PDF</a>
+      <a id="mWa" class="btn primary" target="_blank" rel="noopener">Enviar WhatsApp</a>
+    </div>
+    <div class="row">
+      <button class="btn" onclick="document.getElementById('mb').style.display='none'">Fechar</button>
+    </div>
+  </div>
+</div>
 
 <script>
-  // === CONFIG ===
-  const API_BASE = "https://script.google.com/macros/s/AKfycbyrDoEP82oJDj2wTIX491414Qf5e-YaDZJHYMAgmWfiddVKCw7WP4oQwrVtEouYxL-NvQ/exec";
+/* ================== CONFIG ================== */
+const API_BASE = "https://script.google.com/macros/s/AKfycbyrDoEP82oJDj2wTIX491414Qf5e-YaDZJHYMAgmWfiddVKCw7WP4oQwrVtEouYxL-NvQ/exec";
 
-  // === token: URL (?t=), sessionStorage, localStorage ===
-  (function ensureToken(){
-    const qs = new URLSearchParams(location.search);
-    const urlT = qs.get('t');
-    if (urlT) { localStorage.setItem('token', urlT); sessionStorage.setItem('token', urlT); }
-  })();
-  const TOKEN =
-    new URLSearchParams(location.search).get('t') ||
-    sessionStorage.getItem('token') ||
-    localStorage.getItem('token') || '';
-
-  // === helpers ===
-  const $ = sel => document.querySelector(sel);
-  const bar = $("#bar"), barFill = $("#bar>i");
-  function loading(on=true){ bar.style.display = on?'block':'none'; requestAnimationFrame(()=> barFill.style.width = on?'95%':'0'); }
-  function say(t){ $("#msg").textContent = t||''; }
-  function setStatus(t){ $("#status").textContent = t; }
-
-  async function post(path, body){
-    const r = await fetch(API_BASE + "?path=" + encodeURIComponent(path), {
-      method: "POST",
-      headers: {"Content-Type":"application/json;charset=utf-8"},
-      body: JSON.stringify(Object.assign({token:TOKEN}, body||{}))
-    });
-    return r.json();
-  }
-
-  // === sessão ===
-  (async()=>{
-    try{
-      if(!TOKEN) throw new Error('sem-token');
-      const w = await post("/whoami",{});
-      if(!w.session) throw new Error('invalid');
-      $("#who").textContent = `${w.session.usuario} • ${new Date(w.session.expira).toLocaleTimeString()}`;
-    }catch(e){
-      location.href = "index.html";
-    }
-  })();
-
-  // === data default hoje ===
-  (function setHoje(){
-    const d=new Date();
-    const iso = d.toISOString().slice(0,10);
-    $("#data").value = iso;
-  })();
-
-  // === máscara simples telefone ===
-  function maskTel(el){
-    el.addEventListener('input', ()=>{
-      let v = el.value.replace(/\D/g,'').slice(0,11);
-      if(v.length>2) v='('+v.slice(0,2)+') '+v.slice(2);
-      if(v.length>10) v=v.slice(0,10)+'-'+v.slice(10);
-      el.value=v;
-    });
-  }
-  ["cliTel","forTel"].forEach(id=>maskTel($("#"+id)));
-
-  // === itens ===
-  const itens = [];
-  function renderItens(){
-    const c = $("#itens");
-    c.innerHTML = itens.map(i=>`<div class="tag">• ${i.tipo} ${i.tamanho} — ${i.qtd}</div>`).join('')||'<span class="muted">Nenhum item</span>';
-    $("#tot").textContent = "Total: " + itens.reduce((s,i)=>s+Number(i.qtd||0),0);
-  }
-  $("#addItem").onclick = ()=>{
-    const it = {
-      tipo: $("#tipo").value,
-      tamanho: $("#tamanho").value,
-      qtd: Number($("#qtd").value||0)
-    };
-    if(it.qtd>0) itens.push(it);
-    renderItens();
-  };
-  renderItens();
-
-  // === fotos preview -> base64 (data URLs) ===
-  const fotos = [];
-  $("#fotos").addEventListener('change', async (e)=>{
-    fotos.length = 0; $("#thumbs").innerHTML = '';
-    const files = Array.from(e.target.files||[]);
-    for(const f of files){
-      const b64 = await fileToDataURL(f);
-      fotos.push({ dataUrl:b64 });
-      const img = document.createElement('img'); img.src = b64; $("#thumbs").appendChild(img);
-    }
+/* ================== UTILS ================== */
+const $ = s => document.querySelector(s);
+const bar = $("#bar");
+function setBar(p){ bar && (bar.style.width = p+"%"); }
+function say(msg, cls){
+  const el = $("#status");
+  if(!el) return;
+  el.className = "stat";
+  if(cls) el.classList.add(cls);
+  el.textContent = msg;
+}
+function todayISO(){
+  const d = new Date();
+  const pad=n=>String(n).padStart(2,"0");
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+}
+function getToken(){
+  // 1) hash ?t=, 2) localStorage, 3) cookie
+  try{
+    const url = new URL(location.href);
+    const t = url.hash.match(/t=([^&]+)/);
+    if(t){ localStorage.setItem("token", decodeURIComponent(t[1])); return decodeURIComponent(t[1]); }
+  }catch(_){}
+  try{
+    const t = localStorage.getItem("token");
+    if(t) return t;
+  }catch(_){}
+  const m = document.cookie.match(/(?:^|;\s*)rom_token=([^;]+)/);
+  return m ? decodeURIComponent(m[1]) : null;
+}
+async function post(path, body){
+  const r = await fetch(API_BASE + "?path=" + encodeURIComponent(path), {
+    method:"POST",
+    headers:{"Content-Type":"application/json;charset=utf-8"},
+    body: JSON.stringify(body||{})
   });
-  function fileToDataURL(file){
-    return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); });
-  }
+  return r.json();
+}
 
-  // === enviar ===
-  $("#enviar").onclick = async ()=>{
-    // validações mínimas
-    const rom = $("#rom").value.trim();
-    const data = $("#data").value;
-    const cliTel = $("#cliTel").value.trim();
-    const cliNome = $("#cliNome").value.trim();
-    const cliCidade = $("#cliCidade").value.trim();
-    const forTel = $("#forTel").value.trim();
-    const forNome = $("#forNome").value.trim();
-    const forCidade = $("#forCidade").value.trim();
+/* ================== THEME ================== */
+function getTheme(){ return localStorage.getItem("theme")||"dark"; }
+function applyTheme(th){ document.documentElement.classList.toggle("light", th==="light"); }
+$("#theme").onclick = ()=>{
+  const th = getTheme()==="dark" ? "light" : "dark";
+  localStorage.setItem("theme", th); applyTheme(th);
+};
+applyTheme(getTheme());
 
-    if(!rom || !cliTel || !cliNome || !cliCidade || !forTel || !forNome || !forCidade){
-      say("Preencha os dados de cliente e fornecedor."); return;
-    }
-    if(itens.length===0){ say("Adicione ao menos 1 item."); return; }
+/* ================== TABS ================== */
+document.querySelectorAll(".chip").forEach(ch=>{
+  ch.onclick=()=>{
+    document.querySelectorAll(".chip").forEach(c=>c.classList.remove("active"));
+    ch.classList.add("active");
+    const tab = ch.dataset.tab;
+    $("#tab-novo").style.display = tab==="novo" ? "" : "none";
+    $("#tab-roms").style.display = tab==="roms" ? "" : "none";
+    if(tab==="roms") loadRomList();
+  };
+});
 
-    const body = {
-      rom, data,
-      cliente:{ tel:cliTel, nome:cliNome, local:cliCidade },
-      fornecedor:{ tel:forTel, nome:forNome, local:forCidade },
-      itens, fotos
+/* ================== FORM ================== */
+const itens = [];
+function renderItens(){
+  const wrap = $("#itens");
+  wrap.innerHTML = "";
+  itens.forEach((it, idx)=>{
+    const row = document.createElement("div");
+    row.className = "item-row";
+    row.innerHTML = `
+      <select data-k="tipo">
+        <option ${it.tipo==="Caixa"?"selected":""}>Caixa</option>
+        <option ${it.tipo==="Saco"?"selected":""}>Saco</option>
+        <option ${it.tipo==="Pacote"?"selected":""}>Pacote</option>
+      </select>
+      <select data-k="tamanho">
+        <option ${it.tamanho==="P"?"selected":""}>P</option>
+        <option ${it.tamanho==="M"?"selected":""}>M</option>
+        <option ${it.tamanho==="G"?"selected":""}>G</option>
+      </select>
+      <input data-k="qtd" type="number" min="0" value="${it.qtd}" />
+      <button class="btn danger" title="Remover">✕</button>
+    `;
+    row.querySelectorAll("select,input").forEach(el=>{
+      el.onchange = ()=>{
+        const k = el.dataset.k;
+        itens[idx][k] = (k==="qtd") ? Number(el.value||0) : el.value;
+        updateTotal();
+      };
+    });
+    row.querySelector("button").onclick = ()=>{
+      itens.splice(idx,1);
+      renderItens(); updateTotal();
     };
+    wrap.appendChild(row);
+  });
+  if(!itens.length){
+    itens.push({tipo:"Caixa", tamanho:"P", qtd:1});
+    renderItens();
+  }
+}
+function updateTotal(){
+  const t = itens.reduce((s,i)=>s+Number(i.qtd||0),0);
+  $("#totalQtd").textContent = t;
+}
 
-    try{
-      setStatus("Enviando…"); loading(true); say('');
-      const r = await post("/rom/create", body);
-      if(r.error){ say("Erro: "+r.error); setStatus("Erro"); return; }
+$("#addItem").onclick = ()=>{
+  itens.push({tipo:"Caixa", tamanho:"P", qtd:1});
+  renderItens(); updateTotal();
+};
 
-      setStatus("Enviado");
-      say(`Romaneio ${r.cod} criado. PDF gerado.`);
-      if(r.whatsappUrl){
-        // abre pop de compartilhamento
-        const ok = confirm("Abrir WhatsApp para enviar o comprovante?");
-        if(ok) window.open(r.whatsappUrl, "_blank");
-      }
-      // limpar estado
-      itens.length=0; renderItens(); $("#thumbs").innerHTML=''; $("#fotos").value='';
-    }catch(e){
-      setStatus("Erro"); say("Erro de rede: "+e.message);
-    }finally{
-      loading(false);
-    }
+/* Pré-visualização fotos */
+const fotosSel = $("#fotos");
+const thumbs = $("#thumbs");
+let fotosArr = []; // {name, dataUrl}
+fotosSel.onchange = async ()=>{
+  thumbs.innerHTML = ""; fotosArr = [];
+  const files = Array.from(fotosSel.files||[]);
+  for(const f of files){
+    const dataUrl = await toDataURL(f);
+    fotosArr.push({ name:f.name, dataUrl });
+    const img = document.createElement("img");
+    img.src = dataUrl; thumbs.appendChild(img);
+  }
+};
+function toDataURL(file){
+  return new Promise(res=>{
+    const r = new FileReader();
+    r.onload = ()=>res(r.result); r.readAsDataURL(file);
+  });
+}
+
+/* Data hoje */
+$("#data").value = todayISO();
+
+/* Máscara de telefone */
+function maskTel(v){
+  v = (v||"").replace(/\D/g,"");
+  if(v.length>11) v=v.slice(0,11);
+  if(v.length<=10){
+    // fixo: (99) 9999-9999
+    return v.replace(/^(\d{0,2})(\d{0,4})(\d{0,4}).*$/, (_,a,b,c)=>(
+      (a?`(${a}`:"")+(a.length==2?") ":"")+(b||"")+(c?`-${c}`:"")
+    ));
+  }else{
+    // celular: (99) 9 9999-9999
+    return v.replace(/^(\d{0,2})(\d{0,1})(\d{0,4})(\d{0,4}).*$/, (_,a,b,c,d)=>(
+      (a?`(${a}`:"")+(a.length==2?") ":"")+(b?`${b} `:"")+(c||"")+(d?`-${d}`:"")
+    ));
+  }
+}
+["cli_tel","for_tel"].forEach(id=>{
+  const el = $("#"+id);
+  el.addEventListener("input", ()=>{ el.value = maskTel(el.value); });
+});
+
+/* Limpar */
+$("#limpar").onclick = ()=>{
+  $("#rom").value = "";
+  $("#data").value = todayISO();
+  ["cli_tel","cli_nome","cli_local","for_tel","for_nome","for_local"].forEach(id=>$("#"+id).value="");
+  fotosSel.value=""; fotosArr=[]; thumbs.innerHTML="";
+  itens.splice(0,itens.length,{tipo:"Caixa",tamanho:"P",qtd:1});
+  renderItens(); updateTotal(); say("–");
+};
+
+/* Enviar */
+$("#enviar").onclick = async ()=>{
+  const token = getToken();
+  if(!token){ alert("Sessão inválida. Faça login."); return; }
+
+  const body = {
+    token,
+    rom: $("#rom").value,
+    data: $("#data").value,
+    cliente: { tel: $("#cli_tel").value, nome: $("#cli_nome").value, local: $("#cli_local").value },
+    fornecedor: { tel: $("#for_tel").value, nome: $("#for_nome").value, local: $("#for_local").value },
+    itens,
+    fotos: fotosArr.map(f=>({data: f.dataUrl})),
+    obs: ""
   };
 
-  // === ações topo ===
-  $("#refresh").onclick = ()=> location.reload(true);
-  $("#logout").onclick = ()=>{ localStorage.removeItem('token'); sessionStorage.removeItem('token'); location.href="index.html"; };
+  // Validações mínimas
+  if(!body.rom || !body.cliente.tel || !body.cliente.nome || !body.cliente.local ||
+     !body.fornecedor.tel || !body.fornecedor.nome || !body.fornecedor.local){
+    say("Preencha todos os campos obrigatórios de Cliente e Fornecedor.", "err");
+    return;
+  }
+  if(itens.every(i=>!i.qtd || Number(i.qtd)<=0)){
+    say("Informe pelo menos 1 item com quantidade.", "err"); return;
+  }
+
+  try{
+    setBar(25); say("Enviando…");
+    const r = await post("/rom/create", body);
+    setBar(80);
+
+    if(r.error){ say("Erro: "+r.error, "err"); setBar(0); return; }
+
+    say("Romaneio criado!", "ok"); setBar(100);
+    // Modal
+    $("#mMsg").textContent = `Código: ${r.cod || "(sem)"} • Total Itens: ${itens.reduce((s,i)=>s+Number(i.qtd||0),0)}`;
+    $("#mPdf").href = r.pdfUrl || "#";
+    $("#mWa").href  = r.whatsappUrl || "#";
+    $("#mb").style.display = "flex";
+  }catch(e){
+    say("Erro de rede: Failed to fetch", "err");
+  }finally{
+    setTimeout(()=>setBar(0), 500);
+  }
+};
+
+/* Render inicial */
+renderItens(); updateTotal();
+
+/* ================== SESSÃO ================== */
+(async ()=>{
+  const token = getToken();
+  if(!token){ alert("Sessão inválida. Faça login."); location.href="index.html"; return; }
+  try{
+    const me = await post("/whoami", {token});
+    if(!me || !me.session){ throw 0; }
+    // ok
+  }catch(_){
+    alert("Sessão inválida. Faça login.");
+    location.href = "index.html";
+  }
+})();
+
+/* ================== LISTA ROMANEIOS ==================
+   Tenta usar /rom/list; se não existir, apenas informa.  */
+async function loadRomList(){
+  const token = getToken();
+  const tbody = $("#romTable tbody");
+  const info  = $("#romInfo");
+  tbody.innerHTML = ""; info.textContent = "Carregando…";
+
+  try{
+    const r = await post("/rom/list", {token}); // <-- opcional no seu backend
+    if(r.error) throw new Error(r.error);
+    const rows = Array.isArray(r.rows) ? r.rows : [];
+
+    // Filtros ROM/Cidade
+    const romSel = $("#f-rom"), citySel = $("#f-city");
+    const roms = [...new Set(rows.map(x=>x.rom).filter(Boolean))].sort((a,b)=>a-b);
+    const cities = [...new Set(rows.map(x=>x.cli_cidade_uf).filter(Boolean))].sort();
+    romSel.innerHTML = '<option value="">Todos os ROMs</option>' + roms.map(n=>`<option>${n}</option>`).join("");
+    citySel.innerHTML = '<option value="">Todas as cidades</option>' + cities.map(c=>`<option>${c}</option>`).join("");
+
+    function apply(){
+      const fr = romSel.value, fc = citySel.value;
+      const filt = rows.filter(x=>(!fr||String(x.rom)===String(fr)) && (!fc||x.cli_cidade_uf===fc));
+      tbody.innerHTML = filt.map(x=>`
+        <tr>
+          <td>${x.data||""}</td>
+          <td>${x.rom||""}</td>
+          <td>${x.cli_nome||""}</td>
+          <td>${x.cli_cidade_uf||""}</td>
+          <td>${x.for_nome||""}</td>
+          <td>${x.itens||""}</td>
+          <td>${x.total_qtd||""}</td>
+        </tr>
+      `).join("");
+      info.textContent = `${filt.length} registro(s)`;
+    }
+    romSel.onchange = apply; citySel.onchange = apply; apply();
+
+    // Exportação simples (print) — A4 sem quebrar cliente no meio depende
+    // do HTML gerado; aqui é demonstrativo:
+    $("#export").onclick = ()=>window.print();
+
+  }catch(err){
+    info.textContent = "Listagem indisponível no momento.";
+    $("#export").onclick = ()=>alert("A exportação depende da listagem. Quando o endpoint /rom/list estiver ativo, habilita automaticamente.");
+  }
+}
+
+/* ================== LOGOUT ================== */
+$("#logout").onclick = ()=>{
+  try{ localStorage.removeItem("token"); }catch(_){}
+  document.cookie = "rom_token=; max-age=0; path=/";
+  location.href = "index.html";
+};
 </script>
 </body>
 </html>
