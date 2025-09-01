@@ -1,295 +1,527 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Romaneio • Painel</title>
 <style>
-:root{
-  --bg:#0b1320; --card:#121b2e; --muted:#8793ab; --text:#eaf1ff; --line:rgba(255,255,255,.08);
-  --primary:#4c8dff; --primary-600:#3a74d6; --danger:#ff6b6b; --ok:#19c37d;
-}
-*{box-sizing:border-box} html,body{height:100%}
-body{margin:0;background:#0b1320;color:var(--text);font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial}
-a{color:inherit}
-.nav{
-  position:sticky; top:0; z-index:50; background:rgba(9,16,31,.7); backdrop-filter:blur(8px);
-  border-bottom:1px solid var(--line); padding:12px 16px; display:flex; align-items:center; gap:10px;
-}
-.brand{display:flex; align-items:center; gap:8px; font-weight:800}
-.badge{padding:6px 10px; background:#0f1729; border:1px solid var(--line); border-radius:10px; font-size:12px}
-.sp{flex:1}
-.btn{appearance:none;border:0;border-radius:12px;padding:10px 14px;background:#1a2340;color:#dfe8ff;cursor:pointer}
-.btn:hover{filter:brightness(1.06)}
-.btn-primary{background:var(--primary)}
-.btn-danger{background:#ff5d5d}
-.container{max-width:1120px;margin:16px auto;padding:0 16px}
-.card{background:#121b2e;border:1px solid var(--line);border-radius:16px;padding:16px;margin:16px 0}
-h2{margin:0 0 10px}
-.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.fld{display:flex;flex-direction:column;gap:6px}
-input,select,textarea{
-  background:#0f1729;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14px
-}
-.small{font-size:12px;color:var(--muted)}
-.item-row{display:grid;grid-template-columns:1.4fr 1fr .8fr 46px;gap:10px;align-items:center;margin-top:10px}
-.thumb{width:90px;height:90px;object-fit:cover;border-radius:10px;border:1px solid var(--line)}
-.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
-.chip{background:#0f1729;border:1px solid var(--line); padding:8px 10px;border-radius:999px;font-size:12px}
-.progress{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:60}
-.box{background:#111a2d;border:1px solid var(--line);border-radius:16px;padding:18px;min-width:320px; text-align:center}
-.bar{height:8px;background:#0f1729;border-radius:999px;overflow:hidden;margin-top:12px}
-.bar>div{height:100%;width:0%;background:linear-gradient(90deg,#63a4ff,#4c8dff);transition:width .2s}
-.ok{color:var(--ok)} .err{color:var(--danger)}
-hr{border:none;border-top:1px solid var(--line);margin:14px 0}
+  :root{
+    --bg:#0b1324; --panel:#0f1729; --muted:#9fb0db; --text:#eaf0ff;
+    --line:#1e2a46; --brand:#3b82f6; --accent:#1f6feb; --danger:#ef4444;
+  }
+  html,body{height:100%}
+  body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 Inter,system-ui,Segoe UI,Roboto,Arial}
+  .wrap{max-width:1080px;margin:26px auto;padding:0 16px}
+  .topbar{display:flex;gap:8px;align-items:center;justify-content:flex-end}
+  .btn{border:0;border-radius:10px;padding:10px 14px;background:#15223d;color:#cfe1ff;cursor:pointer}
+  .btn:hover{filter:brightness(1.05)}
+  .btn-primary{background:var(--brand);color:#fff}
+  .btn-danger{background:var(--danger);color:#fff}
+  .chip{padding:8px 10px;border-radius:10px;background:#132040}
+  .title{font-size:28px;font-weight:800;margin:14px 0 6px}
+  .subtitle{color:var(--muted);font-size:13px}
+  .row{display:grid;gap:12px}
+  .grid2{grid-template-columns:1fr 1fr}
+  .grid3{grid-template-columns:1fr 1fr 1fr}
+  @media(max-width:820px){ .grid2,.grid3{grid-template-columns:1fr} }
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;margin:16px 0;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+  .header{display:flex;align-items:center;justify-content:space-between}
+  label{display:block;margin-bottom:6px;color:#c9d6ff;font-weight:600}
+  input,select,textarea{
+    width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;
+    background:#0c1731;color:#e7efff;outline:none
+  }
+  .line{height:1px;background:var(--line);margin:12px 0}
+  .small{font-size:12px;color:#a8b8dd}
+  .right{display:flex;gap:8px;align-items:center}
+  .hidden{display:none}
+
+  /* previews */
+  .preview{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
+  .thumb{width:120px;height:90px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
+
+  /* Tabs */
+  .tabs{display:flex;gap:8px}
+  .tab{padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:#0c1731;color:#dfe8ff;cursor:pointer}
+  .tab.active{background:var(--brand);color:#fff;border-color:transparent}
+
+  /* REPORT (lista) */
+  .report{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:12px 0;break-inside:avoid}
+  .rep-head{background:#0e1a33;color:#fff;padding:10px 12px;font-weight:700;display:flex;gap:14px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+  .rep-meta{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:#cdd6f6}
+  .rep-title{font-weight:800}
+  .rep-table{width:100%;border-collapse:collapse;font-size:13px}
+  .rep-table th,.rep-table td{border:1px solid var(--line);padding:6px 8px;text-align:left;background:#0f1729}
+  .rep-table th{background:#122143;font-weight:700}
+  .rep-total{background:#101a34;text-align:right;font-weight:800}
+  .sum{margin-left:10px}
+
+  /* overlay */
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);backdrop-filter:blur(1px);display:none;align-items:center;justify-content:center;z-index:30}
+  .spinner{background:#0f1729;border:1px solid var(--line);color:#afc2ee;padding:14px 18px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+  .dots:after{content:"…";animation:dots 1.6s infinite steps(4)}
+  @keyframes dots {0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
+
+  /* PRINT (A4) */
+  @media print{
+    body{background:#fff}
+    .no-print{display:none !important}
+    .report{break-inside:avoid}
+    @page{ size:A4; margin:12mm }
+  }
 </style>
 </head>
+
 <body>
-  <div class="nav">
-    <div class="brand">🚚 <span>Romaneio</span></div>
-    <span id="who" class="badge">—</span>
-    <div class="sp"></div>
-    <a class="btn" href="#" id="tabRom">Enviar Romaneio</a>
-    <a class="btn" href="#" id="tabList">Romaneios</a>
-    <a class="btn" href="#" id="tabCli">Clientes</a>
-    <a class="btn" href="#" id="tabUsr">Usuários</a>
-    <button id="btnTheme" class="btn" title="Tema">🌙/🌞</button>
-    <button id="btnReload" class="btn" title="Atualizar">⟳ Atualizar</button>
-    <button id="btnOut" class="btn btn-danger">Sair</button>
+<div class="wrap">
+
+  <div class="header no-print">
+    <div>
+      <div class="title">🚚 Romaneio</div>
+      <div class="subtitle" id="connTxt">Conectado • --:--</div>
+    </div>
+    <div class="right">
+      <button class="btn" id="btnTheme">🌙/🌞</button>
+      <button class="btn" id="btnRefresh">⟳ Atualizar</button>
+      <button class="btn btn-danger" id="btnLogout">Sair</button>
+    </div>
   </div>
 
-  <div class="container" id="sectionRom">
-    <div class="card">
-      <div class="small" id="stamp"></div>
-      <h2>Itens</h2>
+  <!-- TABS -->
+  <div class="tabs no-print">
+    <button class="tab active" id="tabForm">Enviar Romaneio</button>
+    <button class="tab" id="tabList">Romaneios</button>
+    <button class="tab" id="tabUsers">Usuários</button>
+  </div>
 
-      <!-- Itens -->
-      <div id="items"></div>
-      <div style="margin-top:8px">
+  <!-- ====== FORM ====== -->
+  <section id="sectionForm">
+    <!-- Cliente & Fornecedor -->
+    <div class="card">
+      <h2>Cliente & Fornecedor</h2>
+      <div class="row grid2">
+        <div>
+          <label>ROM</label>
+          <input id="fRom" type="number" placeholder="Ex.: 21" />
+        </div>
+        <div>
+          <label>Data</label>
+          <input id="fData" type="date" />
+        </div>
+      </div>
+
+      <div class="row grid2">
+        <div>
+          <label>Cliente • Telefone</label>
+          <input id="cliTel" placeholder="(85) 9 9999-9999" />
+        </div>
+        <div>
+          <label>Cliente • Nome</label>
+          <input id="cliNome" placeholder="Nome do cliente" />
+        </div>
+      </div>
+      <div class="row grid2">
+        <div>
+          <label>Cliente • Cidade/UF</label>
+          <input id="cliCid" placeholder="Fortaleza / CE" />
+        </div>
+        <div>
+          <label>Fornecedor • Telefone</label>
+          <input id="forTel" placeholder="(85) 3333-3333" />
+        </div>
+      </div>
+      <div class="row grid2">
+        <div>
+          <label>Fornecedor • Nome</label>
+          <input id="forNome" placeholder="Nome do fornecedor" />
+        </div>
+        <div>
+          <label>Fornecedor • Cidade/UF</label>
+          <input id="forCid" placeholder="Maracanaú / CE" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Itens -->
+    <div class="card">
+      <h2>Itens</h2>
+      <div class="row grid3">
+        <div>
+          <label>Tipo</label>
+          <select id="itTipo">
+            <option>Caixa</option>
+            <option>Saco</option>
+            <option>Encomenda</option>
+          </select>
+        </div>
+        <div>
+          <label>Tamanho</label>
+          <select id="itTam">
+            <option>P</option><option>M</option><option>G</option>
+          </select>
+        </div>
+        <div>
+          <label>Qtd</label>
+          <input id="itQtd" type="number" value="1" min="1" />
+        </div>
+      </div>
+      <div class="right" style="margin-top:10px">
         <button class="btn" id="btnAddItem">+ Adicionar item</button>
-        <span class="chip">Total: <b id="totalQtd">0</b></span>
+        <span class="small" id="totalItens">Total: 1</span>
       </div>
     </div>
 
     <!-- Fotos -->
     <div class="card">
       <h2>Fotos</h2>
-      <div class="small">Você pode selecionar múltiplas imagens. Pré-visualização abaixo.</div>
-      <input id="inFotos" type="file" accept="image/*" multiple style="margin-top:8px"/>
-      <div id="previews" class="chips"></div>
-      <div style="margin-top:12px; display:flex; gap:10px">
-        <button id="btnSend" class="btn btn-primary">Enviar</button>
-        <button id="btnClear" class="btn">Limpar</button>
+      <div class="small">Você pode selecionar várias imagens. Pré-visualização abaixo.</div>
+      <input id="fotos" type="file" accept="image/*" multiple />
+      <div class="preview" id="previews"></div>
+      <div class="right" style="margin-top:10px">
+        <button class="btn btn-primary" id="btnEnviar">Enviar</button>
+        <button class="btn" id="btnLimpar">Limpar</button>
       </div>
-      <div id="status" class="small"></div>
     </div>
+  </section>
 
-    <!-- Cliente / Fornecedor -->
+  <!-- ====== LIST ====== -->
+  <section id="sectionList" class="hidden">
     <div class="card">
-      <h2>Cliente & Fornecedor</h2>
-      <div class="grid2">
-        <div class="fld"><label>ROM</label><input id="rom" type="number" placeholder="Ex.: 21"/></div>
-        <div class="fld"><label>Data</label><input id="data" type="date"/></div>
+      <div class="header">
+        <h2>Romaneios</h2>
+        <div class="right">
+          <button class="btn" id="btnPDF">Exportar PDF</button>
+        </div>
       </div>
-      <hr>
-      <div class="grid2">
-        <div class="fld"><label>Cliente • Telefone</label><input id="cli_tel" placeholder="(85) 9 9999-9999"/></div>
-        <div class="fld"><label>Cliente • Nome</label><input id="cli_nome" placeholder="Nome do cliente"/></div>
+      <div class="row grid2">
+        <div>
+          <label>ROM</label>
+          <select id="fltRom"><option value="all">Todos</option></select>
+        </div>
+        <div>
+          <label>Cidade do Cliente</label>
+          <select id="fltCid"><option value="all">Todas</option></select>
+        </div>
       </div>
-      <div class="fld"><label>Cliente • Cidade/UF</label><input id="cli_local" placeholder="Ex.: Fortaleza/CE"/></div>
-      <hr>
-      <div class="grid2">
-        <div class="fld"><label>Fornecedor • Telefone</label><input id="for_tel" placeholder="(85) 9 9999-9999"/></div>
-        <div class="fld"><label>Fornecedor • Nome</label><input id="for_nome" placeholder="Nome do fornecedor"/></div>
+      <div style="margin-top:10px" class="right">
+        <button class="btn btn-primary" id="btnFiltrar">Filtrar</button>
+        <div id="sumario" class="small sum"></div>
       </div>
-      <div class="fld"><label>Fornecedor • Cidade/UF</label><input id="for_local" placeholder="Ex.: Maracanaú/CE"/></div>
-      <div class="fld"><label>Observações</label><textarea id="obs" rows="3" placeholder="Ex.: Doca 3, às 16h"></textarea></div>
     </div>
-  </div>
+    <div id="relatorios"></div>
+  </section>
 
-  <!-- Seções futuras (placeholder) -->
-  <div class="container" id="sectionList" style="display:none">
-    <div class="card"><h2>Romaneios</h2><div class="small">Lista/relatórios entram aqui numa próxima etapa.</div></div>
-  </div>
-  <div class="container" id="sectionCli" style="display:none">
-    <div class="card"><h2>Clientes</h2><div class="small">Cadastro básico numa próxima etapa.</div></div>
-  </div>
-  <div class="container" id="sectionUsr" style="display:none">
-    <div class="card"><h2>Usuários</h2><div class="small">Gestão de usuários/perfis numa próxima etapa.</div></div>
-  </div>
-
-  <!-- overlay progresso -->
-  <div class="progress" id="overlay">
-    <div class="box">
-      <div id="overlayTxt">Enviando…</div>
-      <div class="bar"><div id="overlayBar"></div></div>
+  <!-- ====== USERS placeholder ====== -->
+  <section id="sectionUsers" class="hidden">
+    <div class="card">
+      <h2>Usuários</h2>
+      <div class="small">(em breve) – listagem e permissões por papel.</div>
     </div>
-  </div>
+  </section>
+
+</div>
+
+<!-- overlay -->
+<div class="overlay" id="overlay"><div class="spinner"><span id="ovTxt">Processando</span><span class="dots"></span></div></div>
 
 <script>
-/* ====== CONFIG ====== */
 const API_BASE = "https://script.google.com/macros/s/AKfycbyrDoEP82oJDj2wTIX491414Qf5e-YaDZJHYMAgmWfiddVKCw7WP4oQwrVtEouYxL-NvQ/exec";
 
-/* ====== UTILS ====== */
-const qs = s=>document.querySelector(s);
-const fmtDate = d => new Date(d||Date.now()).toISOString().slice(0,10);
-const toast = (t,cls)=>{ const el=qs("#status"); el.className="small "+(cls||""); el.textContent=t; };
-const overlay = (v, txt, p)=>{ const o=qs("#overlay"); o.style.display= v?"flex":"none"; qs("#overlayTxt").textContent = txt||""; if(typeof p==="number") qs("#overlayBar").style.width = (p*100)+"%"; };
-const getSession = ()=>{ try{return JSON.parse(localStorage.getItem("rom_session")||"{}");}catch(_){return{}}; };
+/* ===== helpers ===== */
+const qs = (s,el=document)=> el.querySelector(s);
+function toast(msg,type){ console.log(type||"info", msg); alert(msg); }
+function overlay(show, txt){
+  const ov=qs("#overlay");
+  if(show){ qs("#ovTxt").textContent = txt||"Processando"; ov.style.display="flex"; }
+  else ov.style.display="none";
+}
+function maskPhone(v){
+  v = String(v||"").replace(/\D/g,"");
+  if(v.length===11){ return v.replace(/^(\d{2})(\d)(\d{4})(\d{4})$/,"($1) $2 $3-$4"); }
+  if(v.length===10){ return v.replace(/^(\d{2})(\d{4})(\d{4})$/,"($1) $2-$3"); }
+  return v;
+}
+function nowISO(){ const d=new Date(); const p=n=>String(n).padStart(2,'0'); return `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`; }
 
-/* ====== THEME / RELOAD / TABS ====== */
-qs("#btnTheme").onclick = ()=>{ const k="rom_theme"; localStorage.setItem(k,(localStorage.getItem(k)==="dark"?"light":"dark")); location.reload(); };
-qs("#btnReload").onclick = ()=> location.href = "app.html?v="+Date.now();
+/* ===== session mock (você já faz login na index e salva localStorage) ===== */
+function getSession(){
+  // espera: { token, usuario }
+  try{ return JSON.parse(localStorage.getItem("rom_sess")||"{}"); }catch(_){ return {}; }
+}
 
-const showTab = (id)=>{ ["Rom","List","Cli","Usr"].forEach(s=>qs("#section"+s).style.display = (s===id?"block":"none")); };
-qs("#tabRom").onclick = (e)=>{e.preventDefault();showTab("Rom");};
-qs("#tabList").onclick= (e)=>{e.preventDefault();showTab("List");};
-qs("#tabCli").onclick = (e)=>{e.preventDefault();showTab("Cli");};
-qs("#tabUsr").onclick = (e)=>{e.preventDefault();showTab("Usr");};
-
-/* ====== API ====== */
-async function apiPost(path, data){
-  const r = await fetch(API_BASE + "?path=" + encodeURIComponent(path), {
-    method:"POST", headers:{ "Content-Type":"text/plain;charset=utf-8" },
-    body: JSON.stringify(data||{}), mode:"cors", credentials:"omit",
+/* ===== API ===== */
+async function apiPost(path, body={}){
+  const r = await fetch(API_BASE+"?path="+encodeURIComponent(path), {
+    method:"POST",
+    headers:{ "Content-Type":"application/json;charset=utf-8" },
+    body: JSON.stringify(body)
   });
-  if(!r.ok) throw new Error("HTTP "+r.status);
   return await r.json();
 }
 
-/* ====== SESSION header ====== */
-(function(){
-  const s = getSession();
-  if(!s?.token){ location.href="index.html"; return; }
-  qs("#who").textContent = `${s.usuario} • ${new Date().toLocaleString()}`;
-  qs("#data").value = fmtDate();
-  qs("#stamp").textContent = "Conectado • " + new Date().toLocaleString();
-})();
-qs("#btnOut").onclick = async ()=>{
-  try{ await apiPost("/logout",{ token:getSession().token }); }catch(_){}
-  localStorage.removeItem("rom_session"); location.href="index.html";
-};
-
-/* ====== ITENS ====== */
-const itemsEl = qs("#items");
-const totalQtdEl = qs("#totalQtd");
-const tipos = ["Caixa","Pacote","Fardo","Volume","Saco","Palete"];
-const tamanhos = ["P","M","G","GG"];
-let items = [];
-
-function renderItems(){
-  itemsEl.innerHTML = "";
-  let total = 0;
-  items.forEach((it,idx)=>{
-    total += Number(it.qtd||0);
-    const row = document.createElement("div");
-    row.className="item-row";
-    row.innerHTML = `
-      <select class="it-tipo">
-        ${tipos.map(t=>`<option ${it.tipo===t?"selected":""}>${t}</option>`).join("")}
-      </select>
-      <select class="it-tamanho">
-        ${tamanhos.map(t=>`<option ${it.tamanho===t?"selected":""}>${t}</option>`).join("")}
-      </select>
-      <input class="it-qtd" type="number" min="1" value="${it.qtd||1}">
-      <button class="btn btn-danger it-x">✕</button>`;
-    row.querySelector(".it-tipo").onchange = e=>{items[idx].tipo=e.target.value;};
-    row.querySelector(".it-tamanho").onchange = e=>{items[idx].tamanho=e.target.value;};
-    row.querySelector(".it-qtd").oninput = e=>{items[idx].qtd=Number(e.target.value||0); updateTotal();};
-    row.querySelector(".it-x").onclick = ()=>{ items.splice(idx,1); renderItems(); };
-    itemsEl.appendChild(row);
-  });
-  totalQtdEl.textContent = total;
+/* ===== UI tabs ===== */
+function showTab(name){
+  for(const [id,sec] of [["Form","#sectionForm"],["List","#sectionList"],["Users","#sectionUsers"]]){
+    qs(sec).classList.toggle("hidden", id!==name);
+    qs("#tab"+id).classList.toggle("active", id===name);
+  }
 }
-function updateTotal(){ totalQtdEl.textContent = items.reduce((s,i)=>s+Number(i.qtd||0),0); }
 
-qs("#btnAddItem").onclick = ()=>{ items.push({tipo:"Caixa", tamanho:"P", qtd:1}); renderItems(); };
-/* começa com 1 item */
-items = [{tipo:"Caixa", tamanho:"P", qtd:1}];
-renderItems();
+/* ===== form ===== */
+let itens = [{tipo:"Caixa", tamanho:"P", qtd:1}];
+let fotosData = []; // base64
 
-/* ====== FOTOS & PREVIEW ====== */
-let fotosFiles = [];
-qs("#inFotos").addEventListener("change", (ev)=>{
-  fotosFiles = Array.from(ev.target.files||[]);
-  const p = qs("#previews"); p.innerHTML="";
-  fotosFiles.forEach(f=>{
-    const img = document.createElement("img");
-    img.className="thumb";
-    img.src = URL.createObjectURL(f);
-    p.appendChild(img);
+function refreshItens(){
+  qs("#totalItens").textContent = "Total: "+itens.reduce((s,i)=>s+Number(i.qtd||0),0);
+}
+
+qs("#btnAddItem").addEventListener("click", ()=>{
+  const i = {
+    tipo: qs("#itTipo").value,
+    tamanho: qs("#itTam").value,
+    qtd: Number(qs("#itQtd").value||1)
+  };
+  if(i.qtd>0) itens.push(i);
+  refreshItens();
+});
+
+qs("#btnLimpar").addEventListener("click", ()=>{
+  itens = [{tipo:"Caixa", tamanho:"P", qtd:1}];
+  qs("#previews").innerHTML = ""; fotosData = [];
+  refreshItens();
+});
+
+qs("#fotos").addEventListener("change", (ev)=>{
+  const files = Array.from(ev.target.files||[]);
+  const host = qs("#previews");
+  host.innerHTML = ""; fotosData = [];
+  files.forEach(f=>{
+    const rd = new FileReader();
+    rd.onload = (e)=>{
+      const dataUrl = e.target.result;
+      fotosData.push({ dataUrl });
+      const img = new Image(); img.className="thumb"; img.src=dataUrl; host.appendChild(img);
+    };
+    rd.readAsDataURL(f);
   });
 });
 
-/* ====== ENVIAR ====== */
-qs("#btnSend").onclick = async ()=>{
-  const sess = getSession(); if(!sess?.token){ location.href="index.html"; return; }
-
-  // validações básicas
-  const rom = Number(qs("#rom").value||0);
-  if(!rom){ toast("Informe o ROM","err"); return; }
-  if(items.reduce((s,i)=>s+Number(i.qtd||0),0)<=0){ toast("Nenhum item informado","err"); return; }
-
-  // monta corpo
-  const body = {
-    token:sess.token,
-    rom,
-    data: qs("#data").value || fmtDate(),
-    obs:  qs("#obs").value || "",
-    cliente:{
-      tel:  qs("#cli_tel").value,  nome: qs("#cli_nome").value,
-      local:qs("#cli_local").value
-    },
-    fornecedor:{
-      tel:  qs("#for_tel").value,  nome: qs("#for_nome").value,
-      local:qs("#for_local").value
-    },
-    itens: items.map(i=>({tipo:i.tipo, tamanho:i.tamanho, qtd:Number(i.qtd||0)}))
-  };
-
-  // converte fotos em base64 dataURL (sem abrir Google)
-  overlay(true,"Preparando imagens…",.05);
-  const fotos = [];
-  for(let i=0;i<fotosFiles.length;i++){
-    const f = fotosFiles[i];
-    const dataUrl = await fileToDataURL(f);
-    fotos.push({name:f.name, dataUrl});
-    overlay(true,`Convertendo ${i+1}/${fotosFiles.length}…`, (i+1)/fotosFiles.length*.5 + .05);
-  }
-  body.fotos = fotos;
-
-  try{
-    overlay(true,"Enviando…",.65);
-    const r = await apiPost("/rom/create", body);
-    overlay(true,"Finalizando…",.95);
-    if(r.error){ overlay(false); toast(r.error,"err"); return; }
-    overlay(false);
-    toast(`OK! Código ${r.cod}. PDF gerado.`, "ok");
-    // limpa somente fotos
-    qs("#inFotos").value=""; fotosFiles=[]; qs("#previews").innerHTML="";
-  }catch(e){
-    overlay(false); toast("Erro ao enviar: "+e.message,"err");
-  }
-};
-
-qs("#btnClear").onclick = ()=>{
-  items = [{tipo:"Caixa", tamanho:"P", qtd:1}]; renderItems();
-  qs("#inFotos").value=""; fotosFiles=[]; qs("#previews").innerHTML="";
-  ["cli_tel","cli_nome","cli_local","for_tel","for_nome","for_local","obs","rom"].forEach(id=>qs("#"+id).value="");
-  qs("#data").value = fmtDate();
-  toast("");
-};
-
-/* helpers */
-function fileToDataURL(file){
-  return new Promise((res,rej)=>{
-    const fr = new FileReader();
-    fr.onerror = () => rej(new Error("Falha ao ler imagem"));
-    fr.onload  = () => res(fr.result);
-    fr.readAsDataURL(file);
+/* auto mask + (futuro) autofill */
+["cliTel","forTel"].forEach(id=>{
+  qs("#"+id).addEventListener("input", (e)=>{
+    const raw = e.target.value.replace(/\D/g,"");
+    e.target.value = maskPhone(raw);
   });
+});
+
+/* enviar */
+qs("#btnEnviar").addEventListener("click", async ()=>{
+  // validações simples
+  const req = (id,msg)=>{ const v=qs("#"+id).value.trim(); if(!v){ toast(msg||"Preencha os campos", "err"); throw "stop"; } return v; };
+  try{
+    const rom = req("fRom","Informe o ROM");
+    const data = qs("#fData").value || new Date().toISOString().slice(0,10);
+
+    const cli_tel = req("cliTel","Informe telefone do cliente").replace(/\D/g,"");
+    const cli_nome = req("cliNome","Informe nome do cliente");
+    const cli_cid  = req("cliCid","Informe cidade/UF do cliente");
+
+    const for_tel = req("forTel","Informe telefone do fornecedor").replace(/\D/g,"");
+    const for_nome= req("forNome","Informe nome do fornecedor");
+    const for_cid = req("forCid","Informe cidade/UF do fornecedor");
+
+    if(!itens.length || itens.reduce((s,i)=>s+Number(i.qtd||0),0)<=0){ toast("Adicione pelo menos 1 item","err"); return; }
+
+    overlay(true,"Enviando");
+    const body = {
+      token:getSession().token,
+      rom, data,
+      cliente:{ tel:cli_tel, nome:cli_nome, local:cli_cid },
+      fornecedor:{ tel:for_tel, nome:for_nome, local:for_cid },
+      itens, fotos: fotosData
+    };
+    const r = await apiPost("/rom/create", body);
+    overlay(false);
+    if(!r.ok){ toast(r.error||"Falha no envio","err"); return; }
+
+    toast("Romaneio enviado! Código "+r.cod, "ok");
+    if(r.whatsappUrl){
+      if(confirm("Abrir WhatsApp do cliente com o comprovante?")) window.open(r.whatsappUrl,"_blank");
+    }
+    // limpar leve
+    qs("#btnLimpar").click();
+  }catch(e){ if(e!=="stop"){ overlay(false); console.error(e); } }
+});
+
+/* ===== Romaneios (filtros + render) ===== */
+async function loadFilters(){
+  try{
+    const r = await apiPost("/rom/filters",{ token:getSession().token });
+    const romSel = qs("#fltRom"), cidSel = qs("#fltCid");
+    romSel.innerHTML = `<option value="all">Todos</option>` + (r.roms||[]).map(x=>`<option>${x}</option>`).join("");
+    cidSel.innerHTML = `<option value="all">Todas</option>` + (r.cidades||[]).map(x=>`<option>${x}</option>`).join("");
+  }catch{ toast("Falha ao carregar filtros","err"); }
 }
+
+async function loadRelatorio(){
+  const body = { token:getSession().token, rom:qs("#fltRom").value, cidade:qs("#fltCid").value };
+  overlay(true,"Buscando");
+  try{
+    const r = await apiPost("/rom/list", body);
+    overlay(false);
+    if(!r.ok){ toast(r.error||"Falha","err"); return; }
+    qs("#sumario").textContent = `Clientes: ${r.clientes.length} • Volumes (total): ${r.totalGeral}`;
+    const host = qs("#relatorios"); host.innerHTML="";
+
+    r.clientes.forEach(c=> host.appendChild(makeClientReport(c)));
+    // guardo último dataset para exportar pdf
+    window.__lastReport = { filtroRom: body.rom, filtroCid: body.cidade, data: r };
+  }catch(e){ overlay(false); toast("Erro ao listar", "err"); }
+}
+
+function makeClientReport(c){
+  const wrap = document.createElement("div");
+  wrap.className = "report";
+  wrap.innerHTML = `
+    <div class="rep-head">
+      <div class="rep-title">JR TRANSPORTES</div>
+      <div class="rep-meta">
+        <div><b>ROMANEIO</b> ${c.rom||"-"}</div>
+        <div><b>CLIENTE</b> ${esc(c.cliente.nome||"-")}</div>
+        <div><b>CIDADE</b> ${esc(c.cliente.cidade_uf||"-")}</div>
+        <div><b>CONTATO</b> ${maskPhone(c.cliente.tel||"")}</div>
+      </div>
+    </div>
+    <table class="rep-table">
+      <thead><tr>
+        <th>FORNECEDOR</th>
+        <th>CÓDIGO</th>
+        <th>CADÁ</th>
+        <th>BACO</th>
+        <th>TAMANHO/ITEM</th>
+        <th>DATA</th>
+        <th>VALOR UNIT</th>
+        <th>VALOR TOTAL</th>
+        <th>OBSERVAÇÃO</th>
+      </tr></thead>
+      <tbody>
+        ${c.linhas.map(l=>`
+          <tr>
+            <td>${esc(l.fornecedor||"")}</td>
+            <td>${esc(l.codigo||"")}</td>
+            <td>${Number(l.qtd||0)}</td>
+            <td></td>
+            <td>${esc(l.item||"")}</td>
+            <td>${esc(l.data||"")}</td>
+            <td>${esc(l.valorUnit||"")}</td>
+            <td>${esc(l.valorTotal||"")}</td>
+            <td>${esc(l.obs||"")}</td>
+          </tr>
+        `).join("")}
+        <tr><td colspan="9" class="rep-total">VOLUMES (cliente): ${c.totalVol}</td></tr>
+      </tbody>
+    </table>`;
+  return wrap;
+}
+function esc(s){ return String(s||"").replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[m])); }
+
+/* Exportar PDF (A4, sem quebrar cliente) */
+qs("#btnPDF").addEventListener("click", ()=>{
+  const R = window.__lastReport;
+  if(!R){ toast("Gere o relatório primeiro (Filtrar).","err"); return; }
+
+  const w = window.open("", "_blank");
+  const css = `
+    <style>
+      body{ font:12px/1.4 Arial, Helvetica, sans-serif; color:#111; margin:0 }
+      .hdr{padding:12px 16px 0 16px}
+      .muted{color:#555;font-size:12px}
+      .report{ border:1px solid #ddd; border-radius:10px; margin:12px 16px; overflow:hidden; break-inside:avoid; }
+      .rep-head{ background:#0e1a33; color:#fff; padding:8px 12px; display:flex; gap:10px; flex-wrap:wrap; justify-content:space-between; }
+      .rep-title{ font-weight:800 }
+      .rep-meta{ display:flex; gap:12px; flex-wrap:wrap; font-size:12px }
+      table{ width:100%; border-collapse:collapse; font-size:12px }
+      th,td{ border:1px solid #e5e5e5; padding:6px 8px; }
+      th{ background:#f1f4fb; }
+      .rep-total{ background:#f5f7ff; font-weight:700; text-align:right }
+      @page{ size:A4; margin:12mm }
+      .report{ break-inside:avoid }
+    </style>`;
+
+  const head = `
+    <div class="hdr">
+      <h2 style="margin:8px 16px">Relatório de Romaneios</h2>
+      <div class="muted" style="margin:0 16px 10px 16px">
+        ROM: <b>${R.filtroRom==="all"?"Todos":R.filtroRom}</b> •
+        Cidade: <b>${R.filtroCid==="all"?"Todas":R.filtroCid}</b> •
+        Gerado em: ${new Date().toLocaleString()}
+      </div>
+    </div>`;
+
+  let body = head;
+  R.data.clientes.forEach(c=>{
+    body += `
+    <div class="report">
+      <div class="rep-head">
+        <div class="rep-title">JR TRANSPORTES</div>
+        <div class="rep-meta">
+          <div><b>ROMANEIO</b> ${c.rom||"-"}</div>
+          <div><b>CLIENTE</b> ${esc(c.cliente.nome||"-")}</div>
+          <div><b>CIDADE</b> ${esc(c.cliente.cidade_uf||"-")}</div>
+          <div><b>CONTATO</b> ${maskPhone(c.cliente.tel||"")}</div>
+        </div>
+      </div>
+      <table>
+        <thead><tr>
+          <th>FORNECEDOR</th><th>CÓDIGO</th><th>CADÁ</th><th>BACO</th>
+          <th>TAMANHO/ITEM</th><th>DATA</th><th>VALOR UNIT</th><th>VALOR TOTAL</th><th>OBS.</th>
+        </tr></thead>
+        <tbody>
+          ${c.linhas.map(l=>`
+            <tr>
+              <td>${esc(l.fornecedor||"")}</td>
+              <td>${esc(l.codigo||"")}</td>
+              <td>${Number(l.qtd||0)}</td>
+              <td></td>
+              <td>${esc(l.item||"")}</td>
+              <td>${esc(l.data||"")}</td>
+              <td>${esc(l.valorUnit||"")}</td>
+              <td>${esc(l.valorTotal||"")}</td>
+              <td>${esc(l.obs||"")}</td>
+            </tr>`).join("")}
+          <tr><td colspan="9" class="rep-total">VOLUMES (cliente): ${c.totalVol}</td></tr>
+        </tbody>
+      </table>
+    </div>`;
+  });
+
+  w.document.write(`<html><head><meta charset="utf-8">${css}</head><body>${body}</body></html>`);
+  w.document.close();
+  w.focus();
+  w.print();
+});
+
+qs("#btnFiltrar").addEventListener("click", loadRelatorio);
+
+/* ===== init ===== */
+function init(){
+  // conexão
+  qs("#connTxt").textContent = "Conectado • "+new Date().toLocaleString();
+  qs("#fData").value = new Date().toISOString().slice(0,10);
+
+  // topo
+  qs("#btnRefresh").addEventListener("click", ()=>location.reload());
+  qs("#btnTheme").addEventListener("click", ()=>document.body.classList.toggle("light"));
+  qs("#btnLogout").addEventListener("click", ()=>{ localStorage.removeItem("rom_sess"); location.href="./index.html"; });
+
+  // tabs
+  qs("#tabForm").addEventListener("click", ()=>showTab("Form"));
+  qs("#tabList").addEventListener("click", async ()=>{ showTab("List"); await loadFilters(); await loadRelatorio(); });
+  qs("#tabUsers").addEventListener("click", ()=>showTab("Users"));
+
+  refreshItens();
+}
+init();
 </script>
 </body>
 </html>
