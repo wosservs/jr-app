@@ -1,527 +1,162 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8" />
-<title>Romaneio • Painel</title>
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-
-<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate" />
-<meta http-equiv="Pragma" content="no-cache" />
-<meta http-equiv="Expires" content="0" />
-
-<style>
-  :root{
-    --bg:#0b1320; --card:#111a2d; --muted:#a3aed0; --text:#e8ecff;
-    --accent:#2563eb; --accent-2:#1d4ed8; --error:#ef4444; --ok:#22c55e;
-    --input:#1a2439; --border:#23314f; --shadow:rgba(0,0,0,.45);
-    --chip:#0f1628;
-  }
-  .light{
-    --bg:#f3f6ff; --card:#fff; --muted:#55607a; --text:#111827;
-    --accent:#2563eb; --accent-2:#1d4ed8; --error:#b91c1c; --ok:#16a34a;
-    --input:#f2f5ff; --border:#d7def1; --shadow:rgba(0,0,0,.08);
-    --chip:#eef3ff;
-  }
-
-  *{box-sizing:border-box}
-  html,body{height:100%}
-  body{
-    margin:0; font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-    background:var(--bg); color:var(--text);
-  }
-
-  .container{max-width:1120px; margin:0 auto; padding:18px}
-  .top{
-    display:flex; align-items:center; gap:12px; justify-content:space-between;
-  }
-  .brand{display:flex; align-items:center; gap:.6rem; font-weight:700; font-size:1.2rem}
-  .brand .emj{filter: drop-shadow(0 1px 0 #0003)}
-  .actions{display:flex; gap:8px}
-
-  .btn{
-    display:inline-flex; align-items:center; gap:.45rem;
-    background:var(--card); color:var(--text);
-    border:1px solid var(--border); border-radius:999px;
-    padding:.45rem .8rem; font-size:.9rem; cursor:pointer;
-    box-shadow:0 2px 6px var(--shadow);
-  }
-  .btn:hover{filter:brightness(1.03)}
-  .btn.primary{ background:var(--accent); border-color:var(--accent); color:#fff; }
-  .btn.primary:hover{ background:var(--accent-2); }
-  .btn.danger{ background:#ef44441a; border-color:#ef44444d; color:#fecaca; }
-  .btn.ghost{ background:transparent }
-
-  .tabs{display:flex; gap:8px; margin-top:14px}
-  .chip{
-    background:var(--chip); border:1px solid var(--border);
-    color:var(--text); border-radius:999px; padding:.35rem .8rem; cursor:pointer;
-  }
-  .chip.active{ background:var(--accent); border-color:var(--accent); color:#fff; }
-
-  .card{
-    margin-top:14px; background:var(--card); border:1px solid var(--border);
-    border-radius:14px; padding:18px; box-shadow:0 10px 30px var(--shadow);
-    position:relative; overflow:hidden;
-  }
-  .progress{
-    position:absolute; top:0; left:0; height:3px; width:0%;
-    background: linear-gradient(90deg, #60a5fa, #22d3ee, #22c55e);
-    transition:width .25s ease;
-  }
-
-  h2{margin:0 0 10px; font-size:1.1rem; color:var(--muted)}
-  label{display:block; margin:.6rem 0 .25rem; color:var(--muted); font-size:.9rem}
-  input, select{
-    width:100%; padding:.64rem .7rem; border-radius:10px;
-    border:1px solid var(--border); background:var(--input); color:var(--text);
-    outline:none;
-  }
-  input:focus, select:focus{border-color:#6aa3ff; box-shadow:0 0 0 3px #2563eb22}
-  .grid{display:grid; gap:12px}
-  .g2{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .g3{grid-template-columns:repeat(3,minmax(0,1fr))}
-  @media (max-width:900px){ .g2,.g3{grid-template-columns:1fr} }
-
-  .row{display:flex; gap:10px; margin-top:14px; flex-wrap:wrap}
-  .row .btn{justify-content:center}
-
-  .item-row{display:grid; grid-template-columns:2fr 1fr 100px 42px; gap:8px}
-  .thumbs{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px}
-  .thumbs img{width:86px; height:86px; object-fit:cover; border-radius:10px; border:1px solid var(--border)}
-
-  .stat{margin-top:6px; font-size:.85rem; color:var(--muted)}
-  .ok{color:var(--ok)} .err{color:var(--error)}
-
-  /* Lista Romaneios */
-  .filters{display:grid; gap:10px; grid-template-columns:1fr 1fr auto}
-  .tbl{width:100%; border-collapse:collapse; margin-top:12px}
-  .tbl th, .tbl td{border-bottom:1px solid var(--border); padding:8px 10px; text-align:left; font-size:.92rem}
-  .tbl th{color:var(--muted); font-weight:600}
-
-  /* Modal */
-  .modal-back{
-    position:fixed; inset:0; background:rgba(0,0,0,.5); display:none;
-    align-items:center; justify-content:center; z-index:50;
-  }
-  .modal{
-    background:var(--card); border:1px solid var(--border); color:var(--text);
-    width:min(520px, 92vw); border-radius:14px; padding:18px; box-shadow:0 18px 50px var(--shadow);
-  }
-  .modal h3{margin:0 0 10px}
-  .modal .row{margin-top:10px}
-  .modal .btn{flex:1}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Romaneio • Login</title>
+  <style>
+    :root{
+      --bg:#0b1320; --card:#121b2e; --muted:#7b8aa1; --text:#eaf1ff;
+      --primary:#4c8dff; --primary-600:#3a74d6; --success:#19c37d; --danger:#ff6b6b;
+      --shadow:0 18px 40px rgba(0,0,0,.35);
+    }
+    *{box-sizing:border-box} html,body{height:100%}
+    body{
+      margin:0; font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      background:linear-gradient(180deg,#0b1320 0%, #0d1528 100%); color:var(--text);
+      display:flex; align-items:center; justify-content:center; padding:24px;
+    }
+    .wrap{width:100%; max-width:560px}
+    .row-top{display:flex; gap:10px; justify-content:flex-end; margin-bottom:14px}
+    .btn{
+      appearance:none; border:0; border-radius:12px; padding:10px 14px;
+      background:#1a2340; color:#dfe8ff; cursor:pointer; box-shadow:var(--shadow);
+      display:inline-flex; align-items:center; gap:8px; font-weight:600
+    }
+    .btn:hover{filter:brightness(1.06)}
+    .btn-primary{background:var(--primary)}
+    .card{
+      background:var(--card); border:1px solid rgba(255,255,255,.06);
+      border-radius:18px; padding:26px; box-shadow:var(--shadow);
+    }
+    h1{margin:0 0 10px; font-size:28px; display:flex; gap:10px; align-items:center}
+    .muted{color:var(--muted); font-size:14px}
+    .fld{display:flex; flex-direction:column; gap:6px; margin-top:14px}
+    .fld input{
+      background:#0f1729; color:var(--text); border:1px solid rgba(255,255,255,.08);
+      border-radius:12px; padding:12px 14px; font-size:16px; outline:none
+    }
+    .row{display:flex; gap:10px; margin-top:16px}
+    .row .btn{flex:1}
+    .ok{color:var(--success)} .err{color:var(--danger)}
+    .ver{margin-top:8px; color:#8aa4ff; font-size:12px}
+    /* progress */
+    .progress{height:4px; width:100%; background:#0f1729; border-radius:999px; overflow:hidden; margin:14px 0 4px}
+    .bar{height:100%; width:0%; background:linear-gradient(90deg,#63a4ff,#4c8dff); transition:width .2s}
+  </style>
 </head>
 <body>
-<div class="container">
-  <div class="top">
-    <div class="brand"><span class="emj">🚚</span> Romaneio</div>
-    <div class="actions">
-      <button id="theme" class="btn" title="Tema">🌙/🌞</button>
-      <button id="logout" class="btn danger">Sair</button>
+  <div class="wrap">
+    <div class="row-top">
+      <button id="btnTheme" class="btn" title="Tema">🌙/🌞</button>
+      <button id="btnReload" class="btn" title="Forçar atualização">⟳ Atualizar</button>
+    </div>
+
+    <div class="card">
+      <h1>🚚 Romaneio</h1>
+      <div id="conn" class="muted">…</div>
+
+      <div class="fld">
+        <label>Usuário</label>
+        <input id="user" placeholder="admin" autocomplete="username"/>
+      </div>
+      <div class="fld">
+        <label>Senha</label>
+        <input id="pass" type="password" placeholder="••••••" autocomplete="current-password"/>
+      </div>
+
+      <div class="row">
+        <button id="btnLogin" class="btn btn-primary">Entrar</button>
+        <button id="btnPing" class="btn">Testar conexão</button>
+      </div>
+
+      <div class="progress" style="display:none" id="prog"><div class="bar" id="bar"></div></div>
+      <div id="msg" class="muted" style="min-height:22px;margin-top:6px"></div>
+
+      <div class="ver">v1.0.5</div>
     </div>
   </div>
-
-  <div class="tabs">
-    <button class="chip active" data-tab="novo">Novo</button>
-    <button class="chip" data-tab="roms">Romaneios</button>
-  </div>
-
-  <!-- NOVO ROMANEIO -->
-  <section class="card" id="tab-novo">
-    <div class="progress" id="bar"></div>
-
-    <h2>Cliente & Fornecedor</h2>
-    <div class="grid g2">
-      <div>
-        <label>ROM</label>
-        <input id="rom" type="number" placeholder="Ex.: 21" />
-      </div>
-      <div>
-        <label>Data</label>
-        <input id="data" type="date" />
-      </div>
-
-      <div>
-        <label>Cliente • Telefone</label>
-        <input id="cli_tel" type="tel" placeholder="(85) 9 9999-9999" />
-      </div>
-      <div>
-        <label>Cliente • Nome</label>
-        <input id="cli_nome" type="text" placeholder="Nome do cliente" />
-      </div>
-
-      <div>
-        <label>Cliente • Cidade/UF</label>
-        <input id="cli_local" list="cidades" placeholder="Fortaleza/CE" />
-      </div>
-      <div>
-        <label>Fornecedor • Telefone</label>
-        <input id="for_tel" type="tel" placeholder="(85) 3333-3333" />
-      </div>
-
-      <div>
-        <label>Fornecedor • Nome</label>
-        <input id="for_nome" type="text" placeholder="Nome do fornecedor" />
-      </div>
-      <div>
-        <label>Fornecedor • Cidade/UF</label>
-        <input id="for_local" list="cidades" placeholder="Maracanaú/CE" />
-      </div>
-    </div>
-
-    <datalist id="cidades">
-      <option value="Fortaleza/CE"></option>
-      <option value="Maracanaú/CE"></option>
-      <option value="Caucaia/CE"></option>
-    </datalist>
-
-    <h2 style="margin-top:16px">Itens</h2>
-    <div id="itens"></div>
-    <div class="row">
-      <button id="addItem" class="btn">+ Adicionar item</button>
-      <div class="stat">Total: <b id="totalQtd">0</b></div>
-    </div>
-
-    <h2 style="margin-top:16px">Fotos</h2>
-    <input id="fotos" type="file" accept="image/*" multiple />
-    <div class="thumbs" id="thumbs"></div>
-
-    <div class="row">
-      <button id="enviar" class="btn primary">Enviar</button>
-      <button id="limpar" class="btn">Limpar</button>
-    </div>
-
-    <div class="stat" id="status">–</div>
-  </section>
-
-  <!-- LISTA ROMANEIOS -->
-  <section class="card" id="tab-roms" style="display:none">
-    <h2>Romaneios</h2>
-    <div class="filters">
-      <select id="f-rom">
-        <option value="">Todos os ROMs</option>
-      </select>
-      <select id="f-city">
-        <option value="">Todas as cidades</option>
-      </select>
-      <button id="export" class="btn">Exportar PDF</button>
-    </div>
-
-    <table class="tbl" id="romTable">
-      <thead>
-        <tr>
-          <th>Data</th><th>ROM</th><th>Cliente</th><th>Cidade</th><th>Fornecedor</th><th>Itens</th><th>Total</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-
-    <div class="stat" id="romInfo">Carregando…</div>
-  </section>
-</div>
-
-<!-- MODAL -->
-<div class="modal-back" id="mb">
-  <div class="modal">
-    <h3>Romaneio enviado ✅</h3>
-    <div class="stat" id="mMsg">Tudo certo!</div>
-    <div class="row">
-      <a id="mPdf" class="btn" target="_blank" rel="noopener">Abrir PDF</a>
-      <a id="mWa" class="btn primary" target="_blank" rel="noopener">Enviar WhatsApp</a>
-    </div>
-    <div class="row">
-      <button class="btn" onclick="document.getElementById('mb').style.display='none'">Fechar</button>
-    </div>
-  </div>
-</div>
 
 <script>
-/* ================== CONFIG ================== */
+const VERSION="v1.0.5";
+/* ====== CONFIG ====== */
 const API_BASE = "https://script.google.com/macros/s/AKfycbyrDoEP82oJDj2wTIX491414Qf5e-YaDZJHYMAgmWfiddVKCw7WP4oQwrVtEouYxL-NvQ/exec";
 
-/* ================== UTILS ================== */
-const $ = s => document.querySelector(s);
-const bar = $("#bar");
-function setBar(p){ bar && (bar.style.width = p+"%"); }
-function say(msg, cls){
-  const el = $("#status");
-  if(!el) return;
-  el.className = "stat";
-  if(cls) el.classList.add(cls);
-  el.textContent = msg;
-}
-function todayISO(){
-  const d = new Date();
-  const pad=n=>String(n).padStart(2,"0");
-  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-}
-function getToken(){
-  // 1) hash ?t=, 2) localStorage, 3) cookie
-  try{
-    const url = new URL(location.href);
-    const t = url.hash.match(/t=([^&]+)/);
-    if(t){ localStorage.setItem("token", decodeURIComponent(t[1])); return decodeURIComponent(t[1]); }
-  }catch(_){}
-  try{
-    const t = localStorage.getItem("token");
-    if(t) return t;
-  }catch(_){}
-  const m = document.cookie.match(/(?:^|;\s*)rom_token=([^;]+)/);
-  return m ? decodeURIComponent(m[1]) : null;
-}
-async function post(path, body){
-  const r = await fetch(API_BASE + "?path=" + encodeURIComponent(path), {
-    method:"POST",
-    headers:{"Content-Type":"application/json;charset=utf-8"},
-    body: JSON.stringify(body||{})
-  });
-  return r.json();
-}
+/* ====== UI helpers ====== */
+const qs = s=>document.querySelector(s);
+const msg = (t, cls="muted") => { qs("#msg").className=cls; qs("#msg").textContent=t||""; };
+const setConn = (ok, txt) => qs("#conn").innerHTML = ok ? `Conectado • <span class="ok">${txt}</span>` : `<span class="err">${txt}</span>`;
+const prog = (v)=>{ qs("#prog").style.display="block"; qs("#bar").style.width = (v*100).toFixed(0)+"%"; if(v>=1) setTimeout(()=>qs("#prog").style.display="none",350); };
 
-/* ================== THEME ================== */
-function getTheme(){ return localStorage.getItem("theme")||"dark"; }
-function applyTheme(th){ document.documentElement.classList.toggle("light", th==="light"); }
-$("#theme").onclick = ()=>{
-  const th = getTheme()==="dark" ? "light" : "dark";
-  localStorage.setItem("theme", th); applyTheme(th);
-};
-applyTheme(getTheme());
-
-/* ================== TABS ================== */
-document.querySelectorAll(".chip").forEach(ch=>{
-  ch.onclick=()=>{
-    document.querySelectorAll(".chip").forEach(c=>c.classList.remove("active"));
-    ch.classList.add("active");
-    const tab = ch.dataset.tab;
-    $("#tab-novo").style.display = tab==="novo" ? "" : "none";
-    $("#tab-roms").style.display = tab==="roms" ? "" : "none";
-    if(tab==="roms") loadRomList();
-  };
-});
-
-/* ================== FORM ================== */
-const itens = [];
-function renderItens(){
-  const wrap = $("#itens");
-  wrap.innerHTML = "";
-  itens.forEach((it, idx)=>{
-    const row = document.createElement("div");
-    row.className = "item-row";
-    row.innerHTML = `
-      <select data-k="tipo">
-        <option ${it.tipo==="Caixa"?"selected":""}>Caixa</option>
-        <option ${it.tipo==="Saco"?"selected":""}>Saco</option>
-        <option ${it.tipo==="Pacote"?"selected":""}>Pacote</option>
-      </select>
-      <select data-k="tamanho">
-        <option ${it.tamanho==="P"?"selected":""}>P</option>
-        <option ${it.tamanho==="M"?"selected":""}>M</option>
-        <option ${it.tamanho==="G"?"selected":""}>G</option>
-      </select>
-      <input data-k="qtd" type="number" min="0" value="${it.qtd}" />
-      <button class="btn danger" title="Remover">✕</button>
-    `;
-    row.querySelectorAll("select,input").forEach(el=>{
-      el.onchange = ()=>{
-        const k = el.dataset.k;
-        itens[idx][k] = (k==="qtd") ? Number(el.value||0) : el.value;
-        updateTotal();
-      };
-    });
-    row.querySelector("button").onclick = ()=>{
-      itens.splice(idx,1);
-      renderItens(); updateTotal();
-    };
-    wrap.appendChild(row);
-  });
-  if(!itens.length){
-    itens.push({tipo:"Caixa", tamanho:"P", qtd:1});
-    renderItens();
-  }
-}
-function updateTotal(){
-  const t = itens.reduce((s,i)=>s+Number(i.qtd||0),0);
-  $("#totalQtd").textContent = t;
-}
-
-$("#addItem").onclick = ()=>{
-  itens.push({tipo:"Caixa", tamanho:"P", qtd:1});
-  renderItens(); updateTotal();
-};
-
-/* Pré-visualização fotos */
-const fotosSel = $("#fotos");
-const thumbs = $("#thumbs");
-let fotosArr = []; // {name, dataUrl}
-fotosSel.onchange = async ()=>{
-  thumbs.innerHTML = ""; fotosArr = [];
-  const files = Array.from(fotosSel.files||[]);
-  for(const f of files){
-    const dataUrl = await toDataURL(f);
-    fotosArr.push({ name:f.name, dataUrl });
-    const img = document.createElement("img");
-    img.src = dataUrl; thumbs.appendChild(img);
-  }
-};
-function toDataURL(file){
-  return new Promise(res=>{
-    const r = new FileReader();
-    r.onload = ()=>res(r.result); r.readAsDataURL(file);
-  });
-}
-
-/* Data hoje */
-$("#data").value = todayISO();
-
-/* Máscara de telefone */
-function maskTel(v){
-  v = (v||"").replace(/\D/g,"");
-  if(v.length>11) v=v.slice(0,11);
-  if(v.length<=10){
-    // fixo: (99) 9999-9999
-    return v.replace(/^(\d{0,2})(\d{0,4})(\d{0,4}).*$/, (_,a,b,c)=>(
-      (a?`(${a}`:"")+(a.length==2?") ":"")+(b||"")+(c?`-${c}`:"")
-    ));
-  }else{
-    // celular: (99) 9 9999-9999
-    return v.replace(/^(\d{0,2})(\d{0,1})(\d{0,4})(\d{0,4}).*$/, (_,a,b,c,d)=>(
-      (a?`(${a}`:"")+(a.length==2?") ":"")+(b?`${b} `:"")+(c||"")+(d?`-${d}`:"")
-    ));
-  }
-}
-["cli_tel","for_tel"].forEach(id=>{
-  const el = $("#"+id);
-  el.addEventListener("input", ()=>{ el.value = maskTel(el.value); });
-});
-
-/* Limpar */
-$("#limpar").onclick = ()=>{
-  $("#rom").value = "";
-  $("#data").value = todayISO();
-  ["cli_tel","cli_nome","cli_local","for_tel","for_nome","for_local"].forEach(id=>$("#"+id).value="");
-  fotosSel.value=""; fotosArr=[]; thumbs.innerHTML="";
-  itens.splice(0,itens.length,{tipo:"Caixa",tamanho:"P",qtd:1});
-  renderItens(); updateTotal(); say("–");
-};
-
-/* Enviar */
-$("#enviar").onclick = async ()=>{
-  const token = getToken();
-  if(!token){ alert("Sessão inválida. Faça login."); return; }
-
-  const body = {
-    token,
-    rom: $("#rom").value,
-    data: $("#data").value,
-    cliente: { tel: $("#cli_tel").value, nome: $("#cli_nome").value, local: $("#cli_local").value },
-    fornecedor: { tel: $("#for_tel").value, nome: $("#for_nome").value, local: $("#for_local").value },
-    itens,
-    fotos: fotosArr.map(f=>({data: f.dataUrl})),
-    obs: ""
-  };
-
-  // Validações mínimas
-  if(!body.rom || !body.cliente.tel || !body.cliente.nome || !body.cliente.local ||
-     !body.fornecedor.tel || !body.fornecedor.nome || !body.fornecedor.local){
-    say("Preencha todos os campos obrigatórios de Cliente e Fornecedor.", "err");
-    return;
-  }
-  if(itens.every(i=>!i.qtd || Number(i.qtd)<=0)){
-    say("Informe pelo menos 1 item com quantidade.", "err"); return;
-  }
-
-  try{
-    setBar(25); say("Enviando…");
-    const r = await post("/rom/create", body);
-    setBar(80);
-
-    if(r.error){ say("Erro: "+r.error, "err"); setBar(0); return; }
-
-    say("Romaneio criado!", "ok"); setBar(100);
-    // Modal
-    $("#mMsg").textContent = `Código: ${r.cod || "(sem)"} • Total Itens: ${itens.reduce((s,i)=>s+Number(i.qtd||0),0)}`;
-    $("#mPdf").href = r.pdfUrl || "#";
-    $("#mWa").href  = r.whatsappUrl || "#";
-    $("#mb").style.display = "flex";
-  }catch(e){
-    say("Erro de rede: Failed to fetch", "err");
-  }finally{
-    setTimeout(()=>setBar(0), 500);
-  }
-};
-
-/* Render inicial */
-renderItens(); updateTotal();
-
-/* ================== SESSÃO ================== */
-(async ()=>{
-  const token = getToken();
-  if(!token){ alert("Sessão inválida. Faça login."); location.href="index.html"; return; }
-  try{
-    const me = await post("/whoami", {token});
-    if(!me || !me.session){ throw 0; }
-    // ok
-  }catch(_){
-    alert("Sessão inválida. Faça login.");
-    location.href = "index.html";
+/* ====== THEME ====== */
+(function(){
+  const key="rom_theme";
+  const apply=()=>{ document.documentElement.dataset.theme=localStorage.getItem(key)||"dark"; };
+  apply();
+  qs("#btnTheme").onclick=()=>{ localStorage.setItem(key, (localStorage.getItem(key)==="dark"?"light":"dark")); apply(); };
+  if((localStorage.getItem(key) ?? "dark") === "dark"){
+    document.body.style.background = "linear-gradient(180deg,#0b1320 0%, #0d1528 100%)";
   }
 })();
 
-/* ================== LISTA ROMANEIOS ==================
-   Tenta usar /rom/list; se não existir, apenas informa.  */
-async function loadRomList(){
-  const token = getToken();
-  const tbody = $("#romTable tbody");
-  const info  = $("#romInfo");
-  tbody.innerHTML = ""; info.textContent = "Carregando…";
+/* ====== RELOAD ====== */
+qs("#btnReload").onclick=()=>{ location.href = location.pathname + "?v=" + Date.now(); };
 
+/* ====== API ====== */
+async function apiPost(path, data){
+  const r = await fetch(API_BASE + "?path=" + encodeURIComponent(path), {
+    method:"POST", headers:{ "Content-Type":"text/plain;charset=utf-8" },
+    body: JSON.stringify(data||{}), mode:"cors", credentials:"omit",
+  });
+  if(!r.ok) throw new Error("HTTP "+r.status);
+  return await r.json();
+}
+
+/* ====== PING ON LOAD ====== */
+(async()=>{
   try{
-    const r = await post("/rom/list", {token}); // <-- opcional no seu backend
-    if(r.error) throw new Error(r.error);
-    const rows = Array.isArray(r.rows) ? r.rows : [];
+    await apiPost("/ping", {});
+    setConn(true, new Date().toLocaleString());
+  }catch(e){
+    setConn(false,"Falha ao conectar");
+  }
+})();
 
-    // Filtros ROM/Cidade
-    const romSel = $("#f-rom"), citySel = $("#f-city");
-    const roms = [...new Set(rows.map(x=>x.rom).filter(Boolean))].sort((a,b)=>a-b);
-    const cities = [...new Set(rows.map(x=>x.cli_cidade_uf).filter(Boolean))].sort();
-    romSel.innerHTML = '<option value="">Todos os ROMs</option>' + roms.map(n=>`<option>${n}</option>`).join("");
-    citySel.innerHTML = '<option value="">Todas as cidades</option>' + cities.map(c=>`<option>${c}</option>`).join("");
+/* ====== Ações ====== */
+qs("#btnPing").onclick = async ()=>{
+  try{ prog(.2); await apiPost("/ping",{}); prog(1); msg("Conexão OK ✓","ok"); }
+  catch(e){ prog(1); msg("Falha ao conectar","err"); }
+};
 
-    function apply(){
-      const fr = romSel.value, fc = citySel.value;
-      const filt = rows.filter(x=>(!fr||String(x.rom)===String(fr)) && (!fc||x.cli_cidade_uf===fc));
-      tbody.innerHTML = filt.map(x=>`
-        <tr>
-          <td>${x.data||""}</td>
-          <td>${x.rom||""}</td>
-          <td>${x.cli_nome||""}</td>
-          <td>${x.cli_cidade_uf||""}</td>
-          <td>${x.for_nome||""}</td>
-          <td>${x.itens||""}</td>
-          <td>${x.total_qtd||""}</td>
-        </tr>
-      `).join("");
-      info.textContent = `${filt.length} registro(s)`;
-    }
-    romSel.onchange = apply; citySel.onchange = apply; apply();
+async function doLogin(){
+  const usuario = qs("#user").value.trim() || "admin";
+  const senha   = qs("#pass").value.trim();
+  if(!senha){ msg("Informe a senha","err"); return; }
+  try{
+    prog(.2);
+    const r = await apiPost("/login",{usuario,senha});
+    prog(.6);
+    if(r.error){ prog(1); msg(r.error,"err"); return; }
 
-    // Exportação simples (print) — A4 sem quebrar cliente no meio depende
-    // do HTML gerado; aqui é demonstrativo:
-    $("#export").onclick = ()=>window.print();
-
-  }catch(err){
-    info.textContent = "Listagem indisponível no momento.";
-    $("#export").onclick = ()=>alert("A exportação depende da listagem. Quando o endpoint /rom/list estiver ativo, habilita automaticamente.");
+    // ===== GUARDA SESSÃO =====
+    localStorage.setItem("rom_session", JSON.stringify(r.session));
+    // >>> ACRESCENTEI: disponibiliza o token para o app.html <<<
+    localStorage.setItem("token", r.session.token);                                  // LocalStorage
+    document.cookie = "rom_token="+encodeURIComponent(r.session.token)+"; path=/; max-age=28800"; // 8h
+    // (opcional) também envia no hash
+    prog(1);
+    msg("Login OK. Redirecionando…","ok");
+    location.href = "app.html#t="+encodeURIComponent(r.session.token)+"&v="+Date.now();
+  }catch(e){
+    prog(1); msg("Erro: "+e.message,"err");
   }
 }
 
-/* ================== LOGOUT ================== */
-$("#logout").onclick = ()=>{
-  try{ localStorage.removeItem("token"); }catch(_){}
-  document.cookie = "rom_token=; max-age=0; path=/";
-  location.href = "index.html";
-};
+qs("#btnLogin").onclick = doLogin;
+// Enter envia
+qs("#pass").addEventListener("keydown", e=>{ if(e.key==="Enter") doLogin(); });
+qs("#user").addEventListener("keydown", e=>{ if(e.key==="Enter") qs("#pass").focus(); });
+
 </script>
 </body>
 </html>
