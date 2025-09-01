@@ -1,94 +1,217 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>📦 Romaneio • Login</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <title>Romaneio • Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- Evita cache agressivo -->
+  <!-- Desabilita cache agressivo -->
   <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
 
   <style>
-    body {
-      margin: 0; font-family: Arial, sans-serif;
-      background: #0b1320; color: #eee; display: flex;
-      justify-content: center; align-items: center;
-      height: 100vh;
+    :root{
+      --bg:#0b1320; --card:#111a2d; --muted:#a3aed0; --text:#e8ecff;
+      --accent:#2563eb; --accent-2:#1d4ed8; --error:#ef4444; --ok:#22c55e;
+      --input:#1a2439; --border:#23314f; --shadow:rgba(0,0,0,.45);
     }
-    .card {
-      background: #111a2d; padding: 2rem; border-radius: 12px;
-      box-shadow: 0 0 12px rgba(0,0,0,.5); width: 320px;
+    .light{
+      --bg:#f3f6ff; --card:#fff; --muted:#55607a; --text:#111827;
+      --accent:#2563eb; --accent-2:#1d4ed8; --error:#b91c1c; --ok:#16a34a;
+      --input:#f2f5ff; --border:#d7def1; --shadow:rgba(0,0,0,.08);
     }
-    h1 { text-align: center; margin: 0 0 1rem; }
-    label { display:block; margin-top:1rem; font-size:.9rem; }
-    input {
-      width:100%; padding:.6rem; border:1px solid #333;
-      border-radius:6px; margin-top:.3rem;
-      background:#1a2439; color:#fff;
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: var(--bg); color:var(--text);
+      display:flex; align-items:center; justify-content:center;
     }
-    button {
-      width:100%; margin-top:1.5rem; padding:.7rem;
-      border:none; border-radius:6px;
-      background:#2563eb; color:white; font-size:1rem;
-      cursor:pointer; transition:.2s;
+
+    .wrap{width:100%; max-width:440px; padding:24px;}
+    .topbar{
+      display:flex; justify-content:flex-end; gap:10px; margin-bottom:10px;
     }
-    button:hover { background:#1d4ed8; }
-    #msg { color: #f87171; text-align:center; margin-top:.8rem; font-size:.9rem; }
+    .btn{
+      display:inline-flex; align-items:center; gap:.45rem;
+      background:var(--card); color:var(--text);
+      border:1px solid var(--border); border-radius:999px;
+      padding:.45rem .8rem; font-size:.9rem; cursor:pointer;
+      box-shadow:0 2px 6px var(--shadow);
+    }
+    .btn:hover{filter:brightness(1.03)}
+    .btn.primary{ background:var(--accent); border-color:var(--accent); color:#fff; }
+    .btn.primary:hover{ background:var(--accent-2); }
+
+    .card{
+      background:var(--card); border:1px solid var(--border);
+      border-radius:14px; padding:28px; box-shadow: 0 10px 30px var(--shadow);
+      position:relative; overflow:hidden;
+    }
+    .progress{
+      position:absolute; top:0; left:0; height:3px; width:0%;
+      background: linear-gradient(90deg, #60a5fa, #22d3ee, #22c55e);
+      transition:width .25s ease;
+    }
+    h1{margin:0 0 18px; display:flex; align-items:center; gap:.6rem; font-size:1.6rem}
+    h1 .emj{filter: drop-shadow(0 1px 0 #0003)}
+    label{display:block; margin:.6rem 0 .25rem; color:var(--muted); font-size:.9rem}
+    input{
+      width:100%; padding:.7rem .8rem; border-radius:10px;
+      border:1px solid var(--border); background:var(--input); color:var(--text);
+      outline:none;
+    }
+    input:focus{border-color:#6aa3ff; box-shadow:0 0 0 3px #2563eb22}
+
+    .row{display:flex; gap:10px; margin-top:16px}
+    .row .btn{flex:1; justify-content:center}
+
+    #status{
+      margin-top:10px; font-size:.85rem; text-align:center; color:var(--muted);
+    }
+    #status.ok{ color: var(--ok); }
+    #status.err{ color: var(--error); }
+
+    .footer{margin-top:14px; text-align:center; color:var(--muted); font-size:.78rem}
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>🚚 Romaneio</h1>
-    <label>Usuário
-      <input id="usuario" type="text" autocomplete="username">
-    </label>
-    <label>Senha
-      <input id="senha" type="password" autocomplete="current-password">
-    </label>
-    <button id="entrar">Entrar</button>
-    <div id="msg"></div>
-    <p style="text-align:center;margin-top:1rem;font-size:.75rem;color:#aaa">v1.0.4</p>
+  <div class="wrap">
+    <div class="topbar">
+      <button id="theme" class="btn" title="Alternar tema">🌙/🌞</button>
+      <button id="refresh" class="btn" title="Forçar atualização">⟳ Atualizar</button>
+    </div>
+
+    <div class="card">
+      <div class="progress" id="bar"></div>
+
+      <h1><span class="emj">🚚</span> Romaneio</h1>
+
+      <label for="user">Usuário</label>
+      <input id="user" type="text" autocomplete="username" placeholder="admin" />
+
+      <label for="pwd">Senha</label>
+      <input id="pwd" type="password" autocomplete="current-password" placeholder="••••••" />
+
+      <div class="row">
+        <button id="login" class="btn primary">Entrar</button>
+        <button id="ping" class="btn">Testar conexão</button>
+      </div>
+
+      <div id="status">–</div>
+
+      <div class="footer">v1.0.4</div>
+    </div>
   </div>
 
   <script>
-    const API_BASE = "https://script.google.com/macros/s/AKfycbyrDoEP82oJDj2wTIX491414Qf5e-YaDZJHYMAgmWfiddVKCw7WP4oQwrVtEouYxL-NvQ/exec";
-    const $ = sel => document.querySelector(sel);
-    const say = t => $("#msg").textContent = t||"";
+  // ========= CONFIG =========
+  const API_BASE = "https://script.google.com/macros/s/AKfycbyrDoEP82oJDj2wTIX491414Qf5e-YaDZJHYMAgmWfiddVKCw7WP4oQwrVtEouYxL-NvQ/exec";
 
-    async function post(path, body){
-      const r = await fetch(API_BASE+"?path="+encodeURIComponent(path), {
-        method:"POST", headers:{"Content-Type":"application/json"},
-        body:JSON.stringify(body||{})
-      });
-      return r.json();
-    }
+  // ========= UTILS =========
+  const $ = s=>document.querySelector(s);
+  const bar = $("#bar");
+  function setBar(p){ bar.style.width = p+"%"; }
+  function say(msg, cls){
+    const el = $("#status");
+    el.className = ""; if(cls) el.classList.add(cls);
+    el.textContent = msg;
+  }
+  function nowBR(){
+    const d = new Date();
+    const pad=n=>String(n).padStart(2,"0");
+    return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  }
+  function saveToken(t){
+    try{ localStorage.setItem("token", t); }catch(_){}
+    try{ sessionStorage.setItem("token", t); }catch(_){}
+    try{ document.cookie = `rom_token=${t}; max-age=2592000; path=/`; }catch(_){}
+  }
+  function getTheme(){ return localStorage.getItem("theme")||"dark"; }
+  function applyTheme(th){ document.documentElement.classList.toggle("light", th==="light"); }
 
-    $("#entrar").onclick = async ()=>{
-      const usuario = $("#usuario").value.trim();
-      const senha = $("#senha").value.trim();
-      if(!usuario||!senha){ say("Informe usuário e senha."); return; }
+  async function post(path, body){
+    const r = await fetch(API_BASE + "?path=" + encodeURIComponent(path), {
+      method:"POST",
+      headers:{"Content-Type":"application/json;charset=utf-8"},
+      body: JSON.stringify(body||{})
+    });
+    return r.json();
+  }
 
-      try{
-        say("Conectando...");
-        const data = await post("/login",{usuario,senha});
-        if(data.error){ say("Erro: "+data.error); return; }
+  // ========= INICIAL =========
+  applyTheme(getTheme());
+  say("Pronto. Clique em Testar conexão.");
 
-        const t = data.session?.token;
-        if(!t){ say("Falha ao obter sessão."); return; }
+  // ========= AÇÕES =========
+  $("#theme").onclick = ()=>{
+    const th = getTheme()==="dark" ? "light" : "dark";
+    localStorage.setItem("theme", th);
+    applyTheme(th);
+  };
 
-        // salva nos 3 lugares
-        localStorage.setItem('token', t);
-        sessionStorage.setItem('token', t);
-        document.cookie = `rom_token=${t}; max-age=2592000; path=/`; // 30 dias
+  $("#refresh").onclick = ()=>{
+    const v = Date.now();
+    const url = location.pathname + "?v="+v;
+    location.replace(url);
+  };
 
-        // redireciona para app.html com token no hash
-        location.href = "app.html#t=" + encodeURIComponent(t);
-      }catch(e){
-        say("Erro de rede: "+e.message);
+  $("#ping").onclick = async ()=>{
+    try{
+      setBar(25);
+      const j = await post("/ping",{});
+      setBar(70);
+      if(j && (j.pong || j.ok)){
+        say("Conectado • "+nowBR(), "ok");
+      }else{
+        say("Falha no ping.", "err");
       }
-    };
+    }catch(e){
+      say("Erro de rede: Failed to fetch", "err");
+    }finally{ setBar(100); setTimeout(()=>setBar(0), 300); }
+  };
+
+  async function doLogin(){
+    const usuario = $("#user").value.trim();
+    const senha   = $("#pwd").value.trim();
+    if(!usuario || !senha){ say("Informe usuário e senha.", "err"); return; }
+
+    try{
+      setBar(30);
+      say("Conectando...");
+
+      const j = await post("/login", {usuario, senha});
+      setBar(75);
+
+      if(j.error){ say("Erro: "+j.error, "err"); setBar(0); return; }
+
+      const t = j?.session?.token;
+      if(!t){ say("Falha ao obter sessão.", "err"); setBar(0); return; }
+
+      saveToken(t);
+      say("Login OK! Redirecionando...", "ok");
+      setBar(100);
+
+      // redireciona passando o token no hash também
+      location.href = "app.html#t=" + encodeURIComponent(t) + "&ts=" + Date.now();
+    }catch(e){
+      say("Erro de rede: Failed to fetch", "err");
+      setBar(0);
+    }
+  }
+
+  $("#login").onclick = doLogin;
+  $("#pwd").addEventListener("keydown", e=>{ if(e.key==="Enter") doLogin(); });
+
+  // Teste automático de ping ao abrir (rápido, silencioso)
+  (async ()=>{
+    try{
+      const j = await post("/ping",{});
+      if(j && (j.pong || j.ok)) say("Conectado • "+nowBR(), "ok");
+    }catch(_){}
+  })();
   </script>
 </body>
 </html>
