@@ -1,152 +1,133 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Romaneio • Login</title>
-  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root{
-      --bg:#0b1220; --card:#111a2b; --text:#e5e9f0; --muted:#9aa3b2; --primary:#2563eb; --danger:#ef4444; --ok:#16a34a; --input:#0f172a; --ring:#3b82f6;
+      --bg:#0b1220; --card:#111a2b; --muted:#8ea1c0; --text:#eaf0ff; --primary:#3b82f6; --danger:#ef4444; --ok:#22c55e;
+      --shadow:0 8px 28px rgba(0,0,0,.25)
     }
-    .light{
-      --bg:#f6f7fb; --card:#ffffff; --text:#0b1220; --muted:#5c6470; --primary:#2563eb; --danger:#dc2626; --ok:#16a34a; --input:#f1f5f9; --ring:#3b82f6;
-    }
-    *{box-sizing:border-box;font-family:Inter,system-ui,Segoe UI,Roboto,Arial}
-    body{margin:0;background:var(--bg);color:var(--text)}
-    .container{max-width:420px;margin:5vh auto;padding:24px}
-    .card{background:var(--card);border-radius:18px;padding:28px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
-    h1{margin:0 0 18px;font-size:26px;display:flex;align-items:center;gap:10px}
-    .muted{color:var(--muted);font-size:14px;margin-bottom:18px}
-    label{display:block;font-size:14px;margin:10px 0 6px}
-    input{width:100%;padding:12px 14px;border-radius:12px;border:1px solid transparent;background:var(--input);color:var(--text);outline:none}
-    input:focus{border-color:var(--ring);box-shadow:0 0 0 3px rgba(59,130,246,.25)}
-    .row{display:flex;gap:10px}
-    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 16px;border-radius:12px;border:0;cursor:pointer;color:white;background:var(--primary)}
-    .btn.secondary{background:#334155}
-    .btn.mini{padding:8px 10px;font-size:12px}
-    .topbar{display:flex;justify-content:flex-end;margin-bottom:12px;gap:8px}
-    .alert{margin-top:14px;background:rgba(239,68,68,.15);color:#fecaca;padding:10px 12px;border-radius:10px;display:none}
-    .ok{margin-top:14px;background:rgba(22,163,74,.15);color:#bbf7d0;padding:10px 12px;border-radius:10px;display:none}
-    /* progress */
-    #progress{position:fixed;left:0;top:0;height:3px;width:0;background:var(--primary);z-index:9999;transition:width .25s}
-    .foot{margin-top:10px;display:flex;justify-content:space-between;align-items:center}
+    [data-theme="light"]{ --bg:#f6f7fb; --card:#ffffff; --muted:#4b5563; --text:#111827; --primary:#2563eb; --danger:#dc2626; --ok:#16a34a; --shadow:0 8px 24px rgba(2,6,23,.08)}
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial}
+    .wrap{min-height:100dvh;display:grid;place-items:center;padding:32px}
+    .card{width:100%;max-width:520px;background:var(--card);border-radius:20px;padding:28px;box-shadow:var(--shadow)}
+    h1{display:flex;gap:10px;align-items:center;margin:0 0 16px 0;font-size:28px}
+    .row{display:flex;flex-direction:column;gap:6px;margin:12px 0}
+    label{font-weight:600;color:var(--muted)}
+    input{width:100%;border:1px solid rgba(148,163,184,.25);background:transparent;color:var(--text);border-radius:10px;padding:12px 14px;outline:none}
+    input:focus{border-color:var(--primary)}
+    .actions{display:flex;gap:10px;margin-top:12px}
+    button{appearance:none;border:0;border-radius:12px;padding:12px 16px;cursor:pointer;font-weight:600}
+    .btn-primary{background:var(--primary);color:#fff}
+    .btn-ghost{background:transparent;color:var(--text);border:1px solid rgba(148,163,184,.25)}
+    .tiny{color:var(--muted);font-size:12px;margin-top:8px}
+    .topbar{position:absolute;inset:24px 24px auto auto;display:flex;gap:10px}
+    .pill{background:var(--card);color:var(--text);border:1px solid rgba(148,163,184,.25);padding:10px 14px;border-radius:999px;cursor:pointer}
+    .alert{margin-top:12px;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.35);color:#fecaca;padding:10px;border-radius:10px}
+    .ok{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.35);color:#bbf7d0}
+    .spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin 1s linear infinite;vertical-align:-3px;margin-right:8px}
+    @keyframes spin{to{transform:rotate(360deg)}}
   </style>
 </head>
 <body>
-  <div id="progress"></div>
-  <div class="container">
-    <div class="topbar">
-      <button id="btn-theme" class="btn mini secondary" title="Tema">🌙/☀️</button>
-      <button id="btn-hard" class="btn mini secondary" title="Forçar atualização">↻ Atualizar</button>
-    </div>
+  <div class="topbar">
+    <button class="pill" id="themeBtn">🌙/🌞</button>
+    <button class="pill" id="refreshBtn">⟳ Atualizar</button>
+  </div>
+
+  <div class="wrap">
     <div class="card">
       <h1>🚚 Romaneio</h1>
-      <div class="muted">Acesse com seu usuário e senha.</div>
 
-      <label for="user">Usuário</label>
-      <input id="user" autocomplete="username" placeholder="admin">
+      <div id="diag" class="tiny">verificando conexão…</div>
 
-      <label for="pass">Senha</label>
-      <input id="pass" type="password" autocomplete="current-password" placeholder="••••••">
-
-      <div class="row" style="margin-top:16px">
-        <button id="btn-login" class="btn" style="flex:1">Entrar</button>
-        <button id="btn-test" class="btn secondary">Testar conexão</button>
+      <div class="row">
+        <label for="user">Usuário</label>
+        <input id="user" autocomplete="username" value="admin" placeholder="usuário">
       </div>
 
-      <div id="msg-err" class="alert"></div>
-      <div id="msg-ok"  class="ok"></div>
-
-      <div class="foot">
-        <small class="muted">v<span id="v"></span></small>
+      <div class="row">
+        <label for="pass">Senha</label>
+        <input id="pass" type="password" autocomplete="current-password" placeholder="senha">
       </div>
+
+      <div class="actions">
+        <button id="loginBtn" class="btn-primary">Entrar</button>
+        <button id="testBtn" class="btn-ghost">Testar conexão</button>
+      </div>
+
+      <div id="msg"></div>
+
+      <div class="tiny">v1.0.4</div>
     </div>
   </div>
 
 <script>
-/* ======= CONFIG ======= */
-const API_BASE = "https://script.google.com/macros/s/AKfycbyrDoEP82oJDj2wTIX491414Qf5e-YaDZJHYMAgmWfiddVKCw7WP4oQwrVtEouYxL-NvQ/exec"; // <- sua URL /exec
-const VERSION  = "1.0.3";
+  // ===== CONFIG =====
+  const API_BASE = "https://script.google.com/macros/s/AKfycbyrDoEP82oJDj2wTIX491414Qf5e-YaDZJHYMAgmWfiddVKCw7WP4oQwrVtEouYxL-NvQ/exec";
+  const APP_URL  = "./app.html";
 
-/* ======= THEME ======= */
-function applyTheme(){
-  const t = localStorage.getItem("theme") || "dark";
-  if(t==="light") document.documentElement.classList.add("light");
-  else document.documentElement.classList.remove("light");
-}
-applyTheme();
-document.getElementById("btn-theme").onclick = ()=>{
-  const cur = localStorage.getItem("theme") || "dark";
-  const nx = cur==="dark"?"light":"dark";
-  localStorage.setItem("theme", nx);
-  applyTheme();
-};
+  // ===== THEME =====
+  const themeBtn = document.getElementById('themeBtn');
+  function setTheme(t){ document.documentElement.setAttribute('data-theme', t); localStorage.setItem('theme', t); }
+  setTheme(localStorage.getItem('theme')||'dark');
+  themeBtn.onclick = ()=> setTheme((localStorage.getItem('theme')||'dark')==='dark'?'light':'dark');
 
-/* ======= HARD REFRESH ======= */
-document.getElementById("btn-hard").onclick = ()=>{
-  const q = new URLSearchParams(location.search);
-  q.set("v", Date.now());
-  location.href = location.pathname + "?" + q.toString();
-};
+  // ===== UTILS =====
+  const msg = (html,ok)=>{ const el=document.getElementById('msg'); el.className="alert"+(ok?" ok":""); el.innerHTML=html; }
+  const wait = (el,doing=true)=>{ el.disabled=doing; el.innerHTML = doing?'<span class="spinner"></span>Carregando…':el._label }
 
-/* ======= PROGRESS ======= */
-const progress = {
-  el: document.getElementById("progress"),
-  start(){ this.el.style.width="10%"; requestAnimationFrame(()=> this.el.style.width="70%"); },
-  end(){ this.el.style.width="100%"; setTimeout(()=> this.el.style.width="0", 250); }
-};
-
-/* ======= UI helpers ======= */
-const $ = sel => document.querySelector(sel);
-const msgErr = $("#msg-err"), msgOk = $("#msg-ok");
-function setErr(t){ msgOk.style.display="none"; if(!t){msgErr.style.display="none";return} msgErr.textContent=t; msgErr.style.display="block"; }
-function setOk(t){ msgErr.style.display="none"; if(!t){msgOk.style.display="none";return} msgOk.textContent=t; msgOk.style.display="block"; }
-
-$("#v").textContent = VERSION;
-
-/* ======= API helpers ======= */
-async function post(path, body){
-  progress.start();
-  try{
-    const r = await fetch(API_BASE+"?path="+encodeURIComponent(path), {
-      method:"POST",
-      headers:{"Content-Type":"application/json;charset=utf-8"},
-      body: JSON.stringify(body||{})
+  async function api(path, body={}){
+    const r = await fetch(API_BASE+'?path='+encodeURIComponent(path), {
+      method:'POST',
+      headers:{ 'Content-Type':'text/plain;charset=utf-8' }, // <- evita preflight/OPTIONS
+      body: JSON.stringify(body)
     });
-    const j = await r.json();
-    return j;
-  }finally{
-    progress.end();
+    return r.json();
   }
-}
 
-/* ======= actions ======= */
-$("#btn-test").onclick = async ()=>{
-  setErr(""); setOk("");
-  const j = await post("/ping", {});
-  if(j && j.pong) setOk("Conectado: "+j.at); else setErr("Falha no ping");
-};
-
-$("#btn-login").onclick = async ()=>{
-  setErr(""); setOk("");
-  const usuario = $("#user").value.trim();
-  const senha   = $("#pass").value.trim();
-  if(!usuario || !senha){ setErr("Informe usuário e senha"); return; }
-  const j = await post("/login", {usuario, senha});
-  if(j && j.session && j.session.token){
-    localStorage.setItem("session", JSON.stringify(j.session));
-    // vai para o app com cache-buster
-    location.href = "app.html?v="+Date.now()+"#rom";
-  }else{
-    setErr(j && j.error ? j.error : "Falha ao entrar");
+  // ===== TESTE =====
+  async function test(){
+    const b = document.getElementById('testBtn'); b._label=b._label||b.textContent; wait(b,true);
+    try{
+      const r = await api('/ping', {});
+      msg('OK: '+(r.at||'')+' • '+JSON.stringify(r), true);
+    }catch(e){ msg('Falha no teste: '+e.message); }
+    finally{ wait(b,false); }
   }
-};
 
-/* enter key */
-["user","pass"].forEach(id=> $( "#"+id ).addEventListener("keydown",e=>{ if(e.key==="Enter") $("#btn-login").click(); }));
+  // ===== LOGIN =====
+  async function login(){
+    const b = document.getElementById('loginBtn'); b._label=b._label||b.textContent; wait(b,true);
+    msg('');
+    try{
+      const usuario = document.getElementById('user').value.trim();
+      const senha   = document.getElementById('pass').value;
+      const r = await api('/login', {usuario, senha});
+      if(r.error){ msg('Erro: '+r.error); wait(b,false); return; }
+      // guarda sessão e vai para o app
+      localStorage.setItem('rom_session', JSON.stringify(r.session||{}));
+      location.href = APP_URL + '?v=' + Date.now();
+    }catch(e){ msg('Falha na rede: '+e.message); }
+    finally{ wait(b,false); }
+  }
+
+  // ===== UI =====
+  document.getElementById('loginBtn').onclick = login;
+  document.getElementById('testBtn').onclick  = test;
+  document.getElementById('refreshBtn').onclick = ()=> location.href = './index.html?v='+Date.now();
+
+  // auto-teste ao abrir
+  (async()=>{ try{
+    const r = await api('/ping', {});
+    document.getElementById('diag').textContent = 'Conectado • '+(r.at||'');
+  }catch(_){ document.getElementById('diag').textContent = 'Sem conexão com a API'; }
+  })();
 </script>
 </body>
 </html>
