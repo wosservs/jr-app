@@ -1,115 +1,94 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Romaneio • Login</title>
+  <meta charset="UTF-8">
+  <title>📦 Romaneio • Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Evita cache agressivo -->
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
   <style>
-    :root{
-      --bg:#0b1522; --card:#101b2b; --muted:#8aa3c2; --txt:#eaf2ff;
-      --primary:#3b82f6; --primary-2:#1e40af; --ok:#16a34a; --warn:#f59e0b; --err:#ef4444;
-      --ring: rgba(59,130,246,.2);
+    body {
+      margin: 0; font-family: Arial, sans-serif;
+      background: #0b1320; color: #eee; display: flex;
+      justify-content: center; align-items: center;
+      height: 100vh;
     }
-    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--txt);font:500 16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
-    .wrap{min-height:100dvh;display:grid;place-items:center;padding:32px}
-    .card{width:100%;max-width:440px;background:var(--card);padding:28px;border-radius:18px;box-shadow:0 20px 70px rgba(0,0,0,.35)}
-    h1{margin:0 0 6px;font-weight:800;letter-spacing:.2px;font-size:28px}
-    .muted{color:var(--muted);font-size:14px;margin-bottom:24px}
-    label{display:block;font-size:13px;margin:14px 0 6px;color:#cfe1ff}
-    input{width:100%;height:44px;border-radius:12px;border:1px solid transparent;background:#0e1928;color:var(--txt);padding:0 14px;outline:none}
-    input:focus{border-color:var(--primary);box-shadow:0 0 0 6px var(--ring)}
-    .row{display:flex;gap:10px}
-    .btn{appearance:none;border:0;cursor:pointer;border-radius:12px;height:44px;padding:0 16px;font-weight:700}
-    .btn.primary{background:var(--primary);color:white}
-    .btn.ghost{background:transparent;border:1px solid #1e2a3d;color:#d5e7ff}
-    .bar{height:4px;background:#0e1928;border-radius:999px;overflow:hidden;margin:14px 0 6px;display:none}
-    .bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--primary),#22c55e);transition:width .25s}
-    .top-actions{display:flex;gap:8px;justify-content:flex-end;margin-bottom:8px}
-    small.version{display:block;margin-top:10px;color:#9ab4d5}
+    .card {
+      background: #111a2d; padding: 2rem; border-radius: 12px;
+      box-shadow: 0 0 12px rgba(0,0,0,.5); width: 320px;
+    }
+    h1 { text-align: center; margin: 0 0 1rem; }
+    label { display:block; margin-top:1rem; font-size:.9rem; }
+    input {
+      width:100%; padding:.6rem; border:1px solid #333;
+      border-radius:6px; margin-top:.3rem;
+      background:#1a2439; color:#fff;
+    }
+    button {
+      width:100%; margin-top:1.5rem; padding:.7rem;
+      border:none; border-radius:6px;
+      background:#2563eb; color:white; font-size:1rem;
+      cursor:pointer; transition:.2s;
+    }
+    button:hover { background:#1d4ed8; }
+    #msg { color: #f87171; text-align:center; margin-top:.8rem; font-size:.9rem; }
   </style>
 </head>
 <body>
-<div class="wrap">
   <div class="card">
-    <div class="top-actions">
-      <button class="btn ghost" id="refresh">⟳ Atualizar</button>
-    </div>
-    <h1>Romaneio</h1>
-    <div class="muted">Acesse com seu usuário e senha.</div>
-
-    <label>Usuário</label>
-    <input id="usuario" placeholder="admin" value="admin" autocomplete="username" />
-
-    <label>Senha</label>
-    <input id="senha" type="password" placeholder="••••••" autocomplete="current-password" />
-
-    <div class="row" style="margin-top:16px">
-      <button class="btn primary" id="entrar">Entrar</button>
-      <button class="btn ghost" id="testar">Testar conexão</button>
-    </div>
-
-    <div class="bar" id="bar"><i></i></div>
-    <div id="msg" class="muted"></div>
-    <small class="version">v1.0.4</small>
+    <h1>🚚 Romaneio</h1>
+    <label>Usuário
+      <input id="usuario" type="text" autocomplete="username">
+    </label>
+    <label>Senha
+      <input id="senha" type="password" autocomplete="current-password">
+    </label>
+    <button id="entrar">Entrar</button>
+    <div id="msg"></div>
+    <p style="text-align:center;margin-top:1rem;font-size:.75rem;color:#aaa">v1.0.4</p>
   </div>
-</div>
 
-<script>
-  // === CONFIG ===
-  const API_BASE = "https://script.google.com/macros/s/AKfycbyrDoEP82oJDj2wTIX491414Qf5e-YaDZJHYMAgmWfiddVKCw7WP4oQwrVtEouYxL-NvQ/exec";
+  <script>
+    const API_BASE = "https://script.google.com/macros/s/AKfycbyrDoEP82oJDj2wTIX491414Qf5e-YaDZJHYMAgmWfiddVKCw7WP4oQwrVtEouYxL-NvQ/exec";
+    const $ = sel => document.querySelector(sel);
+    const say = t => $("#msg").textContent = t||"";
 
-  // === helpers ===
-  const $ = sel => document.querySelector(sel);
-  const bar = $("#bar"), barFill = $("#bar>i");
-  function loading(on=true){ bar.style.display = on?'block':'none'; requestAnimationFrame(()=> barFill.style.width = on?'95%':'0'); }
-  function say(t){ $("#msg").textContent = t||''; }
-
-  async function post(path, body){
-    const r = await fetch(API_BASE + "?path=" + encodeURIComponent(path), {
-      method: "POST",
-      headers: {"Content-Type":"application/json;charset=utf-8"},
-      body: JSON.stringify(body||{})
-    });
-    return r.json();
-  }
-
-  $("#refresh").onclick = () => { localStorage.removeItem('token'); sessionStorage.removeItem('token'); location.reload(true); };
-
-  $("#testar").onclick = async ()=>{
-    try{
-      loading(true);
-      const r = await post("/ping",{});
-      say(r.pong ? "Conectado • " + (new Date()).toLocaleString() : "Falhou");
-    }catch(e){ say("Erro: " + e.message); }
-    finally{ loading(false); }
-  };
-
-  $("#entrar").onclick = async ()=>{
-    const usuario = $("#usuario").value.trim();
-    const senha = $("#senha").value.trim();
-    if(!usuario||!senha){ say("Informe usuário e senha."); return; }
-
-    try{
-      loading(true);
-      const data = await post("/login",{usuario,senha});
-      if(data.error){ say("Erro: "+data.error); return; }
-
-      const t = data.session?.token;
-      if(!t){ say("Falha ao obter sessão."); return; }
-
-      // salva em ambos + passa por URL (fallback)
-      localStorage.setItem('token', t);
-      sessionStorage.setItem('token', t);
-      location.href = "app.html?t=" + encodeURIComponent(t);
-    }catch(e){
-      say("Erro de rede: " + e.message);
-    }finally{
-      loading(false);
+    async function post(path, body){
+      const r = await fetch(API_BASE+"?path="+encodeURIComponent(path), {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body:JSON.stringify(body||{})
+      });
+      return r.json();
     }
-  };
 
-  // auto-testar leve na abertura
-  (async()=>{ try{ const r=await post("/ping",{}); if(r.pong) say("Conectado • "+(new Date()).toLocaleString()); }catch(_){}})();
-</script>
+    $("#entrar").onclick = async ()=>{
+      const usuario = $("#usuario").value.trim();
+      const senha = $("#senha").value.trim();
+      if(!usuario||!senha){ say("Informe usuário e senha."); return; }
+
+      try{
+        say("Conectando...");
+        const data = await post("/login",{usuario,senha});
+        if(data.error){ say("Erro: "+data.error); return; }
+
+        const t = data.session?.token;
+        if(!t){ say("Falha ao obter sessão."); return; }
+
+        // salva nos 3 lugares
+        localStorage.setItem('token', t);
+        sessionStorage.setItem('token', t);
+        document.cookie = `rom_token=${t}; max-age=2592000; path=/`; // 30 dias
+
+        // redireciona para app.html com token no hash
+        location.href = "app.html#t=" + encodeURIComponent(t);
+      }catch(e){
+        say("Erro de rede: "+e.message);
+      }
+    };
+  </script>
 </body>
 </html>
