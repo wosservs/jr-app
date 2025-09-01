@@ -1,295 +1,181 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Romaneio • Painel</title>
-<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
-<style>
-  :root{
-    --bg:#0b1220; --card:#0e1728; --text:#e5e9f0; --muted:#9aa3b2; --primary:#2563eb; --danger:#ef4444; --ok:#16a34a; --input:#0f172a; --ring:#3b82f6;
-  }
-  .light{
-    --bg:#f6f7fb; --card:#ffffff; --text:#0b1220; --muted:#5c6470; --primary:#2563eb; --danger:#dc2626; --ok:#16a34a; --input:#f1f5f9; --ring:#3b82f6;
-  }
-  *{box-sizing:border-box;font-family:Inter,system-ui,Segoe UI,Roboto,Arial}
-  body{margin:0;background:var(--bg);color:var(--text)}
-  header{position:sticky;top:0;background:var(--card);z-index:10;box-shadow:0 2px 14px rgba(0,0,0,.25)}
-  .wrap{max-width:1080px;margin:0 auto;padding:14px 16px;display:flex;align-items:center;gap:12px}
-  .brand{font-weight:700}
-  nav{margin-left:auto;display:flex;gap:8px}
-  .btn{padding:10px 12px;border-radius:10px;border:0;background:#334155;color:#fff;cursor:pointer}
-  .btn.primary{background:var(--primary)}
-  .btn.danger{background:var(--danger)}
-  .btn.ok{background:var(--ok)}
-  main{max-width:1080px;margin:18px auto;padding:0 16px}
-  .card{background:var(--card);border-radius:14px;padding:16px;margin-bottom:16px}
-  label{font-size:14px;color:var(--muted)}
-  select,input,textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid transparent;background:var(--input);color:var(--text);outline:none}
-  select:focus,input:focus,textarea:focus{border-color:var(--ring);box-shadow:0 0 0 3px rgba(59,130,246,.25)}
-  .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
-  .col-4{grid-column:span 4}
-  .col-3{grid-column:span 3}
-  .col-6{grid-column:span 6}
-  .col-12{grid-column:span 12}
-  @media (max-width:900px){ .col-3,.col-4,.col-6{grid-column:span 12} }
-  .thumbs{display:flex;gap:10px;flex-wrap:wrap}
-  .thumb{width:120px;height:120px;object-fit:cover;border-radius:10px;border:1px solid rgba(255,255,255,.1)}
-  .muted{color:var(--muted);font-size:13px}
-  /* progress */
-  #progress{position:fixed;left:0;top:0;height:3px;width:0;background:var(--primary);z-index:9999;transition:width .25s}
-</style>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Romaneio • Painel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{ --bg:#0b1220; --card:#0f172a; --muted:#8ea1c0; --text:#eaf0ff; --primary:#3b82f6; --danger:#ef4444; --ok:#22c55e; --shadow:0 8px 28px rgba(0,0,0,.25) }
+    [data-theme="light"]{ --bg:#f6f7fb; --card:#ffffff; --muted:#4b5563; --text:#111827; --primary:#2563eb; --danger:#dc2626; --ok:#16a34a; --shadow:0 8px 24px rgba(2,6,23,.08) }
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 Inter,system-ui}
+    header{position:sticky;top:0;background:linear-gradient(180deg,var(--bg),rgba(0,0,0,0));padding:16px 18px;z-index:2}
+    .bar{display:flex;gap:10px;align-items:center;justify-content:space-between}
+    .pill{background:var(--card);color:var(--text);border:1px solid rgba(148,163,184,.25);padding:10px 14px;border-radius:999px;cursor:pointer}
+    .container{max-width:1040px;margin:0 auto;padding:0 16px 48px}
+    h2{margin:8px 0 16px}
+    .card{background:var(--card);border-radius:16px;padding:18px;box-shadow:var(--shadow);margin:14px 0}
+    .grid{display:grid;grid-template-columns:1fr 1fr 120px 64px;gap:10px}
+    select,input,textarea{width:100%;background:transparent;border:1px solid rgba(148,163,184,.25);color:var(--text);border-radius:10px;padding:10px}
+    .btn{appearance:none;border:0;border-radius:12px;padding:12px 16px;cursor:pointer;font-weight:600}
+    .btn-primary{background:var(--primary);color:#fff}
+    .btn-ghost{background:transparent;color:var(--text);border:1px solid rgba(148,163,184,.25)}
+    .btn-danger{background:var(--danger);color:#fff}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .w-180{width:180px}
+    .muted{color:var(--muted)}
+    .preview{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+    .preview img{width:140px;height:100px;object-fit:cover;border-radius:8px;border:1px solid rgba(148,163,184,.25)}
+    .spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin 1s linear infinite;vertical-align:-3px;margin-right:8px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .alert{margin-top:12px;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.35);color:#fecaca;padding:10px;border-radius:10px}
+    .ok{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.35);color:#bbf7d0}
+  </style>
 </head>
 <body>
-<div id="progress"></div>
-
 <header>
-  <div class="wrap">
-    <div class="brand">🚚 Romaneio</div>
-    <nav>
-      <button id="btn-theme" class="btn">🌙/☀️</button>
-      <button id="btn-hard" class="btn">↻ Atualizar</button>
-      <button id="btn-logout" class="btn danger">Sair</button>
-    </nav>
+  <div class="bar">
+    <div class="row">
+      <strong>🚚 Romaneio</strong>
+      <span id="who" class="muted"></span>
+    </div>
+    <div class="row">
+      <button class="pill" id="themeBtn">🌙/🌞</button>
+      <button class="pill" id="refreshBtn">⟳ Atualizar</button>
+      <button class="pill" id="logoutBtn">Sair</button>
+    </div>
   </div>
 </header>
 
-<main>
+<div class="container">
   <div class="card">
-    <h3 style="margin:0 0 8px">Enviar Romaneio</h3>
-    <div class="grid">
-      <div class="col-3">
-        <label>ROM</label>
-        <input id="rom" placeholder="Ex.: 21">
-      </div>
-      <div class="col-3">
-        <label>Data</label>
-        <input id="data" type="date">
-      </div>
-      <div class="col-6">
-        <label>Observações</label>
-        <input id="obs" placeholder="Ex.: Doca 3, até 16h">
-      </div>
-
-      <div class="col-6">
-        <label>Telefone do Cliente</label>
-        <input id="cli_tel" placeholder="85999999999">
-      </div>
-      <div class="col-3">
-        <label>Nome do Cliente</label>
-        <input id="cli_nome" placeholder="Nome do cliente">
-      </div>
-      <div class="col-3">
-        <label>Cidade/UF</label>
-        <input id="cli_local" placeholder="Fortaleza/CE">
-      </div>
-
-      <div class="col-6">
-        <label>Telefone do Fornecedor</label>
-        <input id="for_tel" placeholder="85999999999">
-      </div>
-      <div class="col-3">
-        <label>Nome do Fornecedor</label>
-        <input id="for_nome" placeholder="Nome do fornecedor">
-      </div>
-      <div class="col-3">
-        <label>Cidade/UF</label>
-        <input id="for_local" placeholder="Maracanaú/CE">
-      </div>
-
-      <div class="col-12"><hr style="border-color:rgba(255,255,255,.1)"></div>
-
-      <div class="col-4">
-        <label>Tipo</label>
-        <select id="item_tipo">
-          <option>Caixa</option>
-          <option>Saco</option>
-          <option>Palete</option>
-          <option>Outro</option>
-        </select>
-      </div>
-      <div class="col-4">
-        <label>Tamanho</label>
-        <select id="item_tam">
-          <option>P</option><option>M</option><option>G</option><option>Outro</option>
-        </select>
-      </div>
-      <div class="col-3">
-        <label>Qtd</label>
-        <input id="item_qtd" type="number" min="1" value="1">
-      </div>
-      <div class="col-1" style="display:flex;align-items:flex-end">
-        <button id="btn-add-item" class="btn">+ Item</button>
-      </div>
-
-      <div class="col-12">
-        <div id="items" class="muted">Nenhum item adicionado.</div>
-      </div>
-
-      <div class="col-12">
-        <label>Fotos</label>
-        <input id="fotos" type="file" accept="image/*" multiple>
-        <div class="muted">Você pode selecionar várias imagens. Pré-visualização abaixo.</div>
-        <div id="thumbs" class="thumbs" style="margin-top:8px"></div>
-      </div>
-
-      <div class="col-12" style="display:flex;gap:10px;margin-top:12px">
-        <button id="btn-send" class="btn primary">Enviar</button>
-        <button id="btn-clear" class="btn">Limpar</button>
-      </div>
-
-      <div class="col-12">
-        <div id="msg" class="muted"></div>
-      </div>
-    </div>
+    <h2>Itens</h2>
+    <div id="itens"></div>
+    <button class="btn btn-ghost" id="addItem">+ Adicionar item</button>
   </div>
 
   <div class="card">
-    <h3 style="margin:0 0 8px">Romanéios</h3>
-    <div class="muted">Lista/relatórios entram aqui numa próxima etapa.</div>
+    <h2>Fotos</h2>
+    <input id="fotos" type="file" multiple accept="image/*">
+    <div class="muted">Você pode selecionar várias imagens. Pré-visualização abaixo.</div>
+    <div id="preview" class="preview"></div>
   </div>
-</main>
+
+  <div class="row">
+    <button id="sendBtn" class="btn btn-primary">Enviar</button>
+    <button id="clearBtn" class="btn btn-ghost">Limpar</button>
+  </div>
+
+  <div id="msg"></div>
+</div>
 
 <script>
-/* ======= CONFIG ======= */
-const API_BASE = "https://script.google.com/macros/s/AKfycbyrDoEP82oJDj2wTIX491414Qf5e-YaDZJHYMAgmWfiddVKCw7WP4oQwrVtEouYxL-NvQ/exec"; // <- sua URL /exec
+  // ===== CONFIG =====
+  const API_BASE = "https://script.google.com/macros/s/AKfycbyrDoEP82oJDj2wTIX491414Qf5e-YaDZJHYMAgmWfiddVKCw7WP4oQwrVtEouYxL-NvQ/exec";
 
-/* ======= THEME ======= */
-function applyTheme(){
-  const t = localStorage.getItem("theme") || "dark";
-  if(t==="light") document.documentElement.classList.add("light");
-  else document.documentElement.classList.remove("light");
-}
-applyTheme();
-document.getElementById("btn-theme").onclick = ()=>{
-  const cur = localStorage.getItem("theme") || "dark";
-  const nx = cur==="dark"?"light":"dark";
-  localStorage.setItem("theme", nx);
-  applyTheme();
-};
+  // ===== THEME =====
+  function setTheme(t){ document.documentElement.setAttribute('data-theme', t); localStorage.setItem('theme', t); }
+  setTheme(localStorage.getItem('theme')||'dark');
+  document.getElementById('themeBtn').onclick=()=> setTheme((localStorage.getItem('theme')||'dark')==='dark'?'light':'dark');
+  document.getElementById('refreshBtn').onclick=()=> location.href='./app.html?v='+Date.now();
 
-/* ======= HARD REFRESH ======= */
-document.getElementById("btn-hard").onclick = ()=>{
-  const q = new URLSearchParams(location.search);
-  q.set("v", Date.now());
-  location.href = location.pathname + "?" + q.toString() + (location.hash||"");
-};
+  // ===== SESSÃO =====
+  const sess = JSON.parse(localStorage.getItem('rom_session')||'{}');
+  if(!sess || !sess.token){ location.href='./index.html?v='+Date.now(); }
+  document.getElementById('who').textContent = (sess.usuario||'')+' • '+(new Date(sess.expira||'').toLocaleString()||'');
 
-/* ======= PROGRESS ======= */
-const progress = {
-  el: document.getElementById("progress"),
-  start(){ this.el.style.width="10%"; requestAnimationFrame(()=> this.el.style.width="70%"); },
-  end(){ this.el.style.width="100%"; setTimeout(()=> this.el.style.width="0", 250); }
-};
+  // ===== UTILS/API =====
+  const msg = (html,ok)=>{ const el=document.getElementById('msg'); el.className="alert"+(ok?" ok":""); el.innerHTML=html; }
+  const wait = (el,doing=true)=>{ el.disabled=doing; el.innerHTML = doing?'<span class="spinner"></span>Aguarde…':el._label }
 
-/* ======= SESSION ======= */
-let SESSION=null;
-try{ SESSION=JSON.parse(localStorage.getItem("session")||"null"); }catch(_){}
-if(!SESSION || !SESSION.token){ location.href="index.html?v="+Date.now(); }
-
-/* ======= helpers ======= */
-const $ = s => document.querySelector(s);
-const msg = $("#msg");
-function setMsg(t, ok=false){
-  msg.textContent = t||"";
-  msg.style.color = ok? "var(--ok)" : "var(--muted)";
-}
-
-/* ======= default date ======= */
-(function(){
-  const d = new Date();
-  const y=d.getFullYear(), m=("0"+(d.getMonth()+1)).slice(-2), dd=("0"+d.getDate()).slice(-2);
-  $("#data").value = `${y}-${m}-${dd}`;
-})();
-
-/* ======= items ======= */
-const items = [];
-function renderItems(){
-  if(!items.length){ $("#items").textContent="Nenhum item adicionado."; return; }
-  $("#items").innerHTML = items.map((i,idx)=>`• ${i.tipo} ${i.tamanho} — ${i.qtd} <a href="#" data-i="${idx}" class="rm">[remover]</a>`).join("<br>");
-  $("#items").querySelectorAll(".rm").forEach(a=> a.onclick=(e)=>{ e.preventDefault(); items.splice(a.dataset.i,1); renderItems(); });
-}
-$("#btn-add-item").onclick = ()=>{
-  const tipo = $("#item_tipo").value, tamanho=$("#item_tam").value, qtd= Number($("#item_qtd").value||0);
-  if(qtd<=0) return;
-  items.push({tipo,tamanho,qtd});
-  renderItems();
-};
-
-/* ======= fotos preview ======= */
-const fotosSel = []; // {name, dataUrl}
-$("#fotos").addEventListener("change", async (ev)=>{
-  fotosSel.length = 0;
-  $("#thumbs").innerHTML="";
-  const files = Array.from(ev.target.files||[]);
-  for(const f of files){
-    const dataUrl = await fileToDataUrl(f);
-    fotosSel.push({name:f.name, dataUrl});
-    const img = new Image(); img.src=dataUrl; img.className="thumb";
-    $("#thumbs").appendChild(img);
-  }
-});
-function fileToDataUrl(file){
-  return new Promise(res=>{ const r = new FileReader(); r.onload = ()=> res(r.result); r.readAsDataURL(file); });
-}
-
-/* ======= API ======= */
-async function post(path, body){
-  progress.start();
-  try{
-    const r = await fetch(API_BASE+"?path="+encodeURIComponent(path), {
-      method:"POST",
-      headers:{"Content-Type":"application/json;charset=utf-8"},
-      body: JSON.stringify(Object.assign({}, body||{}, {token:SESSION.token}))
+  async function api(path, body={}){
+    body.token = (sess && sess.token) || '';
+    const r = await fetch(API_BASE+'?path='+encodeURIComponent(path), {
+      method:'POST',
+      headers:{ 'Content-Type':'text/plain;charset=utf-8' }, // <- evita preflight
+      body: JSON.stringify(body)
     });
-    return await r.json();
-  }finally{ progress.end(); }
-}
-
-/* ======= send ======= */
-$("#btn-send").onclick = async ()=>{
-  setMsg("");
-  const rom = $("#rom").value.trim();
-  const data = $("#data").value;
-  const obs  = $("#obs").value.trim();
-  const cliente = { tel:$("#cli_tel").value.trim(), nome:$("#cli_nome").value.trim(), local:$("#cli_local").value.trim() };
-  const fornecedor = { tel:$("#for_tel").value.trim(), nome:$("#for_nome").value.trim(), local:$("#for_local").value.trim() };
-
-  if(!rom || !cliente.tel || !cliente.nome || !cliente.local || !fornecedor.tel || !fornecedor.nome || !fornecedor.local){
-    setMsg("Preencha os campos obrigatórios (ROM, cliente e fornecedor)."); return;
+    return r.json();
   }
-  if(!items.length){ setMsg("Adicione pelo menos um item."); return; }
 
-  const fotos = fotosSel.map(f=>({ name:f.name, data:f.dataUrl })); // base64 inline
-  const payload = { rom, data, obs, cliente, fornecedor, itens:items, fotos };
-  const j = await post("/rom/create", payload);
-
-  if(j && j.ok){
-    setMsg(`Enviado! Código: ${j.cod}  •  PDF: ${j.pdfUrl}`, true);
-    if(confirm("Abrir PDF do romaneio?")) window.open(j.pdfUrl, "_blank");
-    if(confirm("Compartilhar no WhatsApp?")) window.open(j.whatsappUrl, "_blank");
-    clearForm();
-  }else{
-    setMsg(j && j.error ? j.error : "Falha no envio");
+  // ===== ITENS UI =====
+  const itensEl = document.getElementById('itens');
+  function itemRow(o={tipo:'Caixa', tamanho:'P', qtd:1}){
+    const div=document.createElement('div'); div.className='grid'; div.innerHTML=`
+      <select class="tipo">
+        <option>Caixa</option><option>Sacola</option><option>Pacote</option><option>Palete</option>
+      </select>
+      <select class="tam">
+        <option>P</option><option>M</option><option>G</option>
+      </select>
+      <input class="qtd" type="number" value="${o.qtd||1}" min="1">
+      <button class="btn btn-danger rem">×</button>
+    `;
+    div.querySelector('.tipo').value = o.tipo||'Caixa';
+    div.querySelector('.tam').value  = (o.tamanho||'P').toUpperCase();
+    div.querySelector('.rem').onclick=()=> div.remove();
+    itensEl.appendChild(div);
   }
-};
+  document.getElementById('addItem').onclick=()=> itemRow();
+  itemRow(); // 1 inicial
 
-function clearForm(){
-  $("#rom").value=""; $("#obs").value="";
-  ["cli_tel","cli_nome","cli_local","for_tel","for_nome","for_local"].forEach(id=> $("#"+id).value="");
-  items.length=0; renderItems();
-  fotosSel.length=0; $("#thumbs").innerHTML=""; $("#fotos").value="";
-}
-$("#btn-clear").onclick = clearForm;
+  // ===== Fotos base64 + preview =====
+  const fotosInput = document.getElementById('fotos');
+  const preview    = document.getElementById('preview');
+  let fotosData = [];
+  fotosInput.onchange = async (ev)=>{
+    fotosData = [];
+    preview.innerHTML = '';
+    const files = Array.from(ev.target.files||[]);
+    for(const f of files){
+      const b64 = await fileToDataURL(f);
+      fotosData.push({name:f.name, data:b64});
+      const img = new Image(); img.src = b64; preview.appendChild(img);
+    }
+  }
+  function fileToDataURL(file){
+    return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); });
+  }
 
-/* ======= logout ======= */
-$("#btn-logout").onclick = async ()=>{
-  try{ await post("/logout", {}); }catch(_){}
-  localStorage.removeItem("session");
-  location.href = "index.html?v="+Date.now();
-};
+  // ===== Enviar =====
+  document.getElementById('sendBtn').onclick = async ()=>{
+    const b = document.getElementById('sendBtn'); b._label=b._label||b.textContent; wait(b,true); msg('');
+    try{
+      const itens = Array.from(itensEl.querySelectorAll('.grid')).map(row=>({
+        tipo: row.querySelector('.tipo').value,
+        tamanho: row.querySelector('.tam').value,
+        qtd: Number(row.querySelector('.qtd').value||0)
+      })).filter(i=>i.qtd>0);
+
+      if(!itens.length){ msg('Informe ao menos 1 item'); wait(b,false); return; }
+
+      const r = await api('/rom/create', {
+        rom: '', data: '', obs:'',
+        cliente:{tel:'',nome:'',local:''},
+        fornecedor:{tel:'',nome:'',local:''},
+        itens, fotos: fotosData
+      });
+
+      if(r.error){ msg('Erro: '+r.error); wait(b,false); return; }
+
+      msg(`OK • Cod: <b>${r.cod}</b> • <a target="_blank" href="${r.pdfUrl}">PDF</a> • <a target="_blank" href="${r.whatsappUrl}">WhatsApp</a>`, true);
+      fotosInput.value=''; preview.innerHTML=''; fotosData=[];
+      itensEl.innerHTML=''; itemRow();
+    }catch(e){ msg('Falha no envio: '+e.message); }
+    finally{ wait(b,false); }
+  };
+
+  document.getElementById('clearBtn').onclick = ()=>{
+    itensEl.innerHTML=''; itemRow(); fotosInput.value=''; preview.innerHTML=''; fotosData=[];
+    msg('');
+  };
+
+  document.getElementById('logoutBtn').onclick = async ()=>{
+    try{ await api('/logout',{}); }catch(_){}
+    localStorage.removeItem('rom_session'); location.href='./index.html?v='+Date.now();
+  };
 </script>
 </body>
 </html>
