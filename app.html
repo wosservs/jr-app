@@ -29,6 +29,7 @@
     h2{margin:0 0 12px}
     select,input[type=text],input[type=number],input[type=date],textarea{width:100%;padding:10px 12px;border:1px solid var(--line);background:transparent;border-radius:10px;color:var(--text)}
     .grid{display:grid;grid-template-columns:1fr 1fr 1fr 80px;gap:10px;align-items:center}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr; gap:10px}
     .btn{cursor:pointer;border:0;border-radius:10px;padding:10px 14px;font-weight:600}
     .btn-primary{background:var(--primary);color:#fff}
     .btn-ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
@@ -45,6 +46,17 @@
     .topbar{position:fixed;inset:0 0 auto 0;height:3px;background:transparent;z-index:20}
     .bar{height:100%;width:0;background:var(--bar);transition:width .2s linear}
     .section{margin-bottom:16px}
+
+    /* autocomplete */
+    .ac-wrap{position:relative}
+    .ac-list{
+      position:absolute; inset:auto 0 0 0; transform:translateY(100%);
+      background:var(--card); border:1px solid var(--line); border-radius:10px;
+      padding:6px; margin-top:4px; max-height:220px; overflow:auto; z-index:5; display:none;
+    }
+    .ac-item{padding:8px;border-radius:8px;cursor:pointer}
+    .ac-item:hover{background:var(--chip)}
+    .req::after{content:" *"; color:#f87171; font-weight:700}
   </style>
 </head>
 <body>
@@ -61,7 +73,6 @@
       <a href="#clientes">Clientes</a>
       <a href="#users">Usuários</a>
       <button id="btnTheme" class="theme">🌙/☀️</button>
-      <!-- Removido o botão "Atualizar app" como solicitado -->
       <a href="#" id="logout" class="btn-ghost">Sair</a>
     </nav>
   </header>
@@ -70,25 +81,61 @@
     <div class="card section" id="secRom">
       <h2>Enviar Romaneio</h2>
 
-      <div class="row">
-        <div style="flex:1">
-          <label class="muted">ROM</label>
+      <div class="grid-2">
+        <div>
+          <label class="muted req">ROM</label>
           <input id="rom" type="number" placeholder="Ex.: 21">
         </div>
-        <div style="flex:1">
-          <label class="muted">Data</label>
+        <div>
+          <label class="muted req">Data</label>
           <input id="data" type="date">
         </div>
       </div>
 
-      <div class="row">
-        <div style="flex:1">
-          <label class="muted">Obs.</label>
-          <input id="obs" type="text" placeholder="Ex.: Doca 3, até 16h">
+      <!-- CLIENTE & FORNECEDOR -->
+      <h3 class="muted" style="margin-top:14px">Cliente & Fornecedor</h3>
+
+      <div class="grid-2">
+        <div>
+          <label class="muted req">Cliente • Telefone</label>
+          <input id="cliTel" type="text" inputmode="numeric" placeholder="(85) 9 9999-9999">
+        </div>
+        <div>
+          <label class="muted req">Cliente • Nome</label>
+          <input id="cliNome" type="text" placeholder="Nome do cliente">
         </div>
       </div>
 
-      <h3 class="muted">Itens</h3>
+      <div class="grid-2">
+        <div class="ac-wrap">
+          <label class="muted req">Cliente • Cidade/UF</label>
+          <input id="cliCidade" type="text" placeholder="Fortaleza/CE" autocomplete="off">
+          <div id="cliCidadeList" class="ac-list"></div>
+        </div>
+        <div>
+          <label class="muted req">Fornecedor • Telefone</label>
+          <input id="forTel" type="text" inputmode="numeric" placeholder="(85) 3333-3333">
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <label class="muted req">Fornecedor • Nome</label>
+          <input id="forNome" type="text" placeholder="Nome do fornecedor">
+        </div>
+        <div class="ac-wrap">
+          <label class="muted req">Fornecedor • Cidade/UF</label>
+          <input id="forCidade" type="text" placeholder="Maracanaú/CE" autocomplete="off">
+          <div id="forCidadeList" class="ac-list"></div>
+        </div>
+      </div>
+
+      <div style="margin-top:10px">
+        <label class="muted">Obs.</label>
+        <input id="obs" type="text" placeholder="Ex.: Doca 3, até 16h">
+      </div>
+
+      <h3 class="muted" style="margin-top:12px">Itens</h3>
       <div id="itens"></div>
       <div class="row" style="margin-top:8px">
         <button id="addItem" class="btn-ghost">+ Adicionar item</button>
@@ -130,52 +177,31 @@ function setTheme(t){ document.documentElement.setAttribute('data-theme',t); loc
 })();
 document.getElementById('btnTheme').onclick = ()=> setTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
 
-/* ===== Sessão: pega token do hash, LocalStorage ou cookie ===== */
-function getCookie(name){
-  const m = document.cookie.match(new RegExp('(^| )'+name+'=([^;]+)')); return m? decodeURIComponent(m[2]) : null;
-}
-function getTokenFromHash(){
-  const h = location.hash || ''; const m = h.match(/[#&]t=([^&]+)/); return m? decodeURIComponent(m[1]) : null;
-}
-
-// index salva como "rom_session"
+/* ===== Sessão ===== */
+function getCookie(name){ const m = document.cookie.match(new RegExp('(^| )'+name+'=([^;]+)')); return m? decodeURIComponent(m[2]) : null; }
+function getTokenFromHash(){ const h = location.hash || ''; const m = h.match(/[#&]t=([^&]+)/); return m? decodeURIComponent(m[1]) : null; }
 function getSession(){
-  let s = null;
-  try{ s = JSON.parse(localStorage.getItem('rom_session')||'null'); }catch(_){}
-  if(!s || !s.token){
-    // fallback: também aceita "session" se por acaso existir
-    try{ s = JSON.parse(localStorage.getItem('session')||'null'); }catch(_){}
-  }
-  // sobrescreve token se veio no hash
-  const tHash = getTokenFromHash();
-  if(!s) s = {};
-  if(tHash) s.token = tHash;
-  // por fim, cookie
-  if(!s.token){ s.token = getCookie('rom_token'); }
-  return s || {};
+  let s=null; try{s=JSON.parse(localStorage.getItem('rom_session')||'null')}catch(_){}
+  if(!s||!s.token){ try{s=JSON.parse(localStorage.getItem('session')||'null')}catch(_){} }
+  const tHash=getTokenFromHash(); if(!s) s={}; if(tHash) s.token=tHash; if(!s.token) s.token=getCookie('rom_token'); return s||{};
 }
-
-const sess = getSession();
-if(!sess || !sess.token){
-  alert('Sessão inválida. Faça login.');
-  location.href='index.html';
-}
+const sess=getSession();
+if(!sess||!sess.token){ alert('Sessão inválida. Faça login.'); location.href='index.html'; }
 document.getElementById('who').textContent = (sess.usuario||'') ? `${sess.usuario} · ${(sess.role||'')}` : '';
 
 /* ===== Helpers ===== */
 function showMsg(kind, text){
-  const el = document.getElementById('msg');
-  el.className = 'msg '+(kind==='err'?'err':'ok');
-  el.textContent = text;
-  el.style.display = 'block';
+  const el=document.getElementById('msg');
+  el.className='msg '+(kind==='err'?'err':'ok');
+  el.textContent=text;
+  el.style.display='block';
 }
 async function post(path, body={}){
   barStart();
   try{
-    const r = await fetch(API_BASE+"?path="+encodeURIComponent(path), {
-      method:'POST',
-      headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body: JSON.stringify({...body, token:sess.token})
+    const r=await fetch(API_BASE+"?path="+encodeURIComponent(path),{
+      method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({...body, token:sess.token})
     });
     barDone();
     return await r.json();
@@ -185,113 +211,140 @@ async function post(path, body={}){
 /* ===== Logout ===== */
 document.getElementById('logout').onclick = async (e)=>{
   e.preventDefault();
-  try{ await post('/logout',{}); }catch(_){}
-  // limpa todas as chaves que podemos ter usado
-  localStorage.removeItem('rom_session');
-  localStorage.removeItem('session');
-  document.cookie = "rom_token=; path=/; max-age=0";
+  try{ await post('/logout',{});}catch(_){}
+  localStorage.removeItem('rom_session'); localStorage.removeItem('session');
+  document.cookie="rom_token=; path=/; max-age=0";
   location.href='index.html';
 };
 
 /* ===== Itens ===== */
-const tipos = ['Caixa','Saco','Palete','Outros'];
-const tamanhos = ['P','M','G'];
-
-const itensDiv = document.getElementById('itens');
-const totalQtdEl = document.getElementById('totalQtd');
-function somaTotal(){ 
-  let t=0; document.querySelectorAll('.qtd').forEach(i=> t += Number(i.value||0)); 
-  totalQtdEl.textContent = t; 
-}
+const tipos=['Caixa','Saco','Palete','Outros'];
+const tamanhos=['P','M','G'];
+const itensDiv=document.getElementById('itens'); const totalQtdEl=document.getElementById('totalQtd');
+function somaTotal(){ let t=0; document.querySelectorAll('.qtd').forEach(i=> t+=Number(i.value||0)); totalQtdEl.textContent=t; }
 function itemRow(){
-  const row = document.createElement('div');
-  row.className='grid';
-
-  const selTipo = document.createElement('select');
-  tipos.forEach(t=>{ const o=document.createElement('option'); o.value=t; o.textContent=t; selTipo.appendChild(o) });
-
-  const selTam = document.createElement('select');
-  tamanhos.forEach(t=>{ const o=document.createElement('option'); o.value=t; o.textContent=t; selTam.appendChild(o) });
-
-  const qtd = document.createElement('input'); qtd.type='number'; qtd.min='1'; qtd.value='1'; qtd.className='qtd'; qtd.oninput=somaTotal;
-
-  const del = document.createElement('button'); del.className='btn btn-danger'; del.textContent='X'; del.onclick=()=>{ row.remove(); somaTotal(); };
-
+  const row=document.createElement('div'); row.className='grid';
+  const selTipo=document.createElement('select'); tipos.forEach(t=>{ const o=document.createElement('option'); o.value=t;o.textContent=t; selTipo.appendChild(o) });
+  const selTam=document.createElement('select'); tamanhos.forEach(t=>{ const o=document.createElement('option'); o.value=t;o.textContent=t; selTam.appendChild(o) });
+  const qtd=document.createElement('input'); qtd.type='number'; qtd.min='1'; qtd.value='1'; qtd.className='qtd'; qtd.oninput=somaTotal;
+  const del=document.createElement('button'); del.className='btn btn-danger'; del.textContent='x'; del.onclick=()=>{row.remove();somaTotal();}
   row.appendChild(selTipo); row.appendChild(selTam); row.appendChild(qtd); row.appendChild(del);
   return row;
 }
-document.getElementById('addItem').onclick = ()=>{ itensDiv.appendChild(itemRow()); somaTotal(); };
-/* cria uma linha por padrão */
+document.getElementById('addItem').onclick=()=>{ itensDiv.appendChild(itemRow()); somaTotal(); };
 itensDiv.appendChild(itemRow()); somaTotal();
 
 /* ===== Fotos ===== */
-const fileInput = document.getElementById('fotos');
-const thumbs = document.getElementById('thumbs');
-let fotosData = []; // dataURL
+const fileInput=document.getElementById('fotos'); const thumbs=document.getElementById('thumbs'); let fotosData=[];
+fileInput.onchange=async(ev)=>{ const files=Array.from(ev.target.files||[]); for(const f of files){ if(!f.type.startsWith('image/')) continue; const d=await fileToDataURL(f); fotosData.push(d);} renderThumbs(); };
+function renderThumbs(){ thumbs.innerHTML=''; fotosData.forEach((d,i)=>{ const box=document.createElement('div'); box.className='thumb'; const img=new Image(); img.src=d; box.appendChild(img); const x=document.createElement('button'); x.textContent='×'; x.onclick=()=>{ fotosData.splice(i,1); renderThumbs(); }; box.appendChild(x); thumbs.appendChild(box); }); }
+function fileToDataURL(file){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); }); }
 
-fileInput.onchange = async (ev)=>{
-  const files = Array.from(ev.target.files||[]);
-  for(const f of files){
-    if(!f.type.startsWith('image/')) continue;
-    const dataUrl = await fileToDataURL(f);
-    fotosData.push(dataUrl);
-  }
-  renderThumbs();
-};
-function renderThumbs(){
-  thumbs.innerHTML='';
-  fotosData.forEach((d,i)=>{
-    const box=document.createElement('div'); box.className='thumb';
-    const img=new Image(); img.src=d; box.appendChild(img);
-    const x=document.createElement('button'); x.textContent='×'; x.onclick=()=>{ fotosData.splice(i,1); renderThumbs(); };
-    box.appendChild(x);
-    thumbs.appendChild(box);
+/* ===== Data hoje ===== */
+function todayISO(){ const d=new Date(); const tz=new Date(d.getTime()-d.getTimezoneOffset()*60000); return tz.toISOString().slice(0,10) }
+document.getElementById('data').value=todayISO();
+
+/* ===== Máscara de telefone BR ===== */
+function formatBRPhone(v){
+  const nums=(v||'').replace(/\D+/g,'').slice(0,11); // DDI removido, até 11 dígitos
+  if(nums.length<=2) return `(${nums}`;
+  if(nums.length<=6) return `(${nums.slice(0,2)}) ${nums.slice(2)}`;
+  if(nums.length===10) return `(${nums.slice(0,2)}) ${nums.slice(2,6)}-${nums.slice(6)}`; // fixo
+  // celular 11 dígitos
+  return `(${nums.slice(0,2)}) ${nums.slice(2,7)}-${nums.slice(7)}`;
+}
+['cliTel','forTel'].forEach(id=>{
+  const el=document.getElementById(id);
+  el.addEventListener('input',()=>{ const start=el.selectionStart; el.value=formatBRPhone(el.value); });
+});
+
+/* ===== Autocomplete Cidade/UF ===== */
+const CITY_LIST=[
+  'Fortaleza/CE','Maracanaú/CE','Maracanaú/CE','Caucaia/CE','Eusébio/CE','Aquiraz/CE','Itaitinga/CE',
+  'Pacatuba/CE','Horizonte/CE','Pacajus/CE','Maranguape/CE','Sobral/CE','Juazeiro do Norte/CE',
+  'Crato/CE','Iguatu/CE','Quixadá/CE','Russas/CE','Aracati/CE'
+];
+function bindAutocomplete(inputId, listId){
+  const input=document.getElementById(inputId);
+  const list=document.getElementById(listId);
+  function close(){ list.style.display='none'; }
+  function open(){ list.style.display='block'; }
+  input.addEventListener('input', ()=>{
+    const q=(input.value||'').trim().toLowerCase();
+    if(q.length<3){ close(); return; }
+    list.innerHTML='';
+    const hits=CITY_LIST.filter(c=>c.toLowerCase().includes(q)).slice(0,30);
+    if(!hits.length){ close(); return; }
+    hits.forEach(c=>{
+      const item=document.createElement('div'); item.className='ac-item'; item.textContent=c;
+      item.onmousedown=(e)=>{ e.preventDefault(); input.value=c; close(); };
+      list.appendChild(item);
+    });
+    open();
   });
+  input.addEventListener('blur', ()=> setTimeout(close,150));
 }
-function fileToDataURL(file){
-  return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); });
-}
+bindAutocomplete('cliCidade','cliCidadeList');
+bindAutocomplete('forCidade','forCidadeList');
 
-/* ===== Data padrão (hoje) ===== */
-function todayISO(){ const d=new Date(); const tz = new Date(d.getTime()-d.getTimezoneOffset()*60000); return tz.toISOString().slice(0,10) }
-document.getElementById('data').value = todayISO();
-
-/* ===== Botões enviar/limpar ===== */
-document.getElementById('limpar').onclick = ()=>{
+/* ===== Limpar ===== */
+document.getElementById('limpar').onclick=()=>{
   document.getElementById('rom').value='';
   document.getElementById('obs').value='';
+  ['cliTel','cliNome','cliCidade','forTel','forNome','forCidade'].forEach(id=>document.getElementById(id).value='');
   itensDiv.innerHTML=''; itensDiv.appendChild(itemRow()); somaTotal();
   fileInput.value=''; fotosData=[]; renderThumbs();
   document.getElementById('msg').style.display='none';
+  document.getElementById('data').value=todayISO();
 };
 
-document.getElementById('enviar').onclick = async ()=>{
-  const rom = Number(document.getElementById('rom').value);
-  const data = document.getElementById('data').value;
-  const obs  = document.getElementById('obs').value.trim();
+/* ===== Enviar ===== */
+document.getElementById('enviar').onclick=async ()=>{
+  const rom=Number(document.getElementById('rom').value);
+  const data=document.getElementById('data').value;
+  const obs=document.getElementById('obs').value.trim();
 
-  const itens = [];
+  const cliTel=document.getElementById('cliTel').value.trim();
+  const cliNome=document.getElementById('cliNome').value.trim();
+  const cliCidade=document.getElementById('cliCidade').value.trim();
+
+  const forTel=document.getElementById('forTel').value.trim();
+  const forNome=document.getElementById('forNome').value.trim();
+  const forCidade=document.getElementById('forCidade').value.trim();
+
+  const itens=[];
   itensDiv.querySelectorAll('.grid').forEach(row=>{
-    const [t,s,q] = row.querySelectorAll('select, input');
-    const qtd = Number(q.value||0);
+    const [t,s,q]=row.querySelectorAll('select, input');
+    const qtd=Number(q.value||0);
     if(qtd>0) itens.push({tipo:t.value,tamanho:s.value,qtd});
   });
 
-  if(!rom){ showMsg('err','Informe o número do ROM'); return }
-  if(!itens.length){ showMsg('err','Adicione ao menos um item'); return }
+  // validações
+  const miss=[];
+  if(!rom) miss.push('ROM');
+  if(!data) miss.push('Data');
+  if(!cliTel) miss.push('Cliente • Telefone');
+  if(!cliNome) miss.push('Cliente • Nome');
+  if(!cliCidade) miss.push('Cliente • Cidade/UF');
+  if(!forTel) miss.push('Fornecedor • Telefone');
+  if(!forNome) miss.push('Fornecedor • Nome');
+  if(!forCidade) miss.push('Fornecedor • Cidade/UF');
+  if(!itens.length) miss.push('Itens');
+
+  if(miss.length){ showMsg('err','Campos obrigatórios ausentes: '+miss.join(', ')); return; }
 
   try{
-    const body = {
+    const body={
       rom, data, obs,
-      cliente: {tel:'', nome:'', local:''},           // poderá ser preenchido depois
-      fornecedor: {tel:'', nome:'', local:''},        // idem
+      cliente:{ tel:cliTel, nome:cliNome, local:cliCidade },
+      fornecedor:{ tel:forTel, nome:forNome, local:forCidade },
       itens,
-      fotos: fotosData.map(d=>({data:d}))
+      fotos:fotosData.map(d=>({data:d}))
     };
-    const r = await post('/rom/create', body);
-    if(r.error){ showMsg('err', r.error); return }
-    showMsg('ok', `Enviado! Código: ${r.cod}`);
-    // if(r.pdfUrl) window.open(r.pdfUrl,'_blank'); // opcional abrir PDF
+    const r=await post('/rom/create', body);
+    if(r.error){ showMsg('err', r.error); return; }
+    showMsg('ok', `Romaneio enviado! Código: ${r.cod||'-'}`);
+    // if(r.pdfUrl) window.open(r.pdfUrl,'_blank');
   }catch(e){
     showMsg('err','Erro de rede: '+e);
   }
