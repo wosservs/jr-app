@@ -10,11 +10,11 @@
   <style>
     :root{
       --bg:#0f172a; --card:#0b1220; --text:#e5e7eb; --muted:#94a3b8; --primary:#2563eb; --danger:#ef4444; --ok:#16a34a; --chip:#111827; --bar:#60a5fa;
-      --line:#1f2937; --overlay:rgba(15,23,42,.65);
+      --line:#1f2937;
     }
     [data-theme="light"]{
       --bg:#f8fafc; --card:#ffffff; --text:#0f172a; --muted:#475569; --primary:#1d4ed8; --danger:#dc2626; --ok:#16a34a; --chip:#eef2ff; --bar:#3b82f6;
-      --line:#e5e7eb; --overlay:rgba(0,0,0,.35);
+      --line:#e5e7eb;
     }
     *{box-sizing:border-box} html,body{height:100%}
     body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto}
@@ -25,32 +25,47 @@
     .container{max-width:1100px;margin:18px auto;padding:0 16px}
     .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
     h2{margin:0 0 12px}
-    select,input[type=text],input[type=number],input[type=date]{width:100%;padding:10px 12px;border:1px solid var(--line);background:transparent;border-radius:10px;color:var(--text)}
+    label{display:block;margin:8px 0 6px;color:var(--muted);font-size:14px}
+    select,input[type=text],input[type=number],input[type=date],textarea{width:100%;padding:10px 12px;border:1px solid var(--line);background:transparent;border-radius:10px;color:var(--text)}
+    textarea{min-height:44px;resize:vertical}
     .grid{display:grid;grid-template-columns:1fr 1fr 1fr 80px;gap:10px;align-items:center}
-    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-    .muted{color:var(--muted)}
     .btn{cursor:pointer;border:0;border-radius:10px;padding:10px 14px;font-weight:600}
     .btn-primary{background:var(--primary);color:#fff}
     .btn-ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
     .btn-danger{background:var(--danger);color:#fff}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .muted{color:var(--muted)}
     .thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
     .thumb{position:relative}
     .thumb img{width:84px;height:84px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
     .thumb button{position:absolute;top:-8px;right:-8px;width:22px;height:22px;border-radius:50%;border:0;background:var(--danger);color:#fff;cursor:pointer}
-    .msg{margin-top:12px;padding:12px;border-radius:10px}
+    .msg{margin-top:10px;padding:10px;border-radius:10px}
     .ok{background:#064e3b;color:#a7f3d0}
     .err{background:#7f1d1d;color:#fecaca}
     .topbar{position:fixed;inset:0 0 auto 0;height:3px;background:transparent;z-index:20}
     .bar{height:100%;width:0;background:var(--bar);transition:width .2s linear}
     .section{margin-bottom:16px}
-    /* Modal sucesso */
-    .overlay{position:fixed;inset:0;background:var(--overlay);display:none;align-items:center;justify-content:center;z-index:50}
-    .modal{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;max-width:520px;width:92%}
-    .modal h3{margin:0 0 8px}
-    .modal .row{justify-content:flex-end}
-    .tag{display:inline-block;padding:4px 8px;border:1px solid var(--line);border-radius:999px;background:var(--chip);margin-left:8px}
-    /* toast */
-    .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:16px;background:var(--card);border:1px solid var(--line);padding:10px 14px;border-radius:10px;display:none;z-index:60}
+
+    /* ===== Modal de sucesso ===== */
+    .modal-backdrop{
+      position:fixed; inset:0; background:rgba(0,0,0,.5);
+      display:flex; align-items:center; justify-content:center; z-index:9999;
+    }
+    .modal{
+      width:min(560px, 92vw);
+      background:var(--card); color:var(--text);
+      border:1px solid var(--line); border-radius:14px;
+      box-shadow:0 20px 60px rgba(0,0,0,.35);
+      padding:18px;
+    }
+    .modal h3{ margin:0 0 8px }
+    .modal .muted{ color:var(--muted) }
+    .modal .row{ display:flex; gap:8px; flex-wrap:wrap; margin-top:14px }
+    .modal .btn{ cursor:pointer; border:0; border-radius:10px; padding:10px 14px; font-weight:600 }
+    .modal .btn-primary{ background:var(--primary); color:#fff }
+    .modal .btn-ghost{ background:transparent; color:var(--text); border:1px solid var(--line) }
+    .modal .btn-ok{ background:var(--ok); color:#022c22 }
+    .modal .btn-danger{ background:var(--danger); color:#fff }
   </style>
 </head>
 <body>
@@ -77,56 +92,49 @@
 
       <div class="row">
         <div style="flex:1">
-          <label class="muted">ROM *</label>
+          <label>ROM *</label>
           <input id="rom" type="number" placeholder="Ex.: 21">
         </div>
         <div style="flex:1">
-          <label class="muted">Data *</label>
+          <label>Data *</label>
           <input id="data" type="date">
         </div>
       </div>
 
-      <h3 class="muted" style="margin-top:10px">Cliente & Fornecedor</h3>
-
+      <h3 class="muted" style="margin-top:4px">Cliente & Fornecedor</h3>
       <div class="row">
-        <div style="flex:1">
-          <label class="muted">Cliente • Telefone *</label>
-          <input id="cli_tel" type="text" placeholder="(85) 9 9999-9999" inputmode="numeric" maxlength="16">
+        <div style="flex:1;min-width:260px">
+          <label>Cliente • Telefone *</label>
+          <input id="cli_tel" type="text" inputmode="numeric" placeholder="(85) 9 9999-9999">
         </div>
-        <div style="flex:1">
-          <label class="muted">Cliente • Nome *</label>
+        <div style="flex:1;min-width:260px">
+          <label>Cliente • Nome *</label>
           <input id="cli_nome" type="text" placeholder="Nome do cliente">
         </div>
       </div>
-
       <div class="row">
-        <div style="flex:1">
-          <label class="muted">Cliente • Cidade/UF *</label>
-          <input id="cli_cid" type="text" placeholder="Fortaleza/CE" list="dlCidades">
+        <div style="flex:1;min-width:260px">
+          <label>Cliente • Cidade/UF *</label>
+          <input id="cli_local" type="text" placeholder="Fortaleza/CE" list="dl_cities" autocomplete="off">
         </div>
-        <div style="flex:1">
-          <label class="muted">Fornecedor • Telefone *</label>
-          <input id="for_tel" type="text" placeholder="(85) 3333-3333" inputmode="numeric" maxlength="16">
+        <div style="flex:1;min-width:260px">
+          <label>Fornecedor • Telefone *</label>
+          <input id="for_tel" type="text" inputmode="numeric" placeholder="(85) 3333-3333">
         </div>
       </div>
-
       <div class="row">
-        <div style="flex:1">
-          <label class="muted">Fornecedor • Cidade/UF *</label>
-          <input id="for_cid" type="text" placeholder="Maracanaú/CE" list="dlCidades">
-        </div>
-        <div style="flex:1">
-          <label class="muted">Fornecedor • Nome *</label>
+        <div style="flex:1;min-width:260px">
+          <label>Fornecedor • Nome *</label>
           <input id="for_nome" type="text" placeholder="Nome do fornecedor">
         </div>
-      </div>
-
-      <div class="row">
-        <div style="flex:1">
-          <label class="muted">Obs.</label>
-          <input id="obs" type="text" placeholder="Ex.: Doca 3, até 16h">
+        <div style="flex:1;min-width:260px">
+          <label>Fornecedor • Cidade/UF *</label>
+          <input id="for_local" type="text" placeholder="Maracanaú/CE" list="dl_cities" autocomplete="off">
         </div>
       </div>
+
+      <label style="margin-top:8px">Obs.</label>
+      <input id="obs" type="text" placeholder="Ex.: Doca 3, até 16h">
 
       <h3 class="muted" style="margin-top:12px">Itens</h3>
       <div id="itens"></div>
@@ -153,51 +161,35 @@
     </div>
   </div>
 
-  <datalist id="dlCidades"></datalist>
-
-  <div id="okLayer" class="overlay">
-    <div class="modal">
-      <h3>Romaneio enviado com sucesso <span id="okCod" class="tag"></span></h3>
-      <p class="muted" id="okTxt">Você pode abrir o PDF ou enviar pelo WhatsApp.</p>
-      <div class="row">
-        <a id="okPdf" href="#" target="_blank" class="btn btn-ghost">Abrir PDF</a>
-        <a id="okWa"  href="#" target="_blank" class="btn btn-primary">Enviar no WhatsApp</a>
-        <button id="okClose" class="btn">Fechar</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="toast" class="toast"></div>
+  <!-- datalist compartilhado para cidades -->
+  <datalist id="dl_cities"></datalist>
 
 <script>
-/* ====== CONFIG ====== */
+/* ======================== CONFIG & CORE ======================== */
 const API_BASE = "https://script.google.com/macros/s/AKfycbyrDoEP82oJDj2wTIX491414Qf5e-YaDZJHYMAgmWfiddVKCw7WP4oQwrVtEouYxL-NvQ/exec";
-
-/* ====== Barra ====== */
 const bar = document.getElementById('bar');
+const $id = (s)=>document.getElementById(s);
+const onlyDigits = (s)=> String(s||'').replace(/\D/g,'');
 function barStart(){ bar.style.width='20%'; let w=20; window._barInt=setInterval(()=>{w=Math.min(95,w+5); bar.style.width=w+'%'},200)}
 function barDone(){ clearInterval(window._barInt); bar.style.width='100%'; setTimeout(()=>bar.style.width='0',300)}
-
-/* ====== Tema ====== */
 function setTheme(t){ document.documentElement.setAttribute('data-theme',t); localStorage.setItem('theme',t) }
-(function(){ const s=localStorage.getItem('theme'); setTheme(s?s:(matchMedia('(prefers-color-scheme: light)').matches?'light':'dark')) })();
-document.getElementById('btnTheme').onclick=()=> setTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
+(function initTheme(){
+  const saved = localStorage.getItem('theme');
+  if(saved){ setTheme(saved) } else { setTheme(window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark') }
+})();
+document.getElementById('btnTheme').onclick = ()=> setTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
 
-/* ====== Sessão ====== */
-const sess=(function(){try{return JSON.parse(localStorage.getItem('session')||localStorage.getItem('rom_session')||'{}')}catch(_){return{}}})();
+const sess = (function(){ try{return JSON.parse(localStorage.getItem('session')||'{}')}catch(_){return{}} })();
 if(!sess.token){ location.href='index.html'; }
 document.getElementById('who').textContent = (sess.usuario||'') ? `${sess.usuario} · ${(sess.role||'')}` : '';
 
-/* ====== Toast ====== */
-function toast(text, kind='ok'){
-  const el=document.getElementById('toast');
-  el.textContent=text; el.style.display='block';
-  el.style.borderColor=(kind==='err'?'#b91c1c': 'var(--line)');
-  setTimeout(()=>{ el.style.display='none' }, 2400);
+function showMsg(kind, text){
+  const el = $id('msg');
+  el.className = 'msg '+(kind==='err'?'err':'ok');
+  el.textContent = text;
+  el.style.display = 'block';
 }
 
-/* ====== Helpers ====== */
-function showMsg(kind, text){ const el=document.getElementById('msg'); el.className='msg '+(kind==='err'?'err':'ok'); el.textContent=text; el.style.display='block'; }
 async function post(path, body={}){
   barStart();
   try{
@@ -207,47 +199,102 @@ async function post(path, body={}){
       body: JSON.stringify({...body, token:sess.token})
     });
     barDone();
-    if(!r.ok) throw new Error('HTTP '+r.status);
     return await r.json();
   }catch(e){ barDone(); throw e }
 }
 
-/* ====== Logout ====== */
 document.getElementById('logout').onclick = async (e)=>{
   e.preventDefault();
   try{ await post('/logout',{}); }catch(_){}
-  localStorage.removeItem('session'); localStorage.removeItem('rom_session');
+  localStorage.removeItem('session');
   location.href='index.html';
 };
 
-/* ====== Itens ====== */
-const tipos=['Caixa','Saco','Palete','Outros'];
-const tamanhos=['P','M','G'];
-const itensDiv=document.getElementById('itens');
-const totalQtdEl=document.getElementById('totalQtd');
-function somaTotal(){ let t=0; document.querySelectorAll('.qtd').forEach(i=> t += Number(i.value||0)); totalQtdEl.textContent=t; }
-function itemRow(){
-  const row=document.createElement('div'); row.className='grid';
-  const selTipo=document.createElement('select'); tipos.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;selTipo.appendChild(o)});
-  const selTam=document.createElement('select'); tamanhos.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;selTam.appendChild(o)});
-  const qtd=document.createElement('input'); qtd.type='number'; qtd.min='1'; qtd.value='1'; qtd.className='qtd'; qtd.oninput=somaTotal;
-  const del=document.createElement('button'); del.className='btn btn-danger'; del.textContent='X'; del.onclick=()=>{ row.remove(); somaTotal(); };
-  row.appendChild(selTipo); row.appendChild(selTam); row.appendChild(qtd); row.appendChild(del); return row;
+/* ======================== MÁSCARA TEL BR ====================== */
+function formatBrPhone(raw){
+  const d = onlyDigits(raw).slice(0,11);
+  if(d.length<=10){
+    // fixo 10 dígitos: (DD) XXXX-XXXX
+    const p1 = d.slice(0,2), p2=d.slice(2,6), p3=d.slice(6,10);
+    return d.length>6 ? `(${p1}) ${p2}-${p3}` : d.length>2 ? `(${p1}) ${p2}` : d;
+  }else{
+    // celular 11 dígitos: (DD) 9XXXX-XXXX
+    const p1=d.slice(0,2), p2=d.slice(2,7), p3=d.slice(7,11);
+    return `(${p1}) ${p2}-${p3}`;
+  }
 }
-document.getElementById('addItem').onclick=()=>{ itensDiv.appendChild(itemRow()); somaTotal(); };
-itensDiv.appendChild(itemRow()); somaTotal();
+['cli_tel','for_tel'].forEach(id=>{
+  const el = $id(id);
+  el.addEventListener('input', ()=> el.value = formatBrPhone(el.value));
+});
 
-/* ====== Fotos (compressão) ====== */
-const fileInput=document.getElementById('fotos');
-const thumbs=document.getElementById('thumbs');
-let fotosData=[]; // dataURL JPG comprimida
+/* ======================== CIDADES (autocomplete) =============== */
+const dlCities = $id('dl_cities');
+let cityTimer=null;
+async function fetchCitiesLike(q){
+  if(!q || q.length<3) return;
+  try{
+    const r = await fetch(API_BASE+"?path="+encodeURIComponent('/cities')+"&q="+encodeURIComponent(q), {method:'GET'});
+    if(!r.ok) return;
+    const js = await r.json();
+    if(Array.isArray(js.cities)){
+      dlCities.innerHTML = js.cities.slice(0,100).map(c=>`<option value="${c}">`).join('');
+    }
+  }catch(_){}
+}
+function bindCitySuggest(inputId){
+  const el = $id(inputId);
+  el.addEventListener('input', ()=>{
+    const v = el.value.trim();
+    clearTimeout(cityTimer);
+    cityTimer=setTimeout(()=>fetchCitiesLike(v), 250);
+  });
+}
+bindCitySuggest('cli_local');
+bindCitySuggest('for_local');
+
+/* ======================== ITENS ================================ */
+const tipos = ['Caixa','Saco','Palete','Outros'];
+const tamanhos = ['P','M','G'];
+
+const itensDiv = $id('itens');
+const totalQtdEl = $id('totalQtd');
+function somaTotal(){ 
+  let t=0; document.querySelectorAll('.qtd').forEach(i=> t += Number(i.value||0)); 
+  totalQtdEl.textContent = t; 
+}
+function itemRow(){
+  const row = document.createElement('div');
+  row.className='grid';
+
+  const selTipo = document.createElement('select');
+  tipos.forEach(t=>{ const o=document.createElement('option'); o.value=t; o.textContent=t; selTipo.appendChild(o) });
+
+  const selTam = document.createElement('select');
+  tamanhos.forEach(t=>{ const o=document.createElement('option'); o.value=t; o.textContent=t; selTam.appendChild(o) });
+
+  const qtd = document.createElement('input'); qtd.type='number'; qtd.min='1'; qtd.value='1'; qtd.className='qtd'; qtd.oninput=somaTotal;
+
+  const del = document.createElement('button'); del.className='btn btn-danger'; del.textContent='x'; del.onclick=()=>{ row.remove(); somaTotal(); };
+
+  row.appendChild(selTipo); row.appendChild(selTam); row.appendChild(qtd); row.appendChild(del);
+  return row;
+}
+$id('addItem').onclick = ()=>{ itensDiv.appendChild(itemRow()); somaTotal(); };
+/* cria duas linhas de exemplo */
+itensDiv.appendChild(itemRow()); itensDiv.appendChild(itemRow()); somaTotal();
+
+/* ======================== FOTOS ================================ */
+const fileInput = $id('fotos');
+const thumbs = $id('thumbs');
+let fotosData = []; // dataURL
+
 fileInput.onchange = async (ev)=>{
-  const files=Array.from(ev.target.files||[]);
+  const files = Array.from(ev.target.files||[]);
   for(const f of files){
     if(!f.type.startsWith('image/')) continue;
     const dataUrl = await fileToDataURL(f);
-    const small   = await compressImage(dataUrl, 1600, 0.82); // máx 1600px, qualidade 82%
-    fotosData.push(small);
+    fotosData.push(dataUrl);
   }
   renderThumbs();
 };
@@ -261,123 +308,123 @@ function renderThumbs(){
     thumbs.appendChild(box);
   });
 }
-function fileToDataURL(file){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); }); }
-function compressImage(dataUrl, maxSide=1600, quality=0.82){
-  return new Promise((resolve)=>{
-    const img=new Image(); img.onload=()=>{
-      let {width:w,height:h}=img;
-      const ratio=Math.min(1, maxSide/Math.max(w,h));
-      if(ratio<1){ w=Math.round(w*ratio); h=Math.round(h*ratio); }
-      const c=document.createElement('canvas'); c.width=w; c.height=h;
-      const cx=c.getContext('2d'); cx.drawImage(img,0,0,w,h);
-      resolve(c.toDataURL('image/jpeg', quality));
-    }; img.src=dataUrl;
-  });
+function fileToDataURL(file){
+  return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); });
 }
 
-/* ====== Data default ====== */
+/* ======================== DATAS & LIMPAR ======================= */
 function todayISO(){ const d=new Date(); return d.toISOString().slice(0,10) }
-document.getElementById('data').value=todayISO();
+$id('data').value = todayISO();
 
-/* ====== Máscara telefone ====== */
-function digits(s){ return String(s||'').replace(/\D/g,'') }
-function maskPhone(el){
-  el.addEventListener('input', ()=>{
-    let v=digits(el.value).replace(/^55/,''); if(v.length>11) v=v.slice(0,11);
-    if(v.length>=11){ el.value=`(${v.slice(0,2)}) ${v.slice(2,3)} ${v.slice(3,7)}-${v.slice(7)}`; }
-    else if(v.length>=10){ el.value=`(${v.slice(0,2)}) ${v.slice(2,6)}-${v.slice(6)}`; }
-    else if(v.length>=6){ el.value=`(${v.slice(0,2)}) ${v.slice(2,6)}-${v.slice(6)}`; }
-    else if(v.length>=2){ el.value=`(${v.slice(0,2)}) ${v.slice(2)}`; }
-    else { el.value=v; }
-  });
-}
-maskPhone(document.getElementById('cli_tel'));
-maskPhone(document.getElementById('for_tel'));
-
-/* ====== Autocomplete Cidades (IBGE) ====== */
-let _cidadesBR=null; const $dl=document.getElementById('dlCidades');
-async function ensureCidadesBR(){
-  if(_cidadesBR) return _cidadesBR;
-  const cache=localStorage.getItem('cidadesBR_v1'); if(cache){ _cidadesBR=JSON.parse(cache); return _cidadesBR; }
-  const r=await fetch('https://servicodados.ibge.gov.br/api/v1/localidades/municipios');
-  const js=await r.json();
-  _cidadesBR=js.map(m=>`${m.nome}/${m.microrregiao.mesorregiao.UF.sigla}`);
-  localStorage.setItem('cidadesBR_v1', JSON.stringify(_cidadesBR)); return _cidadesBR;
-}
-function bindCityAutocomplete(input){
-  input.setAttribute('list','dlCidades');
-  let last=''; input.addEventListener('input', async ()=>{
-    const v=input.value.trim().toLowerCase(); if(v.length<3||v===last) return; last=v;
-    const list=await ensureCidadesBR(); const matches=list.filter(c=>c.toLowerCase().includes(v)).slice(0,40);
-    $dl.innerHTML=matches.map(c=>`<option value="${c}">`).join('');
-  });
-}
-bindCityAutocomplete(document.getElementById('cli_cid'));
-bindCityAutocomplete(document.getElementById('for_cid'));
-
-/* ====== Limpar ====== */
-document.getElementById('limpar').onclick=()=>{
-  ['rom','obs','cli_tel','cli_nome','cli_cid','for_tel','for_nome','for_cid'].forEach(id=>document.getElementById(id).value='');
+$id('limpar').onclick = ()=>{
+  $id('rom').value='';
+  $id('cli_tel').value=''; $id('cli_nome').value=''; $id('cli_local').value='';
+  $id('for_tel').value=''; $id('for_nome').value=''; $id('for_local').value='';
+  $id('obs').value='';
   itensDiv.innerHTML=''; itensDiv.appendChild(itemRow()); somaTotal();
   fileInput.value=''; fotosData=[]; renderThumbs();
-  document.getElementById('msg').style.display='none';
-  document.getElementById('data').value=todayISO();
+  $id('msg').style.display='none';
 };
 
-/* ====== Enviar ====== */
-document.getElementById('enviar').onclick=async ()=>{
-  const rom=Number(document.getElementById('rom').value);
-  const data=document.getElementById('data').value;
-  const obs =document.getElementById('obs').value.trim();
-  const cli_tel =document.getElementById('cli_tel').value.trim();
-  const cli_nome=document.getElementById('cli_nome').value.trim();
-  const cli_cid =document.getElementById('cli_cid').value.trim();
-  const for_tel =document.getElementById('for_tel').value.trim();
-  const for_nome=document.getElementById('for_nome').value.trim();
-  const for_cid =document.getElementById('for_cid').value.trim();
+/* ======================== MODAL DE SUCESSO ===================== */
+function buildWaLink(tel, cod, receiptUrl){
+  const phone = onlyDigits(tel);
+  if(!phone) return null;
+  const msg = `Romaneio ${cod} enviado.%0AComprovante:%0A${receiptUrl}`;
+  return `https://wa.me/55${phone}?text=${msg}`;
+}
+function openSuccessModal({ cod, receiptUrl, pdfUrl, telCliente, telFornecedor }){
+  const old = document.querySelector('.modal-backdrop'); if(old) old.remove();
 
-  const itens=[]; itensDiv.querySelectorAll('.grid').forEach(row=>{
-    const [t,s,q]=row.querySelectorAll('select, input'); const qtd=Number(q.value||0);
+  const waCli = buildWaLink(telCliente, cod, receiptUrl);
+  const waFor = buildWaLink(telFornecedor, cod, receiptUrl);
+
+  const wrap = document.createElement('div');
+  wrap.className = 'modal-backdrop';
+  wrap.innerHTML = `
+    <div class="modal">
+      <h3>Romaneio enviado com sucesso <span class="muted">• cód ${cod}</span></h3>
+      <p class="muted">Você pode abrir o comprovante (HTML público), abrir o PDF ou enviar pelo WhatsApp.</p>
+
+      <div class="row">
+        <button class="btn btn-primary" id="btnOpenReceipt">Abrir comprovante</button>
+        <button class="btn btn-ghost" id="btnOpenPdf">Abrir PDF</button>
+      </div>
+
+      <div class="row">
+        <button class="btn btn-ok" id="btnWaCliente" ${waCli?'':'disabled title="Telefone do cliente vazio"'}>WhatsApp do cliente</button>
+        <button class="btn btn-ok" id="btnWaFornecedor" ${waFor?'':'disabled title="Telefone do fornecedor vazio"'}>WhatsApp do fornecedor</button>
+        <span style="flex:1"></span>
+        <button class="btn btn-danger" id="btnClose">Fechar</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(wrap);
+
+  wrap.querySelector('#btnOpenReceipt').onclick = ()=> window.open(receiptUrl, '_blank');
+  wrap.querySelector('#btnOpenPdf').onclick     = ()=> window.open(pdfUrl, '_blank');
+  wrap.querySelector('#btnClose').onclick       = ()=> wrap.remove();
+
+  if (waCli)  wrap.querySelector('#btnWaCliente').onclick   = ()=> window.open(waCli, '_blank');
+  if (waFor)  wrap.querySelector('#btnWaFornecedor').onclick= ()=> window.open(waFor, '_blank');
+}
+
+/* ======================== ENVIAR ================================ */
+$id('enviar').onclick = async ()=>{
+  const rom = Number($id('rom').value);
+  const data = $id('data').value;
+  const obs  = $id('obs').value.trim();
+
+  const cliente = {
+    tel: $id('cli_tel').value.trim(),
+    nome: $id('cli_nome').value.trim(),
+    local: $id('cli_local').value.trim()
+  };
+  const fornecedor = {
+    tel: $id('for_tel').value.trim(),
+    nome: $id('for_nome').value.trim(),
+    local: $id('for_local').value.trim()
+  };
+
+  const itens = [];
+  itensDiv.querySelectorAll('.grid').forEach(row=>{
+    const [t,s,q] = row.querySelectorAll('select, input');
+    const qtd = Number(q.value||0);
     if(qtd>0) itens.push({tipo:t.value,tamanho:s.value,qtd});
   });
 
-  if(!rom||!data||!cli_tel||!cli_nome||!cli_cid||!for_tel||!for_nome||!for_cid||!itens.length){
-    showMsg('err','Campos obrigatórios ausentes'); return;
+  // validações mínimas
+  if(!rom){ showMsg('err','Informe o número do ROM'); return }
+  if(!data){ showMsg('err','Informe a data'); return }
+  if(!cliente.tel || !cliente.nome || !cliente.local || !fornecedor.tel || !fornecedor.nome || !fornecedor.local){
+    showMsg('err','Preencha os dados do cliente e fornecedor'); return
   }
-
-  // Corta se payload ficar absurdo (> ~8MB) para evitar “Failed to fetch”
-  const approxBytes = fotosData.reduce((n,d)=>n + (d.length*3/4), 0);
-  if(approxBytes > 8*1024*1024){ showMsg('err','Fotos muito pesadas. Selecione menos ou imagens menores.'); return; }
+  if(!itens.length){ showMsg('err','Adicione ao menos um item'); return }
 
   try{
-    const body={
-      rom,data,obs,
-      cliente:{tel:cli_tel,nome:cli_nome,local:cli_cid},
-      fornecedor:{tel:for_tel,nome:for_nome,local:for_cid},
+    const body = {
+      rom, data, obs,
+      cliente, fornecedor,
       itens,
-      fotos:fotosData.map(d=>({data:d}))
+      fotos: fotosData.map(d=>({data:d}))
     };
-    const r=await post('/rom/create', body);
-    if(r.error){ showMsg('err', r.error); return; }
+    const r = await post('/rom/create', body);
+    if(r.error){ showMsg('err', r.error); return }
 
-    // Sucesso → toast + modal
-    toast('Romaneio enviado!');
+    // Modal com 2 WhatsApps + links públicos
+    openSuccessModal({
+      cod: r.cod,
+      receiptUrl: r.receiptUrl || r.htmlUrl || r.viewUrl || '',
+      pdfUrl: r.pdfUrl || '',
+      telCliente: cliente.tel,
+      telFornecedor: fornecedor.tel
+    });
+
     showMsg('ok', `Enviado! Código: ${r.cod}`);
-    document.getElementById('okCod').textContent=`cod ${r.cod}`;
-    if(r.pdfUrl)      document.getElementById('okPdf').href=r.pdfUrl;
-    // Se backend não mandar whatsappUrl, geramos com o telefone do cliente:
-    const wa = r.whatsappUrl || `https://wa.me/55${(cli_tel||'').replace(/\D/g,'')}?text=${encodeURIComponent('Segue o comprovante do romaneio '+r.cod)}`;
-    document.getElementById('okWa').href=wa;
-    document.getElementById('okLayer').style.display='flex';
-
   }catch(e){
-    showMsg('err','Erro de rede: '+e.message);
+    showMsg('err','Erro de rede: '+e);
   }
 };
-
-/* Modal close */
-document.getElementById('okClose').onclick=()=>{document.getElementById('okLayer').style.display='none';};
-document.getElementById('okLayer').addEventListener('click',(e)=>{if(e.target.id==='okLayer') e.currentTarget.style.display='none';});
 </script>
 </body>
 </html>
