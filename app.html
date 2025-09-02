@@ -49,6 +49,8 @@
     .modal h3{margin:0 0 8px}
     .modal .row{justify-content:flex-end}
     .tag{display:inline-block;padding:4px 8px;border:1px solid var(--line);border-radius:999px;background:var(--chip);margin-left:8px}
+    /* toast */
+    .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:16px;background:var(--card);border:1px solid var(--line);padding:10px 14px;border-radius:10px;display:none;z-index:60}
   </style>
 </head>
 <body>
@@ -151,10 +153,8 @@
     </div>
   </div>
 
-  <!-- datalist de cidades (preenchido em tempo real) -->
   <datalist id="dlCidades"></datalist>
 
-  <!-- Modal de sucesso -->
   <div id="okLayer" class="overlay">
     <div class="modal">
       <h3>Romaneio enviado com sucesso <span id="okCod" class="tag"></span></h3>
@@ -167,35 +167,37 @@
     </div>
   </div>
 
+  <div id="toast" class="toast"></div>
+
 <script>
 /* ====== CONFIG ====== */
 const API_BASE = "https://script.google.com/macros/s/AKfycbyrDoEP82oJDj2wTIX491414Qf5e-YaDZJHYMAgmWfiddVKCw7WP4oQwrVtEouYxL-NvQ/exec";
 
-/* ====== Barra de progresso ====== */
+/* ====== Barra ====== */
 const bar = document.getElementById('bar');
 function barStart(){ bar.style.width='20%'; let w=20; window._barInt=setInterval(()=>{w=Math.min(95,w+5); bar.style.width=w+'%'},200)}
 function barDone(){ clearInterval(window._barInt); bar.style.width='100%'; setTimeout(()=>bar.style.width='0',300)}
 
 /* ====== Tema ====== */
 function setTheme(t){ document.documentElement.setAttribute('data-theme',t); localStorage.setItem('theme',t) }
-(function initTheme(){
-  const saved = localStorage.getItem('theme');
-  if(saved){ setTheme(saved) } else { setTheme(window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark') }
-})();
-document.getElementById('btnTheme').onclick = ()=> setTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
+(function(){ const s=localStorage.getItem('theme'); setTheme(s?s:(matchMedia('(prefers-color-scheme: light)').matches?'light':'dark')) })();
+document.getElementById('btnTheme').onclick=()=> setTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
 
 /* ====== Sessão ====== */
-const sess = (function(){ try{return JSON.parse(localStorage.getItem('session')||localStorage.getItem('rom_session')||'{}')}catch(_){return{}} })();
+const sess=(function(){try{return JSON.parse(localStorage.getItem('session')||localStorage.getItem('rom_session')||'{}')}catch(_){return{}}})();
 if(!sess.token){ location.href='index.html'; }
 document.getElementById('who').textContent = (sess.usuario||'') ? `${sess.usuario} · ${(sess.role||'')}` : '';
 
-/* ====== Helpers ====== */
-function showMsg(kind, text){
-  const el = document.getElementById('msg');
-  el.className = 'msg '+(kind==='err'?'err':'ok');
-  el.textContent = text;
-  el.style.display = 'block';
+/* ====== Toast ====== */
+function toast(text, kind='ok'){
+  const el=document.getElementById('toast');
+  el.textContent=text; el.style.display='block';
+  el.style.borderColor=(kind==='err'?'#b91c1c': 'var(--line)');
+  setTimeout(()=>{ el.style.display='none' }, 2400);
 }
+
+/* ====== Helpers ====== */
+function showMsg(kind, text){ const el=document.getElementById('msg'); el.className='msg '+(kind==='err'?'err':'ok'); el.textContent=text; el.style.display='block'; }
 async function post(path, body={}){
   barStart();
   try{
@@ -205,6 +207,7 @@ async function post(path, body={}){
       body: JSON.stringify({...body, token:sess.token})
     });
     barDone();
+    if(!r.ok) throw new Error('HTTP '+r.status);
     return await r.json();
   }catch(e){ barDone(); throw e }
 }
@@ -218,34 +221,33 @@ document.getElementById('logout').onclick = async (e)=>{
 };
 
 /* ====== Itens ====== */
-const tipos = ['Caixa','Saco','Palete','Outros'];
-const tamanhos = ['P','M','G'];
-const itensDiv = document.getElementById('itens');
-const totalQtdEl = document.getElementById('totalQtd');
-function somaTotal(){ let t=0; document.querySelectorAll('.qtd').forEach(i=> t += Number(i.value||0)); totalQtdEl.textContent = t; }
+const tipos=['Caixa','Saco','Palete','Outros'];
+const tamanhos=['P','M','G'];
+const itensDiv=document.getElementById('itens');
+const totalQtdEl=document.getElementById('totalQtd');
+function somaTotal(){ let t=0; document.querySelectorAll('.qtd').forEach(i=> t += Number(i.value||0)); totalQtdEl.textContent=t; }
 function itemRow(){
-  const row = document.createElement('div');
-  row.className='grid';
-  const selTipo = document.createElement('select'); tipos.forEach(t=>{ const o=document.createElement('option'); o.value=t; o.textContent=t; selTipo.appendChild(o) });
-  const selTam  = document.createElement('select'); tamanhos.forEach(t=>{ const o=document.createElement('option'); o.value=t; o.textContent=t; selTam.appendChild(o) });
-  const qtd = document.createElement('input'); qtd.type='number'; qtd.min='1'; qtd.value='1'; qtd.className='qtd'; qtd.oninput=somaTotal;
-  const del = document.createElement('button'); del.className='btn btn-danger'; del.textContent='X'; del.onclick=()=>{ row.remove(); somaTotal(); };
-  row.appendChild(selTipo); row.appendChild(selTam); row.appendChild(qtd); row.appendChild(del);
-  return row;
+  const row=document.createElement('div'); row.className='grid';
+  const selTipo=document.createElement('select'); tipos.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;selTipo.appendChild(o)});
+  const selTam=document.createElement('select'); tamanhos.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;selTam.appendChild(o)});
+  const qtd=document.createElement('input'); qtd.type='number'; qtd.min='1'; qtd.value='1'; qtd.className='qtd'; qtd.oninput=somaTotal;
+  const del=document.createElement('button'); del.className='btn btn-danger'; del.textContent='X'; del.onclick=()=>{ row.remove(); somaTotal(); };
+  row.appendChild(selTipo); row.appendChild(selTam); row.appendChild(qtd); row.appendChild(del); return row;
 }
-document.getElementById('addItem').onclick = ()=>{ itensDiv.appendChild(itemRow()); somaTotal(); };
+document.getElementById('addItem').onclick=()=>{ itensDiv.appendChild(itemRow()); somaTotal(); };
 itensDiv.appendChild(itemRow()); somaTotal();
 
-/* ====== Fotos ====== */
-const fileInput = document.getElementById('fotos');
-const thumbs    = document.getElementById('thumbs');
-let fotosData = []; // dataURL
+/* ====== Fotos (compressão) ====== */
+const fileInput=document.getElementById('fotos');
+const thumbs=document.getElementById('thumbs');
+let fotosData=[]; // dataURL JPG comprimida
 fileInput.onchange = async (ev)=>{
-  const files = Array.from(ev.target.files||[]);
+  const files=Array.from(ev.target.files||[]);
   for(const f of files){
     if(!f.type.startsWith('image/')) continue;
     const dataUrl = await fileToDataURL(f);
-    fotosData.push(dataUrl);
+    const small   = await compressImage(dataUrl, 1600, 0.82); // máx 1600px, qualidade 82%
+    fotosData.push(small);
   }
   renderThumbs();
 };
@@ -260,123 +262,122 @@ function renderThumbs(){
   });
 }
 function fileToDataURL(file){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); }); }
+function compressImage(dataUrl, maxSide=1600, quality=0.82){
+  return new Promise((resolve)=>{
+    const img=new Image(); img.onload=()=>{
+      let {width:w,height:h}=img;
+      const ratio=Math.min(1, maxSide/Math.max(w,h));
+      if(ratio<1){ w=Math.round(w*ratio); h=Math.round(h*ratio); }
+      const c=document.createElement('canvas'); c.width=w; c.height=h;
+      const cx=c.getContext('2d'); cx.drawImage(img,0,0,w,h);
+      resolve(c.toDataURL('image/jpeg', quality));
+    }; img.src=dataUrl;
+  });
+}
 
 /* ====== Data default ====== */
 function todayISO(){ const d=new Date(); return d.toISOString().slice(0,10) }
-document.getElementById('data').value = todayISO();
+document.getElementById('data').value=todayISO();
 
-/* ====== Máscara simples de telefone ====== */
+/* ====== Máscara telefone ====== */
 function digits(s){ return String(s||'').replace(/\D/g,'') }
 function maskPhone(el){
   el.addEventListener('input', ()=>{
-    let v = digits(el.value).replace(/^55/,'');
-    if(v.length>11) v=v.slice(0,11);
-    if(v.length>=11){ el.value = `(${v.slice(0,2)}) ${v.slice(2,3)} ${v.slice(3,7)}-${v.slice(7)}`; }
-    else if(v.length>=10){ el.value = `(${v.slice(0,2)}) ${v.slice(2,6)}-${v.slice(6)}`; }
-    else if(v.length>=6){ el.value = `(${v.slice(0,2)}) ${v.slice(2,6)}-${v.slice(6)}`; }
-    else if(v.length>=2){ el.value = `(${v.slice(0,2)}) ${v.slice(2)}`; }
-    else { el.value = v; }
+    let v=digits(el.value).replace(/^55/,''); if(v.length>11) v=v.slice(0,11);
+    if(v.length>=11){ el.value=`(${v.slice(0,2)}) ${v.slice(2,3)} ${v.slice(3,7)}-${v.slice(7)}`; }
+    else if(v.length>=10){ el.value=`(${v.slice(0,2)}) ${v.slice(2,6)}-${v.slice(6)}`; }
+    else if(v.length>=6){ el.value=`(${v.slice(0,2)}) ${v.slice(2,6)}-${v.slice(6)}`; }
+    else if(v.length>=2){ el.value=`(${v.slice(0,2)}) ${v.slice(2)}`; }
+    else { el.value=v; }
   });
 }
 maskPhone(document.getElementById('cli_tel'));
 maskPhone(document.getElementById('for_tel'));
 
-/* ====== Autocomplete de cidades: Brasil inteiro (cache IBGE) ====== */
-let _cidadesBR = null;
-const $dl = document.getElementById('dlCidades');
+/* ====== Autocomplete Cidades (IBGE) ====== */
+let _cidadesBR=null; const $dl=document.getElementById('dlCidades');
 async function ensureCidadesBR(){
   if(_cidadesBR) return _cidadesBR;
-  const cache = localStorage.getItem('cidadesBR_v1');
-  if(cache){ _cidadesBR = JSON.parse(cache); return _cidadesBR; }
-  // baixa uma vez (~1MB) e guarda
-  const r = await fetch('https://servicodados.ibge.gov.br/api/v1/localidades/municipios');
-  const js = await r.json();
-  _cidadesBR = js.map(m => `${m.nome}/${m.microrregiao.mesorregiao.UF.sigla}`);
-  localStorage.setItem('cidadesBR_v1', JSON.stringify(_cidadesBR));
-  return _cidadesBR;
+  const cache=localStorage.getItem('cidadesBR_v1'); if(cache){ _cidadesBR=JSON.parse(cache); return _cidadesBR; }
+  const r=await fetch('https://servicodados.ibge.gov.br/api/v1/localidades/municipios');
+  const js=await r.json();
+  _cidadesBR=js.map(m=>`${m.nome}/${m.microrregiao.mesorregiao.UF.sigla}`);
+  localStorage.setItem('cidadesBR_v1', JSON.stringify(_cidadesBR)); return _cidadesBR;
 }
 function bindCityAutocomplete(input){
   input.setAttribute('list','dlCidades');
-  let last = '';
-  input.addEventListener('input', async ()=>{
-    const v = input.value.trim().toLowerCase();
-    if(v.length < 3 || v===last) return;
-    last=v;
-    const list = await ensureCidadesBR();
-    const matches = list.filter(c => c.toLowerCase().includes(v)).slice(0,40);
-    $dl.innerHTML = matches.map(c=>`<option value="${c}">`).join('');
+  let last=''; input.addEventListener('input', async ()=>{
+    const v=input.value.trim().toLowerCase(); if(v.length<3||v===last) return; last=v;
+    const list=await ensureCidadesBR(); const matches=list.filter(c=>c.toLowerCase().includes(v)).slice(0,40);
+    $dl.innerHTML=matches.map(c=>`<option value="${c}">`).join('');
   });
 }
 bindCityAutocomplete(document.getElementById('cli_cid'));
 bindCityAutocomplete(document.getElementById('for_cid'));
 
 /* ====== Limpar ====== */
-document.getElementById('limpar').onclick = ()=>{
-  document.getElementById('rom').value='';
-  document.getElementById('obs').value='';
-  document.getElementById('cli_tel').value='';
-  document.getElementById('cli_nome').value='';
-  document.getElementById('cli_cid').value='';
-  document.getElementById('for_tel').value='';
-  document.getElementById('for_nome').value='';
-  document.getElementById('for_cid').value='';
+document.getElementById('limpar').onclick=()=>{
+  ['rom','obs','cli_tel','cli_nome','cli_cid','for_tel','for_nome','for_cid'].forEach(id=>document.getElementById(id).value='');
   itensDiv.innerHTML=''; itensDiv.appendChild(itemRow()); somaTotal();
   fileInput.value=''; fotosData=[]; renderThumbs();
   document.getElementById('msg').style.display='none';
-  document.getElementById('data').value = todayISO();
+  document.getElementById('data').value=todayISO();
 };
 
 /* ====== Enviar ====== */
-document.getElementById('enviar').onclick = async ()=>{
-  const rom = Number(document.getElementById('rom').value);
-  const data = document.getElementById('data').value;
-  const obs  = document.getElementById('obs').value.trim();
+document.getElementById('enviar').onclick=async ()=>{
+  const rom=Number(document.getElementById('rom').value);
+  const data=document.getElementById('data').value;
+  const obs =document.getElementById('obs').value.trim();
+  const cli_tel =document.getElementById('cli_tel').value.trim();
+  const cli_nome=document.getElementById('cli_nome').value.trim();
+  const cli_cid =document.getElementById('cli_cid').value.trim();
+  const for_tel =document.getElementById('for_tel').value.trim();
+  const for_nome=document.getElementById('for_nome').value.trim();
+  const for_cid =document.getElementById('for_cid').value.trim();
 
-  const cli_tel  = document.getElementById('cli_tel').value.trim();
-  const cli_nome = document.getElementById('cli_nome').value.trim();
-  const cli_cid  = document.getElementById('cli_cid').value.trim();
-  const for_tel  = document.getElementById('for_tel').value.trim();
-  const for_nome = document.getElementById('for_nome').value.trim();
-  const for_cid  = document.getElementById('for_cid').value.trim();
-
-  const itens = [];
-  itensDiv.querySelectorAll('.grid').forEach(row=>{
-    const [t,s,q] = row.querySelectorAll('select, input');
-    const qtd = Number(q.value||0);
+  const itens=[]; itensDiv.querySelectorAll('.grid').forEach(row=>{
+    const [t,s,q]=row.querySelectorAll('select, input'); const qtd=Number(q.value||0);
     if(qtd>0) itens.push({tipo:t.value,tamanho:s.value,qtd});
   });
 
-  if(!rom || !data || !cli_tel || !cli_nome || !cli_cid || !for_tel || !for_nome || !for_cid || !itens.length){
+  if(!rom||!data||!cli_tel||!cli_nome||!cli_cid||!for_tel||!for_nome||!for_cid||!itens.length){
     showMsg('err','Campos obrigatórios ausentes'); return;
   }
 
-  try{
-    const body = {
-      rom, data, obs,
-      cliente:    { tel: cli_tel,  nome: cli_nome,  local: cli_cid  },
-      fornecedor: { tel: for_tel,  nome: for_nome,  local: for_cid  },
-      itens,
-      fotos: fotosData.map(d=>({data:d}))
-    };
-    const r = await post('/rom/create', body);
-    if(r.error){ showMsg('err', r.error); return }
+  // Corta se payload ficar absurdo (> ~8MB) para evitar “Failed to fetch”
+  const approxBytes = fotosData.reduce((n,d)=>n + (d.length*3/4), 0);
+  if(approxBytes > 8*1024*1024){ showMsg('err','Fotos muito pesadas. Selecione menos ou imagens menores.'); return; }
 
-    // Toast + Modal com links
+  try{
+    const body={
+      rom,data,obs,
+      cliente:{tel:cli_tel,nome:cli_nome,local:cli_cid},
+      fornecedor:{tel:for_tel,nome:for_nome,local:for_cid},
+      itens,
+      fotos:fotosData.map(d=>({data:d}))
+    };
+    const r=await post('/rom/create', body);
+    if(r.error){ showMsg('err', r.error); return; }
+
+    // Sucesso → toast + modal
+    toast('Romaneio enviado!');
     showMsg('ok', `Enviado! Código: ${r.cod}`);
-    document.getElementById('okCod').textContent = `cod ${r.cod}`;
-    if(r.pdfUrl) document.getElementById('okPdf').href = r.pdfUrl;
-    if(r.whatsappUrl) document.getElementById('okWa').href = r.whatsappUrl;
+    document.getElementById('okCod').textContent=`cod ${r.cod}`;
+    if(r.pdfUrl)      document.getElementById('okPdf').href=r.pdfUrl;
+    // Se backend não mandar whatsappUrl, geramos com o telefone do cliente:
+    const wa = r.whatsappUrl || `https://wa.me/55${(cli_tel||'').replace(/\D/g,'')}?text=${encodeURIComponent('Segue o comprovante do romaneio '+r.cod)}`;
+    document.getElementById('okWa').href=wa;
     document.getElementById('okLayer').style.display='flex';
 
   }catch(e){
-    showMsg('err','Erro de rede: '+e);
+    showMsg('err','Erro de rede: '+e.message);
   }
 };
 
 /* Modal close */
-document.getElementById('okClose').onclick = ()=>{ document.getElementById('okLayer').style.display='none'; };
-document.getElementById('okLayer').addEventListener('click', (e)=>{ if(e.target.id==='okLayer') e.currentTarget.style.display='none'; });
-
+document.getElementById('okClose').onclick=()=>{document.getElementById('okLayer').style.display='none';};
+document.getElementById('okLayer').addEventListener('click',(e)=>{if(e.target.id==='okLayer') e.currentTarget.style.display='none';});
 </script>
 </body>
 </html>
