@@ -9,12 +9,14 @@
   <meta http-equiv="Expires" content="0"/>
   <style>
     :root{
-      --bg:#0f172a; --card:#0b1220; --text:#e5e7eb; --muted:#94a3b8; --primary:#2563eb; --danger:#ef4444; --ok:#16a34a; --chip:#111827; --bar:#60a5fa;
-      --line:#1f2937;
+      --bg:#0f172a; --card:#0b1220; --text:#e5e7eb; --muted:#94a3b8;
+      --primary:#2563eb; --danger:#ef4444; --ok:#16a34a; --chip:#111827;
+      --bar:#60a5fa; --line:#1f2937;
     }
     [data-theme="light"]{
-      --bg:#f8fafc; --card:#ffffff; --text:#0f172a; --muted:#475569; --primary:#1d4ed8; --danger:#dc2626; --ok:#16a34a; --chip:#eef2ff; --bar:#3b82f6;
-      --line:#e5e7eb;
+      --bg:#f8fafc; --card:#ffffff; --text:#0f172a; --muted:#475569;
+      --primary:#1d4ed8; --danger:#dc2626; --ok:#16a34a; --chip:#eef2ff;
+      --bar:#3b82f6; --line:#e5e7eb;
     }
     *{box-sizing:border-box} html,body{height:100%}
     body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto}
@@ -25,10 +27,10 @@
     .container{max-width:1100px;margin:18px auto;padding:0 16px}
     .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
     h2{margin:0 0 12px}
-    label{display:block;margin:8px 0 6px;color:var(--muted);font-size:14px}
-    select,input[type=text],input[type=number],input[type=date],textarea{width:100%;padding:10px 12px;border:1px solid var(--line);background:transparent;border-radius:10px;color:var(--text)}
-    textarea{min-height:44px;resize:vertical}
-    .grid{display:grid;grid-template-columns:1fr 1fr 1fr 80px;gap:10px;align-items:center}
+    label{display:block;font-size:13px;color:var(--muted);margin:8px 0 6px}
+    input,select{width:100%;padding:10px 12px;border:1px solid var(--line);background:transparent;border-radius:10px;color:var(--text)}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .grid4{display:grid;grid-template-columns:1.2fr .8fr .8fr 110px;gap:10px;align-items:center}
     .btn{cursor:pointer;border:0;border-radius:10px;padding:10px 14px;font-weight:600}
     .btn-primary{background:var(--primary);color:#fff}
     .btn-ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
@@ -39,33 +41,22 @@
     .thumb{position:relative}
     .thumb img{width:84px;height:84px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
     .thumb button{position:absolute;top:-8px;right:-8px;width:22px;height:22px;border-radius:50%;border:0;background:var(--danger);color:#fff;cursor:pointer}
-    .msg{margin-top:10px;padding:10px;border-radius:10px}
+    .msg{margin-top:12px;padding:12px;border-radius:10px}
     .ok{background:#064e3b;color:#a7f3d0}
     .err{background:#7f1d1d;color:#fecaca}
     .topbar{position:fixed;inset:0 0 auto 0;height:3px;background:transparent;z-index:20}
     .bar{height:100%;width:0;background:var(--bar);transition:width .2s linear}
     .section{margin-bottom:16px}
 
-    /* ===== Modal de sucesso ===== */
-    .modal-backdrop{
-      position:fixed; inset:0; background:rgba(0,0,0,.5);
-      display:flex; align-items:center; justify-content:center; z-index:9999;
-    }
-    .modal{
-      width:min(560px, 92vw);
-      background:var(--card); color:var(--text);
-      border:1px solid var(--line); border-radius:14px;
-      box-shadow:0 20px 60px rgba(0,0,0,.35);
-      padding:18px;
-    }
-    .modal h3{ margin:0 0 8px }
-    .modal .muted{ color:var(--muted) }
-    .modal .row{ display:flex; gap:8px; flex-wrap:wrap; margin-top:14px }
-    .modal .btn{ cursor:pointer; border:0; border-radius:10px; padding:10px 14px; font-weight:600 }
-    .modal .btn-primary{ background:var(--primary); color:#fff }
-    .modal .btn-ghost{ background:transparent; color:var(--text); border:1px solid var(--line) }
-    .modal .btn-ok{ background:var(--ok); color:#022c22 }
-    .modal .btn-danger{ background:var(--danger); color:#fff }
+    /* Modal */
+    .modal-back{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:30}
+    .modal{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;max-width:520px;width:96%}
+    .modal h3{margin:0 0 8px}
+    .modal .row{justify-content:flex-end}
+    .chip-ok{padding:2px 8px;border-radius:999px;background:#064e3b;color:#a7f3d0;font-size:12px}
+
+    /* datalist “grande” para cidades */
+    datalist option{color:#000}
   </style>
 </head>
 <body>
@@ -77,7 +68,7 @@
       <span id="who" class="muted"></span>
     </div>
     <nav class="row">
-      <a href="#rom" id="mRom">Enviar Romaneio</a>
+      <a href="#rom">Enviar Romaneio</a>
       <a href="#list">Romaneios</a>
       <a href="#clientes">Clientes</a>
       <a href="#users">Usuários</a>
@@ -90,53 +81,62 @@
     <div class="card section" id="secRom">
       <h2>Enviar Romaneio</h2>
 
-      <div class="row">
-        <div style="flex:1">
+      <div class="grid2">
+        <div>
           <label>ROM *</label>
-          <input id="rom" type="number" placeholder="Ex.: 21">
+          <input id="rom" type="number" placeholder="Ex.: 21" required>
         </div>
-        <div style="flex:1">
+        <div>
           <label>Data *</label>
-          <input id="data" type="date">
+          <input id="data" type="date" required>
         </div>
       </div>
 
-      <h3 class="muted" style="margin-top:4px">Cliente & Fornecedor</h3>
-      <div class="row">
-        <div style="flex:1;min-width:260px">
+      <h3 class="muted" style="margin-top:12px">Cliente & Fornecedor</h3>
+      <div class="grid2">
+        <div>
           <label>Cliente • Telefone *</label>
-          <input id="cli_tel" type="text" inputmode="numeric" placeholder="(85) 9 9999-9999">
+          <input id="cli_tel" inputmode="numeric" placeholder="(85) 9 8888-8888" maxlength="16">
         </div>
-        <div style="flex:1;min-width:260px">
+        <div>
           <label>Cliente • Nome *</label>
-          <input id="cli_nome" type="text" placeholder="Nome do cliente">
+          <input id="cli_nome" placeholder="Nome do cliente">
         </div>
       </div>
-      <div class="row">
-        <div style="flex:1;min-width:260px">
+      <div class="grid2">
+        <div>
           <label>Cliente • Cidade/UF *</label>
-          <input id="cli_local" type="text" placeholder="Fortaleza/CE" list="dl_cities" autocomplete="off">
+          <input id="cli_cidade_uf" list="listaCidades" placeholder="Fortaleza/CE">
         </div>
-        <div style="flex:1;min-width:260px">
-          <label>Fornecedor • Telefone *</label>
-          <input id="for_tel" type="text" inputmode="numeric" placeholder="(85) 3333-3333">
+        <div class="row" style="align-items:end;gap:8px">
+          <span id="cli_status" class="chip-ok" style="display:none">auto</span>
         </div>
       </div>
-      <div class="row">
-        <div style="flex:1;min-width:260px">
-          <label>Fornecedor • Nome *</label>
-          <input id="for_nome" type="text" placeholder="Nome do fornecedor">
+
+      <div class="grid2" style="margin-top:8px">
+        <div>
+          <label>Fornecedor • Telefone *</label>
+          <input id="for_tel" inputmode="numeric" placeholder="(85) 3333-3333" maxlength="16">
         </div>
-        <div style="flex:1;min-width:260px">
+        <div>
+          <label>Fornecedor • Nome *</label>
+          <input id="for_nome" placeholder="Nome do fornecedor">
+        </div>
+      </div>
+      <div class="grid2">
+        <div>
           <label>Fornecedor • Cidade/UF *</label>
-          <input id="for_local" type="text" placeholder="Maracanaú/CE" list="dl_cities" autocomplete="off">
+          <input id="for_cidade_uf" list="listaCidades" placeholder="Maracanaú/CE">
+        </div>
+        <div class="row" style="align-items:end;gap:8px">
+          <span id="for_status" class="chip-ok" style="display:none">auto</span>
         </div>
       </div>
 
       <label style="margin-top:8px">Obs.</label>
       <input id="obs" type="text" placeholder="Ex.: Doca 3, até 16h">
 
-      <h3 class="muted" style="margin-top:12px">Itens</h3>
+      <h3 class="muted" style="margin:14px 0 6px">Itens</h3>
       <div id="itens"></div>
       <div class="row" style="margin-top:8px">
         <button id="addItem" class="btn-ghost">+ Adicionar item</button>
@@ -161,41 +161,87 @@
     </div>
   </div>
 
-  <!-- datalist compartilhado para cidades -->
-  <datalist id="dl_cities"></datalist>
+  <!-- datalist de cidades (preenchido via IBGE) -->
+  <datalist id="listaCidades"></datalist>
+
+  <!-- Modal “completar cadastro” quando telefone não encontrado -->
+  <div id="modalCad" class="modal-back">
+    <div class="modal">
+      <h3>Cadastro não encontrado</h3>
+      <p class="muted" id="cadQuem">Preencha nome e cidade/UF.</p>
+      <label>Nome</label>
+      <input id="cadNome" placeholder="Nome">
+      <label style="margin-top:8px">Cidade/UF</label>
+      <input id="cadCidade" list="listaCidades" placeholder="Cidade/UF">
+      <div class="row" style="margin-top:12px">
+        <button id="cadCancel" class="btn btn-ghost">Cancelar</button>
+        <button id="cadOk" class="btn btn-primary">Usar e cadastrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de sucesso com botões de WhatsApp -->
+  <div id="modalOk" class="modal-back">
+    <div class="modal">
+      <h3>Romaneio enviado com sucesso <span id="codChave" class="chip-ok"></span></h3>
+      <p class="muted">Você pode abrir o PDF ou enviar pelo WhatsApp.</p>
+      <div class="row">
+        <button id="btnPdf" class="btn btn-ghost">Abrir PDF</button>
+        <button id="btnWappCli" class="btn btn-primary">WhatsApp Cliente</button>
+        <button id="btnWappFor" class="btn btn-primary">WhatsApp Fornecedor</button>
+        <button id="btnOkClose" class="btn btn-ghost">Fechar</button>
+      </div>
+    </div>
+  </div>
 
 <script>
-/* ======================== CONFIG & CORE ======================== */
+/* ====== CONFIG ====== */
 const API_BASE = "https://script.google.com/macros/s/AKfycbyrDoEP82oJDj2wTIX491414Qf5e-YaDZJHYMAgmWfiddVKCw7WP4oQwrVtEouYxL-NvQ/exec";
-const bar = document.getElementById('bar');
-const $id = (s)=>document.getElementById(s);
-const onlyDigits = (s)=> String(s||'').replace(/\D/g,'');
-function barStart(){ bar.style.width='20%'; let w=20; window._barInt=setInterval(()=>{w=Math.min(95,w+5); bar.style.width=w+'%'},200)}
-function barDone(){ clearInterval(window._barInt); bar.style.width='100%'; setTimeout(()=>bar.style.width='0',300)}
+
+/* ====== Infra UI ====== */
+const $ = s => document.querySelector(s);
+const bar = $('#bar');
+function barStart(){ bar.style.width='20%'; let w=20; window._barInt=setInterval(()=>{w=Math.min(95,w+5); bar.style.width=w+'%'},200) }
+function barDone(){ clearInterval(window._barInt); bar.style.width='100%'; setTimeout(()=>bar.style.width='0',300) }
+function msg(kind, text){
+  const el = $('#msg'); el.className = 'msg ' + (kind==='err'?'err':'ok');
+  el.textContent = text; el.style.display='block';
+}
 function setTheme(t){ document.documentElement.setAttribute('data-theme',t); localStorage.setItem('theme',t) }
 (function initTheme(){
   const saved = localStorage.getItem('theme');
   if(saved){ setTheme(saved) } else { setTheme(window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark') }
 })();
-document.getElementById('btnTheme').onclick = ()=> setTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
+$('#btnTheme').onclick = ()=> setTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
 
-const sess = (function(){ try{return JSON.parse(localStorage.getItem('session')||'{}')}catch(_){return{}} })();
+/* ====== Sessão ====== */
+const sess = (function(){ try{return JSON.parse(localStorage.getItem('session')||localStorage.getItem('rom_session')||'{}')}catch(_){return{}} })();
 if(!sess.token){ location.href='index.html'; }
-document.getElementById('who').textContent = (sess.usuario||'') ? `${sess.usuario} · ${(sess.role||'')}` : '';
+$('#who').textContent = (sess.usuario||'admin') + (sess.role ? (' · ' + sess.role) : '');
 
-function showMsg(kind, text){
-  const el = $id('msg');
-  el.className = 'msg '+(kind==='err'?'err':'ok');
-  el.textContent = text;
-  el.style.display = 'block';
+/* ====== Logout ====== */
+$('#logout').onclick = async (e)=>{ e.preventDefault(); try{ await post('/logout',{}) }catch(_){ } localStorage.removeItem('session'); localStorage.removeItem('rom_session'); location.href='index.html'; };
+
+/* ====== Helpers ====== */
+function onlyDigits(s){ return (s||'').replace(/\D+/g,'') }
+function maskPhone(el){
+  let d = onlyDigits(el.value).slice(0,11); // 10 ou 11
+  if(d.length<=10){ // fixo (2+8)
+    el.value = d.replace(/^(\d{0,2})(\d{0,4})(\d{0,4}).*/, (_,a,b,c)=> (a?`(${a}`:'') + (a&&a.length===2?') ':'') + (b||'') + (b&&c?'-':'') + (c||'') );
+  }else{ // celular (2+9)
+    el.value = d.replace(/^(\d{0,2})(\d{0,5})(\d{0,4}).*/, (_,a,b,c)=> (a?`(${a}`:'') + (a&&a.length===2?') ':'') + (b||'') + (b&&c?'-':'') + (c||'') );
+  }
 }
+['#cli_tel','#for_tel'].forEach(sel=>{
+  const el=$(sel); el.addEventListener('input',()=>maskPhone(el)); el.addEventListener('blur',()=>tryLookup(sel.includes('cli')?'cliente':'fornecedor'));
+});
 
+/* ====== API ====== */
 async function post(path, body={}){
   barStart();
   try{
     const r = await fetch(API_BASE+"?path="+encodeURIComponent(path), {
-      method:'POST',
-      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
       body: JSON.stringify({...body, token:sess.token})
     });
     barDone();
@@ -203,92 +249,50 @@ async function post(path, body={}){
   }catch(e){ barDone(); throw e }
 }
 
-document.getElementById('logout').onclick = async (e)=>{
-  e.preventDefault();
-  try{ await post('/logout',{}); }catch(_){}
-  localStorage.removeItem('session');
-  location.href='index.html';
-};
-
-/* ======================== MÁSCARA TEL BR ====================== */
-function formatBrPhone(raw){
-  const d = onlyDigits(raw).slice(0,11);
-  if(d.length<=10){
-    // fixo 10 dígitos: (DD) XXXX-XXXX
-    const p1 = d.slice(0,2), p2=d.slice(2,6), p3=d.slice(6,10);
-    return d.length>6 ? `(${p1}) ${p2}-${p3}` : d.length>2 ? `(${p1}) ${p2}` : d;
-  }else{
-    // celular 11 dígitos: (DD) 9XXXX-XXXX
-    const p1=d.slice(0,2), p2=d.slice(2,7), p3=d.slice(7,11);
-    return `(${p1}) ${p2}-${p3}`;
-  }
-}
-['cli_tel','for_tel'].forEach(id=>{
-  const el = $id(id);
-  el.addEventListener('input', ()=> el.value = formatBrPhone(el.value));
-});
-
-/* ======================== CIDADES (autocomplete) =============== */
-const dlCities = $id('dl_cities');
-let cityTimer=null;
-async function fetchCitiesLike(q){
-  if(!q || q.length<3) return;
+/* ====== Cidades (IBGE) ====== */
+let cidades = []; // [{nome, uf, label}]
+async function loadCidades(){
   try{
-    const r = await fetch(API_BASE+"?path="+encodeURIComponent('/cities')+"&q="+encodeURIComponent(q), {method:'GET'});
-    if(!r.ok) return;
-    const js = await r.json();
-    if(Array.isArray(js.cities)){
-      dlCities.innerHTML = js.cities.slice(0,100).map(c=>`<option value="${c}">`).join('');
-    }
-  }catch(_){}
+    const r = await fetch('https://servicodados.ibge.gov.br/api/v1/localidades/municipios?orderBy=nome');
+    const arr = await r.json();
+    cidades = arr.map(x=>({nome:x.nome, uf:x.microrregiao.mesorregiao.UF.sigla, label:`${x.nome}/${x.microrregiao.mesorregiao.UF.sigla}`}));
+    fillDatalist('');
+  }catch(_){ /* silencia */ }
 }
-function bindCitySuggest(inputId){
-  const el = $id(inputId);
-  el.addEventListener('input', ()=>{
-    const v = el.value.trim();
-    clearTimeout(cityTimer);
-    cityTimer=setTimeout(()=>fetchCitiesLike(v), 250);
+function fillDatalist(prefix){
+  const dl = $('#listaCidades'); dl.innerHTML='';
+  const p = (prefix||'').toLowerCase();
+  const take = p.length>=3 ? cidades.filter(c=>c.label.toLowerCase().includes(p)).slice(0,50) : cidades.slice(0,0);
+  take.forEach(c=>{
+    const o=document.createElement('option'); o.value=c.label; dl.appendChild(o);
   });
 }
-bindCitySuggest('cli_local');
-bindCitySuggest('for_local');
+['#cli_cidade_uf','#for_cidade_uf','#cadCidade'].forEach(sel=>{
+  const el=$(sel); el.addEventListener('input',()=>fillDatalist(el.value));
+});
+loadCidades();
 
-/* ======================== ITENS ================================ */
+/* ====== Itens ====== */
 const tipos = ['Caixa','Saco','Palete','Outros'];
 const tamanhos = ['P','M','G'];
-
-const itensDiv = $id('itens');
-const totalQtdEl = $id('totalQtd');
-function somaTotal(){ 
-  let t=0; document.querySelectorAll('.qtd').forEach(i=> t += Number(i.value||0)); 
-  totalQtdEl.textContent = t; 
-}
+const itensDiv = $('#itens');
+const totalQtdEl = $('#totalQtd');
+function somaTotal(){ let t=0; document.querySelectorAll('.qtd').forEach(i=> t += Number(i.value||0)); totalQtdEl.textContent = t; }
 function itemRow(){
   const row = document.createElement('div');
-  row.className='grid';
-
-  const selTipo = document.createElement('select');
-  tipos.forEach(t=>{ const o=document.createElement('option'); o.value=t; o.textContent=t; selTipo.appendChild(o) });
-
-  const selTam = document.createElement('select');
-  tamanhos.forEach(t=>{ const o=document.createElement('option'); o.value=t; o.textContent=t; selTam.appendChild(o) });
-
-  const qtd = document.createElement('input'); qtd.type='number'; qtd.min='1'; qtd.value='1'; qtd.className='qtd'; qtd.oninput=somaTotal;
-
-  const del = document.createElement('button'); del.className='btn btn-danger'; del.textContent='x'; del.onclick=()=>{ row.remove(); somaTotal(); };
-
+  row.className='grid4';
+  const selTipo = document.createElement('select'); tipos.forEach(t=>{ const o=document.createElement('option'); o.value=t; o.textContent=t; selTipo.appendChild(o) });
+  const selTam  = document.createElement('select'); tamanhos.forEach(t=>{ const o=document.createElement('option'); o.value=t; o.textContent=t; selTam.appendChild(o) });
+  const qtd     = document.createElement('input');  qtd.type='number'; qtd.min='1'; qtd.value='1'; qtd.className='qtd'; qtd.oninput=somaTotal;
+  const del     = document.createElement('button'); del.className='btn btn-danger'; del.textContent='x'; del.onclick=()=>{ row.remove(); somaTotal(); };
   row.appendChild(selTipo); row.appendChild(selTam); row.appendChild(qtd); row.appendChild(del);
   return row;
 }
-$id('addItem').onclick = ()=>{ itensDiv.appendChild(itemRow()); somaTotal(); };
-/* cria duas linhas de exemplo */
-itensDiv.appendChild(itemRow()); itensDiv.appendChild(itemRow()); somaTotal();
+$('#addItem').onclick = ()=>{ itensDiv.appendChild(itemRow()); somaTotal(); };
+itensDiv.appendChild(itemRow()); somaTotal();
 
-/* ======================== FOTOS ================================ */
-const fileInput = $id('fotos');
-const thumbs = $id('thumbs');
-let fotosData = []; // dataURL
-
+/* ====== Fotos ====== */
+const fileInput = $('#fotos'), thumbs=$('#thumbs'); let fotosData=[];
 fileInput.onchange = async (ev)=>{
   const files = Array.from(ev.target.files||[]);
   for(const f of files){
@@ -304,127 +308,149 @@ function renderThumbs(){
     const box=document.createElement('div'); box.className='thumb';
     const img=new Image(); img.src=d; box.appendChild(img);
     const x=document.createElement('button'); x.textContent='×'; x.onclick=()=>{ fotosData.splice(i,1); renderThumbs(); };
-    box.appendChild(x);
-    thumbs.appendChild(box);
+    box.appendChild(x); thumbs.appendChild(box);
   });
 }
-function fileToDataURL(file){
-  return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); });
-}
+function fileToDataURL(file){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); }); }
 
-/* ======================== DATAS & LIMPAR ======================= */
+/* ====== Form helpers ====== */
 function todayISO(){ const d=new Date(); return d.toISOString().slice(0,10) }
-$id('data').value = todayISO();
-
-$id('limpar').onclick = ()=>{
-  $id('rom').value='';
-  $id('cli_tel').value=''; $id('cli_nome').value=''; $id('cli_local').value='';
-  $id('for_tel').value=''; $id('for_nome').value=''; $id('for_local').value='';
-  $id('obs').value='';
+$('#data').value = todayISO();
+$('#limpar').onclick = clearForm;
+function clearForm(){
+  $('#rom').value=''; $('#obs').value='';
+  ['#cli_tel','#cli_nome','#cli_cidade_uf','#for_tel','#for_nome','#for_cidade_uf'].forEach(s=>$(s).value='');
   itensDiv.innerHTML=''; itensDiv.appendChild(itemRow()); somaTotal();
   fileInput.value=''; fotosData=[]; renderThumbs();
-  $id('msg').style.display='none';
-};
-
-/* ======================== MODAL DE SUCESSO ===================== */
-function buildWaLink(tel, cod, receiptUrl){
-  const phone = onlyDigits(tel);
-  if(!phone) return null;
-  const msg = `Romaneio ${cod} enviado.%0AComprovante:%0A${receiptUrl}`;
-  return `https://wa.me/55${phone}?text=${msg}`;
-}
-function openSuccessModal({ cod, receiptUrl, pdfUrl, telCliente, telFornecedor }){
-  const old = document.querySelector('.modal-backdrop'); if(old) old.remove();
-
-  const waCli = buildWaLink(telCliente, cod, receiptUrl);
-  const waFor = buildWaLink(telFornecedor, cod, receiptUrl);
-
-  const wrap = document.createElement('div');
-  wrap.className = 'modal-backdrop';
-  wrap.innerHTML = `
-    <div class="modal">
-      <h3>Romaneio enviado com sucesso <span class="muted">• cód ${cod}</span></h3>
-      <p class="muted">Você pode abrir o comprovante (HTML público), abrir o PDF ou enviar pelo WhatsApp.</p>
-
-      <div class="row">
-        <button class="btn btn-primary" id="btnOpenReceipt">Abrir comprovante</button>
-        <button class="btn btn-ghost" id="btnOpenPdf">Abrir PDF</button>
-      </div>
-
-      <div class="row">
-        <button class="btn btn-ok" id="btnWaCliente" ${waCli?'':'disabled title="Telefone do cliente vazio"'}>WhatsApp do cliente</button>
-        <button class="btn btn-ok" id="btnWaFornecedor" ${waFor?'':'disabled title="Telefone do fornecedor vazio"'}>WhatsApp do fornecedor</button>
-        <span style="flex:1"></span>
-        <button class="btn btn-danger" id="btnClose">Fechar</button>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(wrap);
-
-  wrap.querySelector('#btnOpenReceipt').onclick = ()=> window.open(receiptUrl, '_blank');
-  wrap.querySelector('#btnOpenPdf').onclick     = ()=> window.open(pdfUrl, '_blank');
-  wrap.querySelector('#btnClose').onclick       = ()=> wrap.remove();
-
-  if (waCli)  wrap.querySelector('#btnWaCliente').onclick   = ()=> window.open(waCli, '_blank');
-  if (waFor)  wrap.querySelector('#btnWaFornecedor').onclick= ()=> window.open(waFor, '_blank');
+  $('#msg').style.display='none';
 }
 
-/* ======================== ENVIAR ================================ */
-$id('enviar').onclick = async ()=>{
-  const rom = Number($id('rom').value);
-  const data = $id('data').value;
-  const obs  = $id('obs').value.trim();
+/* ====== Lookup por telefone ====== */
+let pendenteCadastro = {cliente:false, fornecedor:false};
+async function tryLookup(tipo){
+  const telEl = tipo==='cliente' ? $('#cli_tel') : $('#for_tel');
+  const nomeEl = tipo==='cliente' ? $('#cli_nome') : $('#for_nome');
+  const cidEl  = tipo==='cliente' ? $('#cli_cidade_uf') : $('#for_cidade_uf');
+  const chip   = tipo==='cliente' ? $('#cli_status') : $('#for_status');
+  const tel = onlyDigits(telEl.value);
+  chip.style.display='none';
+  if(tel.length<10) return;
 
-  const cliente = {
-    tel: $id('cli_tel').value.trim(),
-    nome: $id('cli_nome').value.trim(),
-    local: $id('cli_local').value.trim()
-  };
-  const fornecedor = {
-    tel: $id('for_tel').value.trim(),
-    nome: $id('for_nome').value.trim(),
-    local: $id('for_local').value.trim()
-  };
+  try{
+    const r = await post('/contacts/find', { tipo, tel });
+    if(r && r.found){
+      if(r.nome) nomeEl.value = r.nome;
+      if(r.cidade_uf) cidEl.value = r.cidade_uf;
+      chip.textContent='auto'; chip.style.display='inline-block';
+      (tipo==='cliente') ? pendenteCadastro.cliente=false : pendenteCadastro.fornecedor=false;
+      return;
+    }
+    // não encontrado → pedir nome/cidade
+    await abrirModalCadastro(tipo, nomeEl.value, cidEl.value);
+  }catch(_){
+    // se API não existir, apenas segue sem travar
+  }
+}
+function abrirModalCadastro(tipo, nomeAtual, cidAtual){
+  return new Promise(res=>{
+    $('#cadQuem').textContent = `Cadastro de ${tipo} não encontrado.`;
+    $('#cadNome').value = nomeAtual||'';
+    $('#cadCidade').value = cidAtual||'';
+    $('#modalCad').style.display='flex';
+    $('#cadCancel').onclick = ()=>{ $('#modalCad').style.display='none'; res(false) };
+    $('#cadOk').onclick = ()=>{
+      const nome = $('#cadNome').value.trim();
+      const cidade = $('#cadCidade').value.trim();
+      if(tipo==='cliente'){ $('#cli_nome').value=nome; $('#cli_cidade_uf').value=cidade; pendenteCadastro.cliente=true; }
+      else { $('#for_nome').value=nome; $('#for_cidade_uf').value=cidade; pendenteCadastro.fornecedor=true; }
+      $('#modalCad').style.display='none';
+      res(true);
+    };
+  });
+}
+
+/* ====== Enviar ====== */
+$('#enviar').onclick = async ()=>{
+  const rom = Number($('#rom').value);
+  const data = $('#data').value;
+  const obs  = $('#obs').value.trim();
+
+  const cli_tel  = $('#cli_tel').value.trim();
+  const cli_nome = $('#cli_nome').value.trim();
+  const cli_cid  = $('#cli_cidade_uf').value.trim();
+
+  const for_tel  = $('#for_tel').value.trim();
+  const for_nome = $('#for_nome').value.trim();
+  const for_cid  = $('#for_cidade_uf').value.trim();
 
   const itens = [];
-  itensDiv.querySelectorAll('.grid').forEach(row=>{
+  itensDiv.querySelectorAll('.grid4').forEach(row=>{
     const [t,s,q] = row.querySelectorAll('select, input');
     const qtd = Number(q.value||0);
     if(qtd>0) itens.push({tipo:t.value,tamanho:s.value,qtd});
   });
 
-  // validações mínimas
-  if(!rom){ showMsg('err','Informe o número do ROM'); return }
-  if(!data){ showMsg('err','Informe a data'); return }
-  if(!cliente.tel || !cliente.nome || !cliente.local || !fornecedor.tel || !fornecedor.nome || !fornecedor.local){
-    showMsg('err','Preencha os dados do cliente e fornecedor'); return
-  }
-  if(!itens.length){ showMsg('err','Adicione ao menos um item'); return }
+  // validações
+  if(!rom || !data || !cli_tel || !cli_nome || !cli_cid || !for_tel || !for_nome || !for_cid){ msg('err','Campos obrigatórios ausentes'); return }
+  if(!itens.length){ msg('err','Adicione ao menos um item'); return }
 
   try{
     const body = {
       rom, data, obs,
-      cliente, fornecedor,
+      cliente: {tel:cli_tel, nome:cli_nome, local:cli_cid, cadastrar:pendenteCadastro.cliente},
+      fornecedor: {tel:for_tel, nome:for_nome, local:for_cid, cadastrar:pendenteCadastro.fornecedor},
       itens,
       fotos: fotosData.map(d=>({data:d}))
     };
     const r = await post('/rom/create', body);
-    if(r.error){ showMsg('err', r.error); return }
+    if(r.error){ msg('err', r.error); return }
 
-    // Modal com 2 WhatsApps + links públicos
-    openSuccessModal({
-      cod: r.cod,
-      receiptUrl: r.receiptUrl || r.htmlUrl || r.viewUrl || '',
-      pdfUrl: r.pdfUrl || '',
-      telCliente: cliente.tel,
-      telFornecedor: fornecedor.tel
-    });
+    // Mostra modal de sucesso
+    const codigo = r.cod || r.codigo || r.id || '';
+    $('#codChave').textContent = `cod ${codigo}`;
+    const pdfUrl = r.pdfUrl || r.pdf || r.driveUrl || ''; // BACKEND deve tornar público (ver nota abaixo)
+    $('#btnPdf').onclick = ()=>{ if(pdfUrl) window.open(pdfUrl,'_blank') };
 
-    showMsg('ok', `Enviado! Código: ${r.cod}`);
+    const wmsg = (alvo) => {
+      const tel = onlyDigits(alvo==='cli' ? cli_tel : for_tel);
+      if(!tel){ return }
+      const texto = `Romaneio ${rom} (cod ${codigo})%0ACliente: ${cli_nome}%0AFornecedor: ${for_nome}%0AData: ${data}%0AItens: ${itens.map(i=>`${i.qtd} ${i.tipo} ${i.tamanho}`).join(', ')}${pdfUrl?`%0AComprovante: ${pdfUrl}`:''}`;
+      window.open(`https://wa.me/55${tel}?text=${texto}`,'_blank');
+    };
+    $('#btnWappCli').onclick = ()=>wmsg('cli');
+    $('#btnWappFor').onclick = ()=>wmsg('for');
+    $('#modalOk').style.display='flex';
+    $('#btnOkClose').onclick = ()=>{ $('#modalOk').style.display='none'; };
+
+    // limpa form para novo envio
+    clearForm();
+    msg('ok', `Enviado! Código: ${codigo}`);
   }catch(e){
-    showMsg('err','Erro de rede: '+e);
+    msg('err','Erro de rede: '+e);
   }
 };
 </script>
+
+<!--
+IMPORTANTE (para o PDF NÃO pedir login):
+
+No seu Apps Script, após criar o arquivo no Drive, torne-o público:
+
+const file = DriveApp.createFile(blob).setName(nomePdf);
+Drive.Permissions.create(
+  {type: "anyone", role: "reader"},
+  file.getId(),
+  {supportsAllDrives: true}
+);
+// Devolva ao front: { pdfUrl: file.getUrl(), ... }
+
+Também crie o endpoint /contacts/find (opcional):
+- Entrada: {tipo:"cliente"|"fornecedor", tel:"(85) 9..."}
+- Saída quando achou: {found:true, nome:"...", cidade_uf:"Fortaleza/CE"}
+- Saída quando não achou: {found:false}
+
+Se não existir, o front continua funcionando: o usuário preenche e, ao enviar,
+o back-end pode cadastrar usando as flags "cadastrar" enviadas.
+-->
 </body>
 </html>
