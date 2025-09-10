@@ -39,7 +39,6 @@
     .btn-primary{background:var(--primary)}
     .btn:disabled{opacity:.5; cursor:not-allowed;}
     .ok{color:var(--success)} .err{color:var(--danger)}
-    .ver{margin-top:8px; color:#8aa4ff; font-size:12px}
     .footer-info {
       display: flex;
       justify-content: space-between;
@@ -53,20 +52,22 @@
       background: transparent;
       border: 1px solid #1a2340;
       color: var(--muted);
-      width: auto; /* Override the 100% width */
+      width: auto;
       padding: 8px 12px;
     }
     .btn-ghost:hover {
       background: #1a2340;
       color: var(--text);
     }
+    .progress{height:4px; width:100%; background:rgba(0,0,0,.2); border-radius:999px; overflow:hidden; margin:14px 0 4px; display: none;}
+    .bar{height:100%; width:0%; background:linear-gradient(90deg,#63a4ff,#4c8dff); transition:width .2s}
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="card">
       <h1>🚚 Romaneio</h1>
-      <div id="conn" class="muted">…</div>
+      <div id="conn" class="muted">Verificando conexão...</div>
 
       <form id="loginForm">
         <div class="fld">
@@ -82,7 +83,8 @@
           <button id="btnLogin" type="submit" class="btn btn-primary">Entrar</button>
         </div>
       </form>
-
+      
+      <div class="progress" id="prog"><div class="bar" id="bar"></div></div>
       <div id="msg" class="muted" style="min-height:22px;margin-top:10px"></div>
 
       <div class="footer-info">
@@ -100,6 +102,16 @@ const msgEl = qs("#msg");
 const btnLogin = qs("#btnLogin");
 const connEl = qs("#conn");
 const timestampEl = qs("#timestamp");
+const progEl = qs('#prog');
+const barEl = qs('#bar');
+
+function setProgress(val) {
+    progEl.style.display = 'block';
+    barEl.style.width = `${val * 100}%`;
+    if (val >= 1) {
+        setTimeout(() => { progEl.style.display = 'none'; barEl.style.width = '0%'; }, 500);
+    }
+}
 
 function setMsg(text, type = "muted") {
   msgEl.textContent = text || "";
@@ -108,25 +120,22 @@ function setMsg(text, type = "muted") {
 
 function setLoading(isLoading) {
   btnLogin.disabled = isLoading;
-  btnLogin.textContent = isLoading ? "Entrando..." : "Entrar";
+  if (isLoading) {
+    btnLogin.textContent = "Autenticando...";
+    setProgress(0.3);
+  } else {
+    btnLogin.textContent = "Entrar";
+    setProgress(1);
+  }
 }
 
 function getAbsoluteUrl(page) {
     const currentUrl = window.location.href;
-    const isGithubPages = currentUrl.includes('github.io');
-    
-    // Se for GitHub Pages e já tem 'index.html', substitui por 'app.html'
-    if (isGithubPages && currentUrl.endsWith('index.html')) {
-        return currentUrl.replace('index.html', page);
-    }
-    // Se for GitHub Pages e não tem 'index.html', adiciona 'app.html'
-    if (isGithubPages && !currentUrl.endsWith('/')) {
-        return currentUrl + '/' + page;
-    }
-
-    // Lógica padrão para outros ambientes
-    const directoryPath = currentUrl.substring(0, currentUrl.lastIndexOf('/') + 1);
-    return directoryPath + page;
+    // Lida com URLs que podem ou não ter 'index.html' no final
+    const baseUrl = currentUrl.includes('index.html') 
+      ? currentUrl.substring(0, currentUrl.lastIndexOf('index.html'))
+      : currentUrl.substring(0, currentUrl.lastIndexOf('/') + 1);
+    return baseUrl + page;
 }
 
 async function apiPost(path, data) {
@@ -141,7 +150,6 @@ async function apiPost(path, data) {
     return await r.json();
 }
 
-// Ping de conexão ao carregar
 (async () => {
     try {
         await apiPost("/ping");
@@ -154,7 +162,6 @@ async function apiPost(path, data) {
     }
 })();
 
-// Ação de Login
 qs("#loginForm").onsubmit = async (e) => {
     e.preventDefault();
     const usuario = qs("#user").value.trim();
@@ -166,22 +173,28 @@ qs("#loginForm").onsubmit = async (e) => {
     }
 
     setLoading(true);
-    setMsg("Autenticando...");
+    setMsg("");
 
     try {
+        setProgress(0.6);
         const r = await apiPost("/login", { usuario, senha });
+        setProgress(0.9);
         
-        if (r.error) {
-            setMsg(r.error, "err");
+        if (r.error || !r.session || !r.session.token) {
+            setMsg(r.error || "Falha ao obter sessão.", "err");
             setLoading(false);
             return;
         }
         
-        localStorage.setItem("rom_session", JSON.stringify(r.session));
+        // **NOVA LÓGICA:** Passa o token pela URL em vez de salvar aqui.
+        // Isso força o app.html a revalidar com o token mais recente.
         setMsg("Login OK. Redirecionando...", "ok");
+        setProgress(1);
         
-        // Redirecionamento robusto
-        window.location.href = getAbsoluteUrl("app.html?v=" + Date.now());
+        // Adiciona um pequeno delay para garantir que a mensagem seja vista
+        setTimeout(() => {
+            window.location.href = getAbsoluteUrl(`app.html?login_token=${r.session.token}&v=${Date.now()}`);
+        }, 300);
 
     } catch (e) {
         console.error("Erro de login:", e);
@@ -190,7 +203,6 @@ qs("#loginForm").onsubmit = async (e) => {
     }
 };
 
-// Ação do botão de atualizar
 qs("#btnReload").onclick = () => {
   window.location.href = window.location.pathname + '?v=' + Date.now();
 };
