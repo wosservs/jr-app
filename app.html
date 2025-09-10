@@ -324,11 +324,11 @@ function initializeApp(user) {
             initializeApp(r.me); // Inicia o app se a sessão for válida
         }
     } catch (e) {
-        if (e.message !== 'Sessão inválida') {
-            $('#who').textContent = 'Erro de conexão';
-            document.body.style.opacity = '1';
-            console.error("Falha ao verificar sessão:", e);
-        }
+        // CORREÇÃO: Se qualquer erro ocorrer durante a verificação inicial da sessão (ex: rede),
+        // redireciona para o login para evitar ficar numa página em branco.
+        console.error("Falha ao verificar sessão, redirecionando para login:", e);
+        localStorage.removeItem('rom_session');
+        location.href = getAbsoluteUrl("index.html");
     }
 })();
 
