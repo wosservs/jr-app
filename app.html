@@ -10,12 +10,12 @@
   <style>
     :root{
       --bg:#0f172a; --card:#0b1220; --text:#e5e7eb; --muted:#94a3b8;
-      --primary:#2563eb; --danger:#ef4444; --ok:#16a34a; --chip:#111827;
+      --primary:#2563eb; --danger:#ef4444; --ok:#16a3a; --chip:#111827;
       --bar:#60a5fa; --line:#1f2937;
     }
     [data-theme="light"]{
       --bg:#f8fafc; --card:#ffffff; --text:#0f172a; --muted:#475569;
-      --primary:#1d4ed8; --danger:#dc2626; --ok:#16a34a; --chip:#eef2ff;
+      --primary:#1d4ed8; --danger:#dc2626; --ok:#16a3a; --chip:#eef2ff;
       --bar:#3b82f6; --line:#e5e7eb;
     }
     *{box-sizing:border-box} html,body{height:100%}
@@ -215,6 +215,8 @@ function getAbsoluteUrl(page) {
 }
 
 /* ====== API ====== */
+// CORREÇÃO: A função post foi simplificada. Ela não redireciona mais.
+// Ela apenas entrega a resposta do servidor ou um erro de conexão.
 async function post(path, body={}){
   const sess = (function(){ try { return JSON.parse(localStorage.getItem('rom_session') || '{}'); } catch(e) { return {}; } })();
   return new Promise((resolve, reject) => {
@@ -231,11 +233,6 @@ async function post(path, body={}){
         if (xhr.status >= 200 && xhr.status < 400) {
             try {
                 const response = JSON.parse(xhr.responseText);
-                if (response.error === 'Sessão inválida'){
-                    localStorage.removeItem('rom_session');
-                    location.href = getAbsoluteUrl("index.html");
-                    return reject(new Error('Sessão inválida'));
-                }
                 resolve(response);
             } catch(e) {
                 reject(new Error("Erro ao processar resposta do servidor."));
@@ -257,11 +254,16 @@ async function post(path, body={}){
 // =================================================================================
 
 // Esta função só será chamada APÓS a sessão ser validada com sucesso.
-function initializeApp(user) {
-    $('#who').textContent = user;
-    document.body.style.opacity = '1'; // Torna a página visível
+function initializeApp(user, status = 'online') {
+    if (status === 'offline') {
+      $('#who').textContent = `${user} (Offline)`;
+    } else if (status === 'error') {
+      $('#who').textContent = `${user} (Erro no Servidor)`;
+    } else {
+      $('#who').textContent = user;
+    }
+    document.body.style.opacity = '1';
 
-    // INICIALIZAÇÃO DOS COMPONENTES
     (function initTheme(){
       const saved = localStorage.getItem('theme');
       if(saved){ setTheme(saved) } else { setTheme(window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark') }
@@ -270,10 +272,8 @@ function initializeApp(user) {
     itensDiv.appendChild(itemRow());
     somaTotal();
 
-    // LISTENERS DE EVENTOS
     $('#btnTheme').onclick = ()=> setTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
     $('#logout').onclick = async (e)=>{ e.preventDefault(); try{ await post('/logout',{}) }catch(_){ } localStorage.removeItem('rom_session'); location.href= getAbsoluteUrl("index.html"); };
-
     ['#cli_tel','#for_tel'].forEach(sel=>{
       const el=$(sel); el.addEventListener('input',()=>maskPhone(el)); el.addEventListener('blur',()=>tryLookup(sel.includes('cli')?'cliente':'fornecedor'));
     });
@@ -284,11 +284,9 @@ function initializeApp(user) {
     });
     $('#cli_nome').addEventListener('focus', () => tryLookup('cliente'));
     $('#for_nome').addEventListener('focus', () => tryLookup('fornecedor'));
-
     ['#cli_cidade_uf','#for_cidade_uf','#cadCidade'].forEach(sel=>{
       const el=$(sel); el.addEventListener('input',()=>fillDatalist(el.value));
     });
-
     $('#addItem').onclick = ()=>{ itensDiv.appendChild(itemRow()); somaTotal(); };
     fileInput.onchange = handleFileUpload;
     $('#limpar').onclick = clearForm;
@@ -300,8 +298,9 @@ function initializeApp(user) {
 //  LÓGICA PRINCIPAL (executada ao carregar a página)
 // =================================================================================
 
+// CORREÇÃO: Lógica de inicialização robusta para evitar loops.
 (async function start() {
-    document.body.style.opacity = '0'; // Esconde a página até a sessão ser validada
+    document.body.style.opacity = '0';
     $('#who').textContent = 'Verificando...';
 
     const sess = (function(){
@@ -317,18 +316,22 @@ function initializeApp(user) {
 
     try {
         const r = await post('/me', {});
-        if (r.error) {
+        if (r.error === 'Sessão inválida') {
+            console.error("Sessão inválida, redirecionando para o login.");
             localStorage.removeItem('rom_session');
             location.href = getAbsoluteUrl("index.html");
+        } else if (r.error) {
+             console.error("Erro do servidor ao verificar sessão:", r.error);
+             const localUser = sess.usuario || 'Usuário';
+             initializeApp(localUser, 'error');
         } else {
-            initializeApp(r.me); // Inicia o app se a sessão for válida
+            initializeApp(r.me, 'online'); // Inicia o app se a sessão for válida
         }
     } catch (e) {
-        // CORREÇÃO: Se qualquer erro ocorrer durante a verificação inicial da sessão (ex: rede),
-        // redireciona para o login para evitar ficar numa página em branco.
-        console.error("Falha ao verificar sessão, redirecionando para login:", e);
-        localStorage.removeItem('rom_session');
-        location.href = getAbsoluteUrl("index.html");
+        // Este bloco agora só pega falhas de conexão/rede.
+        console.error("Falha de conexão ao verificar sessão. Iniciando em modo offline.", e);
+        const localUser = sess.usuario || 'Usuário';
+        initializeApp(localUser, 'offline');
     }
 })();
 
