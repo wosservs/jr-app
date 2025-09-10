@@ -129,13 +129,11 @@ function setLoading(isLoading) {
   }
 }
 
+// **FUNÇÃO DE URL CORRIGIDA**
 function getAbsoluteUrl(page) {
-    const currentUrl = window.location.href;
-    // Lida com URLs que podem ou não ter 'index.html' no final
-    const baseUrl = currentUrl.includes('index.html') 
-      ? currentUrl.substring(0, currentUrl.lastIndexOf('index.html'))
-      : currentUrl.substring(0, currentUrl.lastIndexOf('/') + 1);
-    return baseUrl + page;
+    const path = window.location.pathname;
+    const basePath = path.substring(0, path.lastIndexOf('/') + 1);
+    return window.location.origin + basePath + page;
 }
 
 async function apiPost(path, data) {
@@ -186,12 +184,9 @@ qs("#loginForm").onsubmit = async (e) => {
             return;
         }
         
-        // **NOVA LÓGICA:** Passa o token pela URL em vez de salvar aqui.
-        // Isso força o app.html a revalidar com o token mais recente.
         setMsg("Login OK. Redirecionando...", "ok");
         setProgress(1);
         
-        // Adiciona um pequeno delay para garantir que a mensagem seja vista
         setTimeout(() => {
             window.location.href = getAbsoluteUrl(`app.html?login_token=${r.session.token}&v=${Date.now()}`);
         }, 300);
