@@ -39,7 +39,6 @@
     .row .btn{flex:1}
     .ok{color:var(--success)} .err{color:var(--danger)}
     .ver{margin-top:8px; color:#8aa4ff; font-size:12px}
-    /* progress */
     .progress{height:4px; width:100%; background:#0f1729; border-radius:999px; overflow:hidden; margin:14px 0 4px}
     .bar{height:100%; width:0%; background:linear-gradient(90deg,#63a4ff,#4c8dff); transition:width .2s}
   </style>
@@ -72,14 +71,14 @@
       <div class="progress" style="display:none" id="prog"><div class="bar" id="bar"></div></div>
       <div id="msg" class="muted" style="min-height:22px;margin-top:6px"></div>
 
-      <div class="ver">v1.0.4</div>
+      <div class="ver">v1.1.0</div>
     </div>
   </div>
 
 <script>
-const VERSION="v1.0.4";
 /* ====== CONFIG ====== */
-const API_BASE = "https://script.google.com/macros/s/AKfycbyrDoEP82oJDj2wTIX491414Qf5e-YaDZJHYMAgmWfiddVKCw7WP4oQwrVtEouYxL-NvQ/exec";
+// A URL da API é injetada pelo backend (Google Apps Script)
+const API_BASE = "<?= API_BASE ?>";
 
 /* ====== UI helpers ====== */
 const qs = s=>document.querySelector(s);
@@ -93,9 +92,6 @@ const prog = (v)=>{ qs("#prog").style.display="block"; qs("#bar").style.width = 
   const apply=()=>{ document.documentElement.dataset.theme=localStorage.getItem(key)||"dark"; };
   apply();
   qs("#btnTheme").onclick=()=>{ localStorage.setItem(key, (localStorage.getItem(key)==="dark"?"light":"dark")); apply(); };
-  // dark/light real
-  const isDark = (localStorage.getItem(key) ?? "dark") === "dark";
-  if(isDark){ document.body.style.background = "linear-gradient(180deg,#0b1320 0%, #0d1528 100%)"; }
 })();
 
 /* ====== RELOAD ====== */
@@ -115,7 +111,7 @@ async function apiPost(path, data){
 (async()=>{
   try{
     const r = await apiPost("/ping", {});
-    setConn(true, new Date().toLocaleString());
+    setConn(true, new Date().toLocaleTimeString());
   }catch(e){
     setConn(false,"Falha ao conectar");
   }
@@ -123,7 +119,7 @@ async function apiPost(path, data){
 
 /* ====== Ações ====== */
 qs("#btnPing").onclick = async ()=>{
-  try{ prog(.2); const r=await apiPost("/ping",{}); prog(1); msg("Conexão OK ✓","ok"); }
+  try{ prog(.2); await apiPost("/ping",{}); prog(1); msg("Conexão OK ✓","ok"); }
   catch(e){ prog(1); msg("Falha ao conectar","err"); }
 };
 
@@ -131,20 +127,30 @@ qs("#btnLogin").onclick = async ()=>{
   const usuario = qs("#user").value.trim() || "admin";
   const senha   = qs("#pass").value.trim();
   if(!senha){ msg("Informe a senha","err"); return; }
+  
+  qs("#btnLogin").disabled = true;
+  msg("Autenticando...");
+
   try{
     prog(.2);
     const r = await apiPost("/login",{usuario,senha});
     prog(.6);
     if(r.error){ prog(1); msg(r.error,"err"); return; }
-    // guarda sessão
+    
     localStorage.setItem("rom_session", JSON.stringify(r.session));
     prog(1);
     msg("Login OK. Redirecionando…","ok");
-    location.href = "app.html?v="+Date.now();
+    
+    // CORREÇÃO: Redireciona para a URL servida pelo script, passando a view 'app'
+    location.href = API_BASE + "?view=app&v="+Date.now();
+
   }catch(e){
     prog(1); msg("Erro: "+e.message,"err");
+  } finally {
+    qs("#btnLogin").disabled = false;
   }
 };
 </script>
 </body>
 </html>
+
