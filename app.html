@@ -196,7 +196,6 @@
 
 <script>
 /* ====== CONFIG ====== */
-// URL da API atualizada com o seu link
 const API_BASE = "https://script.google.com/macros/s/AKfycbyrDoEP82oJDj2wTIX491414Qf5e-YaDZJHYMAgmWfiddVKCw7WP4oQwrVtEouYxL-NvQ/exec";
 
 /* ====== Infra UI ====== */
@@ -222,18 +221,37 @@ function getAbsoluteUrl(page) {
 }
 
 /* ====== Sessão ====== */
-const sess = (function(){ try{return JSON.parse(localStorage.getItem('rom_session')||'{}')}catch(_){return{}} })();
-if(!sess.token){ location.href = getAbsoluteUrl("index.html"); }
-(async () => {
-    try {
-        const r = await post('/me', {});
-        if (r.error) throw new Error(r.error);
-        $('#who').textContent = r.me;
-    } catch (e) {
-        localStorage.removeItem('rom_session');
-        location.href = getAbsoluteUrl("index.html");
-    }
+const sess = (function(){
+    try { return JSON.parse(localStorage.getItem('rom_session') || '{}'); }
+    catch(e) { return {}; }
 })();
+
+// CORREÇÃO: Lógica de sessão mais robusta para evitar loop de redirect.
+// 1. Validação inicial no cliente: se não há token ou se a sessão expirou, redireciona.
+if (!sess.token || !sess.expira_em || new Date(sess.expira_em).getTime() < Date.now()) {
+    localStorage.removeItem('rom_session');
+    // Atraso mínimo para garantir que o LS foi limpo antes do redirect
+    setTimeout(() => { location.href = getAbsoluteUrl("index.html"); }, 50);
+} else {
+    // 2. Se a sessão parece válida no cliente, tenta verificar no servidor para mostrar o nome do usuário.
+    (async () => {
+        try {
+            const r = await post('/me', {}); // Pede ao backend para confirmar o usuário da sessão
+            if (r.error) {
+                // 3. Se o backend diz que a sessão é inválida, limpa e redireciona.
+                localStorage.removeItem('rom_session');
+                location.href = getAbsoluteUrl("index.html");
+            } else {
+                // Se tudo estiver ok, mostra o nome do usuário.
+                $('#who').textContent = r.me;
+            }
+        } catch (e) {
+            // 4. Em caso de erro de rede, assume-se que está offline mas não desloga.
+            $('#who').textContent = 'Offline';
+            console.error("Falha ao verificar sessão:", e);
+        }
+    })();
+}
 
 
 /* ====== Logout ====== */
@@ -278,7 +296,13 @@ async function post(path, body={}){
         barDone();
         if (xhr.status >= 200 && xhr.status < 400) {
             try {
-                resolve(JSON.parse(xhr.responseText));
+                const response = JSON.parse(xhr.responseText);
+                if (response.error === 'Sessão inválida'){
+                    localStorage.removeItem('rom_session');
+                    location.href = getAbsoluteUrl("index.html");
+                    return reject(new Error('Sessão inválida'));
+                }
+                resolve(response);
             } catch(e) {
                 reject(new Error("Erro ao processar resposta do servidor."));
             }
@@ -403,7 +427,9 @@ async function tryLookup(tipo){
     // não encontrado → pedir nome/cidade
     await abrirModalCadastro(tipo, nomeEl.value, cidEl.value);
   }catch(e){
-    console.error(`Falha ao buscar contato (${tipo}):`, e);
+    if (e.message !== 'Sessão inválida') {
+        console.error(`Falha ao buscar contato (${tipo}):`, e);
+    }
   }
 }
 function abrirModalCadastro(tipo, nomeAtual, cidAtual){
@@ -481,7 +507,9 @@ $('#enviar').onclick = async ()=>{
     clearForm();
     msg('ok', `Enviado! Código: ${codigo}`);
   }catch(e){
-    msg('err','Erro de rede: '+e);
+    if (e.message !== 'Sessão inválida') {
+        msg('err','Erro de rede: '+e);
+    }
   }
 };
 </script>
