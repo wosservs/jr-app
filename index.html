@@ -129,14 +129,17 @@ function setLoading(isLoading) {
   }
 }
 
-// **FUNÇÃO DE URL CORRIGIDA E ROBUSTA**
+// **NOVA FUNÇÃO DE URL DEFINITIVA**
 function getAbsoluteUrl(page) {
-    // Pega a URL atual, ex: https://user.github.io/repo/index.html
-    const currentUrl = window.location.href;
-    // Pega a parte da URL antes da última barra, ex: https://user.github.io/repo/
-    const baseUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/') + 1);
-    // Retorna a URL completa e correta
-    return baseUrl + page;
+    const loc = window.location;
+    // Ex: "https://wosservs.github.io"
+    const origin = loc.origin;
+    // Ex: "/jr-app/index.html"
+    const pathname = loc.pathname;
+    // Pega o caminho do diretório, ex: "/jr-app"
+    const dirpath = pathname.substring(0, pathname.lastIndexOf('/'));
+    // Monta a URL final e limpa
+    return `${origin}${dirpath}/${page}`;
 }
 
 async function apiPost(path, data) {
