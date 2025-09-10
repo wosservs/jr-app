@@ -32,7 +32,7 @@
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     .grid4{display:grid;grid-template-columns:1.2fr .8fr .8fr 110px;gap:10px;align-items:center}
     .btn{cursor:pointer;border:0;border-radius:10px;padding:10px 14px;font-weight:600}
-    .btn-primary{background:var(--primary);color:#fff} .btn-primary:disabled{background:#1e40af; cursor: not-allowed;}
+    .btn-primary{background:var(--primary);color:#fff}
     .btn-ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
     .btn-danger{background:var(--danger);color:#fff}
     .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
@@ -47,11 +47,15 @@
     .topbar{position:fixed;inset:0 0 auto 0;height:3px;background:transparent;z-index:20}
     .bar{height:100%;width:0;background:var(--bar);transition:width .2s linear}
     .section{margin-bottom:16px}
+
+    /* Modal */
     .modal-back{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:30}
     .modal{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;max-width:520px;width:96%}
     .modal h3{margin:0 0 8px}
     .modal .row{justify-content:flex-end}
     .chip-ok{padding:2px 8px;border-radius:999px;background:#064e3b;color:#a7f3d0;font-size:12px}
+
+    /* datalist “grande” para cidades */
     datalist option{color:#000}
   </style>
 </head>
@@ -157,8 +161,10 @@
     </div>
   </div>
 
+  <!-- datalist de cidades (preenchido via IBGE) -->
   <datalist id="listaCidades"></datalist>
 
+  <!-- Modal “completar cadastro” quando telefone não encontrado -->
   <div id="modalCad" class="modal-back">
     <div class="modal">
       <h3>Cadastro não encontrado</h3>
@@ -174,6 +180,7 @@
     </div>
   </div>
 
+  <!-- Modal de sucesso com botões de WhatsApp -->
   <div id="modalOk" class="modal-back">
     <div class="modal">
       <h3>Romaneio enviado com sucesso <span id="codChave" class="chip-ok"></span></h3>
@@ -189,8 +196,8 @@
 
 <script>
 /* ====== CONFIG ====== */
-// FIX: A URL da API é derivada da URL atual para evitar erros de template.
-const API_BASE = location.href.split('?')[0];
+// URL da API atualizada com o seu link
+const API_BASE = "https://script.google.com/macros/s/AKfycbyrDoEP82oJDj2wTIX491414Qf5e-YaDZJHYMAgmWfiddVKCw7WP4oQwrVtEouYxL-NvQ/exec";
 
 /* ====== Infra UI ====== */
 const $ = s => document.querySelector(s);
@@ -208,9 +215,15 @@ function setTheme(t){ document.documentElement.setAttribute('data-theme',t); loc
 })();
 $('#btnTheme').onclick = ()=> setTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
 
+function getAbsoluteUrl(page) {
+    const currentUrl = window.location.href;
+    const directoryPath = currentUrl.substring(0, currentUrl.lastIndexOf('/') + 1);
+    return directoryPath + page;
+}
+
 /* ====== Sessão ====== */
 const sess = (function(){ try{return JSON.parse(localStorage.getItem('rom_session')||'{}')}catch(_){return{}} })();
-if(!sess.token){ location.href = API_BASE + "?view=index"; }
+if(!sess.token){ location.href = getAbsoluteUrl("index.html"); }
 (async () => {
     try {
         const r = await post('/me', {});
@@ -218,66 +231,89 @@ if(!sess.token){ location.href = API_BASE + "?view=index"; }
         $('#who').textContent = r.me;
     } catch (e) {
         localStorage.removeItem('rom_session');
-        location.href = API_BASE + "?view=index";
+        location.href = getAbsoluteUrl("index.html");
     }
 })();
 
+
 /* ====== Logout ====== */
-$('#logout').onclick = async (e)=>{ e.preventDefault(); try{ await post('/logout',{}) }catch(_){ } localStorage.removeItem('rom_session'); location.href= API_BASE + "?view=index"; };
+$('#logout').onclick = async (e)=>{ e.preventDefault(); try{ await post('/logout',{}) }catch(_){ } localStorage.removeItem('rom_session'); location.href= getAbsoluteUrl("index.html"); };
 
 /* ====== Helpers ====== */
 function onlyDigits(s){ return (s||'').replace(/\D+/g,'') }
 function maskPhone(el){
-  let d = onlyDigits(el.value).slice(0,11);
-  if(d.length<=10){ el.value = d.replace(/^(\d{0,2})(\d{0,4})(\d{0,4}).*/, (_,a,b,c)=> (a?`(${a}`:'') + (a&&a.length===2?') ':'') + (b||'') + (b&&c?'-':'') + (c||'') ); }
-  else{ el.value = d.replace(/^(\d{0,2})(\d{0,5})(\d{0,4}).*/, (_,a,b,c)=> (a?`(${a}`:'') + (a&&a.length===2?') ':'') + (b||'') + (b&&c?'-':'') + (c||'') ); }
+  let d = onlyDigits(el.value).slice(0,11); // 10 ou 11
+  if(d.length<=10){ // fixo (2+8)
+    el.value = d.replace(/^(\d{0,2})(\d{0,4})(\d{0,4}).*/, (_,a,b,c)=> (a?`(${a}`:'') + (a&&a.length===2?') ':'') + (b||'') + (b&&c?'-':'') + (c||'') );
+  }else{ // celular (2+9)
+    el.value = d.replace(/^(\d{0,2})(\d{0,5})(\d{0,4}).*/, (_,a,b,c)=> (a?`(${a}`:'') + (a&&a.length===2?') ':'') + (b||'') + (b&&c?'-':'') + (c||'') );
+  }
 }
 ['#cli_tel','#for_tel'].forEach(sel=>{
   const el=$(sel); el.addEventListener('input',()=>maskPhone(el)); el.addEventListener('blur',()=>tryLookup(sel.includes('cli')?'cliente':'fornecedor'));
 });
 
-// Auto-preencher data ao digitar ROM
-$('#rom').addEventListener('input', () => {
+// Auto-preenchimento da data
+$('#rom').addEventListener('input', (e) => {
+  if (e.target.value.length > 0 && !$('#data').value) {
     $('#data').value = todayISO();
+  }
 });
-
-// Acionar busca ao focar nos campos de nome
+// Busca por nome ao focar
 $('#cli_nome').addEventListener('focus', () => tryLookup('cliente'));
 $('#for_nome').addEventListener('focus', () => tryLookup('fornecedor'));
 
 /* ====== API ====== */
 async function post(path, body={}){
-  barStart();
-  try{
-    const r = await fetch(API_BASE+"?path="+encodeURIComponent(path), {
-      method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body: JSON.stringify({...body, token:sess.token})
-    });
-    barDone();
-    if (!r.ok) {
-        const errData = await r.json().catch(() => ({error: `HTTP ${r.status}`}));
-        throw new Error(errData.error || `HTTP ${r.status}`);
+  return new Promise((resolve, reject) => {
+    if(API_BASE.includes("COLE_A_URL")){
+        return reject(new Error("Configure a URL da API na constante API_BASE."));
     }
-    return await r.json();
-  }catch(e){ barDone(); throw e }
+    barStart();
+    const xhr = new XMLHttpRequest();
+    const url = API_BASE + "?path=" + encodeURIComponent(path);
+    xhr.open('POST', url, true);
+    xhr.setRequestHeader('Content-Type', 'text/plain;charset=utf-8');
+    xhr.onload = function () {
+        barDone();
+        if (xhr.status >= 200 && xhr.status < 400) {
+            try {
+                resolve(JSON.parse(xhr.responseText));
+            } catch(e) {
+                reject(new Error("Erro ao processar resposta do servidor."));
+            }
+        } else {
+            reject(new Error("HTTP " + xhr.status));
+        }
+    };
+    xhr.onerror = () => {
+        barDone();
+        reject(new Error("Erro de conexão."));
+    };
+    xhr.send(JSON.stringify({...body, token:sess.token}));
+  });
 }
 
 /* ====== Cidades (IBGE) ====== */
-let cidades = [];
+let cidades = []; // [{nome, uf, label}]
 async function loadCidades(){
   try{
     const r = await fetch('https://servicodados.ibge.gov.br/api/v1/localidades/municipios?orderBy=nome');
+    if (!r.ok) throw new Error(`IBGE API falhou com status ${r.status}`);
     const arr = await r.json();
     cidades = arr.map(x=>({nome:x.nome, uf:x.microrregiao.mesorregiao.UF.sigla, label:`${x.nome}/${x.microrregiao.mesorregiao.UF.sigla}`}));
-    fillDatalist('');
-  }catch(_){ console.error("Falha ao carregar cidades do IBGE"); }
+    console.log(`${cidades.length} cidades carregadas.`);
+  }catch(e){
+    console.error("Falha ao carregar cidades do IBGE:", e);
+  }
 }
 function fillDatalist(prefix){
   const dl = $('#listaCidades'); dl.innerHTML='';
   const p = (prefix||'').toLowerCase();
-  // Alterado para 3 letras, conforme solicitado
   const take = p.length>=3 ? cidades.filter(c=>c.label.toLowerCase().includes(p)).slice(0,50) : [];
-  take.forEach(c=>{ const o=document.createElement('option'); o.value=c.label; dl.appendChild(o); });
+  take.forEach(c=>{
+    const o=document.createElement('option'); o.value=c.label; dl.appendChild(o);
+  });
 }
 ['#cli_cidade_uf','#for_cidade_uf','#cadCidade'].forEach(sel=>{
   const el=$(sel); el.addEventListener('input',()=>fillDatalist(el.value));
@@ -291,7 +327,8 @@ const itensDiv = $('#itens');
 const totalQtdEl = $('#totalQtd');
 function somaTotal(){ let t=0; document.querySelectorAll('.qtd').forEach(i=> t += Number(i.value||0)); totalQtdEl.textContent = t; }
 function itemRow(){
-  const row = document.createElement('div'); row.className='grid4';
+  const row = document.createElement('div');
+  row.className='grid4';
   const selTipo = document.createElement('select'); tipos.forEach(t=>{ const o=document.createElement('option'); o.value=t; o.textContent=t; selTipo.appendChild(o) });
   const selTam  = document.createElement('select'); tamanhos.forEach(t=>{ const o=document.createElement('option'); o.value=t; o.textContent=t; selTam.appendChild(o) });
   const qtd     = document.createElement('input');  qtd.type='number'; qtd.min='1'; qtd.value='1'; qtd.className='qtd'; qtd.oninput=somaTotal;
@@ -325,18 +362,22 @@ function renderThumbs(){
 function fileToDataURL(file){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); }); }
 
 /* ====== Form helpers ====== */
-function todayISO(){ return new Date().toISOString().slice(0,10) }
-$('#data').value = todayISO();
+// CORREÇÃO: Usa a data local para evitar problemas de fuso horário.
+function todayISO() {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 $('#limpar').onclick = clearForm;
 function clearForm(){
-  $('#rom').value=''; $('#obs').value='';
-  ['#cli_tel','#cli_nome','#cli_cidade_uf','#for_tel','#for_nome','#for_cidade_uf'].forEach(s=>{$(s).value=''; $(s).style.borderColor='';});
-  ['#cli_status', '#for_status'].forEach(s => $(s).style.display='none');
+  $('#rom').value=''; $('#obs').value=''; $('#data').value = '';
+  ['#cli_tel','#cli_nome','#cli_cidade_uf','#for_tel','#for_nome','#for_cidade_uf'].forEach(s=>$(s).value='');
   itensDiv.innerHTML=''; itensDiv.appendChild(itemRow()); somaTotal();
   fileInput.value=''; fotosData=[]; renderThumbs();
   $('#msg').style.display='none';
-  $('#data').value = todayISO();
-  pendenteCadastro = {cliente:false, fornecedor:false};
 }
 
 /* ====== Lookup por telefone ====== */
@@ -359,14 +400,15 @@ async function tryLookup(tipo){
       (tipo==='cliente') ? pendenteCadastro.cliente=false : pendenteCadastro.fornecedor=false;
       return;
     }
+    // não encontrado → pedir nome/cidade
     await abrirModalCadastro(tipo, nomeEl.value, cidEl.value);
   }catch(e){
-    console.error("API /contacts/find falhou, continuando...", e);
+    console.error(`Falha ao buscar contato (${tipo}):`, e);
   }
 }
 function abrirModalCadastro(tipo, nomeAtual, cidAtual){
   return new Promise(res=>{
-    $('#cadQuem').textContent = `Cadastro de ${tipo} não encontrado. Complete os dados.`;
+    $('#cadQuem').textContent = `Cadastro de ${tipo} não encontrado.`;
     $('#cadNome').value = nomeAtual||'';
     $('#cadCidade').value = cidAtual||'';
     $('#modalCad').style.display='flex';
@@ -374,7 +416,6 @@ function abrirModalCadastro(tipo, nomeAtual, cidAtual){
     $('#cadOk').onclick = ()=>{
       const nome = $('#cadNome').value.trim();
       const cidade = $('#cadCidade').value.trim();
-      if(!nome || !cidade){ alert("Nome e Cidade são obrigatórios."); return; }
       if(tipo==='cliente'){ $('#cli_nome').value=nome; $('#cli_cidade_uf').value=cidade; pendenteCadastro.cliente=true; }
       else { $('#for_nome').value=nome; $('#for_cidade_uf').value=cidade; pendenteCadastro.fornecedor=true; }
       $('#modalCad').style.display='none';
@@ -385,54 +426,50 @@ function abrirModalCadastro(tipo, nomeAtual, cidAtual){
 
 /* ====== Enviar ====== */
 $('#enviar').onclick = async ()=>{
-  const data = {
-    rom: Number($('#rom').value),
-    data: $('#data').value,
-    obs:  $('#obs').value.trim(),
-    cliente: {tel:$('#cli_tel').value.trim(), nome:$('#cli_nome').value.trim(), local:$('#cli_cidade_uf').value.trim(), cadastrar:pendenteCadastro.cliente},
-    fornecedor: {tel:$('#for_tel').value.trim(), nome:$('#for_nome').value.trim(), local:$('#for_cidade_uf').value.trim(), cadastrar:pendenteCadastro.fornecedor},
-    itens: [],
-    fotos: fotosData.map(d=>({data:d}))
-  };
+  const rom = Number($('#rom').value);
+  const data = $('#data').value;
+  const obs  = $('#obs').value.trim();
 
+  const cli_tel  = $('#cli_tel').value.trim();
+  const cli_nome = $('#cli_nome').value.trim();
+  const cli_cid  = $('#cli_cidade_uf').value.trim();
+
+  const for_tel  = $('#for_tel').value.trim();
+  const for_nome = $('#for_nome').value.trim();
+  const for_cid  = $('#for_cidade_uf').value.trim();
+
+  const itens = [];
   itensDiv.querySelectorAll('.grid4').forEach(row=>{
     const [t,s,q] = row.querySelectorAll('select, input');
     const qtd = Number(q.value||0);
-    if(qtd>0) data.itens.push({tipo:t.value,tamanho:s.value,qtd});
+    if(qtd>0) itens.push({tipo:t.value,tamanho:s.value,qtd});
   });
-  
-  // Validações
-  let missing = [];
-  if(!data.rom) missing.push($('#rom'));
-  if(!data.data) missing.push($('#data'));
-  if(!data.cliente.tel || !data.cliente.nome || !data.cliente.local) missing.push($('#cli_tel'), $('#cli_nome'), $('#cli_cidade_uf'));
-  if(!data.fornecedor.tel || !data.fornecedor.nome || !data.fornecedor.local) missing.push($('#for_tel'), $('#for_nome'), $('#for_cidade_uf'));
-  
-  document.querySelectorAll('input').forEach(i => i.style.borderColor='');
-  if(missing.length > 0){
-    missing.forEach(el => el.style.borderColor='var(--danger)');
-    msg('err','Campos obrigatórios ausentes (em vermelho)');
-    missing[0].focus();
-    return;
-  }
-  if(!data.itens.length){ msg('err','Adicione ao menos um item'); return }
 
-  $('#enviar').disabled = true;
-  msg('ok', 'Enviando, aguarde...');
+  // validações
+  if(!rom || !data || !cli_tel || !cli_nome || !cli_cid || !for_tel || !for_nome || !for_cid){ msg('err','Campos obrigatórios ausentes'); return }
+  if(!itens.length){ msg('err','Adicione ao menos um item'); return }
 
   try{
-    const r = await post('/rom/create', data);
+    const body = {
+      rom, data, obs,
+      cliente: {tel:cli_tel, nome:cli_nome, local:cli_cid, cadastrar:pendenteCadastro.cliente},
+      fornecedor: {tel:for_tel, nome:for_nome, local:for_cid, cadastrar:pendenteCadastro.fornecedor},
+      itens,
+      fotos: fotosData.map(d=>({data:d}))
+    };
+    const r = await post('/rom/create', body);
     if(r.error){ msg('err', r.error); return }
 
-    const codigo = r.cod;
+    // Mostra modal de sucesso
+    const codigo = r.cod || r.codigo || r.id || '';
     $('#codChave').textContent = `cod ${codigo}`;
-    const pdfUrl = r.pdfUrl;
+    const pdfUrl = r.pdfUrl || r.pdf || r.driveUrl || '';
     $('#btnPdf').onclick = ()=>{ if(pdfUrl) window.open(pdfUrl,'_blank') };
 
     const wmsg = (alvo) => {
-      const tel = onlyDigits(alvo==='cli' ? data.cliente.tel : data.fornecedor.tel);
+      const tel = onlyDigits(alvo==='cli' ? cli_tel : for_tel);
       if(!tel){ return }
-      const texto = `Romaneio ${data.rom} (cod ${codigo})%0ACliente: ${data.cliente.nome}%0AFornecedor: ${data.fornecedor.nome}%0AItens: ${data.itens.map(i=>`${i.qtd} ${i.tipo} ${i.tamanho}`).join(', ')}${pdfUrl?`%0AComprovante: ${pdfUrl}`:''}`;
+      const texto = `Romaneio ${rom} (cod ${codigo})%0ACliente: ${cli_nome}%0AFornecedor: ${for_nome}%0AData: ${data}%0AItens: ${itens.map(i=>`${i.qtd} ${i.tipo} ${i.tamanho}`).join(', ')}${pdfUrl?`%0AComprovante: ${pdfUrl}`:''}`;
       window.open(`https://wa.me/55${tel}?text=${texto}`,'_blank');
     };
     $('#btnWappCli').onclick = ()=>wmsg('cli');
@@ -440,15 +477,15 @@ $('#enviar').onclick = async ()=>{
     $('#modalOk').style.display='flex';
     $('#btnOkClose').onclick = ()=>{ $('#modalOk').style.display='none'; };
 
+    // limpa form para novo envio
     clearForm();
-    msg('ok', `Enviado com sucesso! Código: ${codigo}`);
+    msg('ok', `Enviado! Código: ${codigo}`);
   }catch(e){
     msg('err','Erro de rede: '+e);
-  } finally {
-    $('#enviar').disabled = false;
   }
 };
 </script>
+
 </body>
 </html>
 
