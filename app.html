@@ -19,7 +19,8 @@
       --bar:#3b82f6; --line:#e5e7eb;
     }
     *{box-sizing:border-box} html,body{height:100%}
-    body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto; transition: opacity .3s;}
+    body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto; transition: opacity .3s; opacity: 0;}
+    body.ready{opacity:1;}
     header{position:sticky;top:0;background:var(--card);border-bottom:1px solid var(--line);display:flex;gap:14px;align-items:center;justify-content:space-between;padding:12px 18px;z-index:10}
     nav a{color:var(--text);text-decoration:none;padding:10px 14px;border-radius:999px;background:var(--chip);border:1px solid var(--line)}
     nav{display:flex;gap:8px;flex-wrap:wrap}
@@ -47,15 +48,11 @@
     .topbar{position:fixed;inset:0 0 auto 0;height:3px;background:transparent;z-index:20}
     .bar{height:100%;width:0;background:var(--bar);transition:width .2s linear}
     .section{margin-bottom:16px}
-
-    /* Modal */
     .modal-back{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:30}
     .modal{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;max-width:520px;width:96%}
     .modal h3{margin:0 0 8px}
     .modal .row{justify-content:flex-end}
     .chip-ok{padding:2px 8px;border-radius:999px;background:#064e3b;color:#a7f3d0;font-size:12px}
-
-    /* datalist “grande” para cidades */
     datalist option{color:#000}
   </style>
 </head>
@@ -161,10 +158,8 @@
     </div>
   </div>
 
-  <!-- datalist de cidades (preenchido via IBGE) -->
   <datalist id="listaCidades"></datalist>
 
-  <!-- Modal “completar cadastro” quando telefone não encontrado -->
   <div id="modalCad" class="modal-back">
     <div class="modal">
       <h3>Cadastro não encontrado</h3>
@@ -180,7 +175,6 @@
     </div>
   </div>
 
-  <!-- Modal de sucesso com botões de WhatsApp -->
   <div id="modalOk" class="modal-back">
     <div class="modal">
       <h3>Romaneio enviado com sucesso <span id="codChave" class="chip-ok"></span></h3>
@@ -198,11 +192,10 @@
 /* ====== CONFIG ====== */
 const API_BASE = "https://script.google.com/macros/s/AKfycbyrDoEP82oJDj2wTIX491414Qf5e-YaDZJHYMAgmWfiddVKCw7WP4oQwrVtEouYxL-NvQ/exec";
 
-/* ====== Infra UI ====== */
+/* ====== Infra UI & API ====== */
 const $ = s => document.querySelector(s);
-const bar = $('#bar');
-function barStart(){ bar.style.width='20%'; let w=20; window._barInt=setInterval(()=>{w=Math.min(95,w+5); bar.style.width=w+'%'},200) }
-function barDone(){ clearInterval(window._barInt); bar.style.width='100%'; setTimeout(()=>bar.style.width='0',300) }
+function barStart(){ $('#bar').style.width='20%'; }
+function barDone(){ $('#bar').style.width='100%'; setTimeout(()=>$('#bar').style.width='0',300); }
 function msg(kind, text){
   const el = $('#msg'); el.className = 'msg ' + (kind==='err'?'err':'ok');
   el.textContent = text; el.style.display='block';
@@ -210,40 +203,27 @@ function msg(kind, text){
 function setTheme(t){ document.documentElement.setAttribute('data-theme',t); localStorage.setItem('theme',t) }
 function getAbsoluteUrl(page) {
     const currentUrl = window.location.href;
+    const isGithubPages = currentUrl.includes('github.io');
+    if (isGithubPages && currentUrl.endsWith('app.html')) return currentUrl.replace('app.html', page);
+    if (isGithubPages && !currentUrl.endsWith('/')) return currentUrl + '/' + page;
     const directoryPath = currentUrl.substring(0, currentUrl.lastIndexOf('/') + 1);
     return directoryPath + page;
 }
 
-/* ====== API ====== */
 async function post(path, body={}){
-  const sess = (function(){ try { return JSON.parse(localStorage.getItem('rom_session') || '{}'); } catch(e) { return {}; } })();
+  const sess = JSON.parse(localStorage.getItem('rom_session') || '{}');
   return new Promise((resolve, reject) => {
-    if(API_BASE.includes("COLE_A_URL")){
-        return reject(new Error("Configure a URL da API na constante API_BASE."));
-    }
     barStart();
     const xhr = new XMLHttpRequest();
-    const url = API_BASE + "?path=" + encodeURIComponent(path);
-    xhr.open('POST', url, true);
+    xhr.open('POST', `${API_BASE}?path=${encodeURIComponent(path)}`, true);
     xhr.setRequestHeader('Content-Type', 'text/plain;charset=utf-8');
-    xhr.onload = function () {
+    xhr.onload = () => {
         barDone();
-        if (xhr.status >= 200 && xhr.status < 400) {
-            try {
-                const response = JSON.parse(xhr.responseText);
-                resolve(response);
-            } catch(e) {
-                reject(new Error("Erro ao processar resposta do servidor."));
-            }
-        } else {
-            reject(new Error("HTTP " + xhr.status));
-        }
+        try { resolve(JSON.parse(xhr.responseText)); }
+        catch(e) { reject(new Error("Resposta inválida do servidor.")); }
     };
-    xhr.onerror = () => {
-        barDone();
-        reject(new Error("Erro de conexão."));
-    };
-    xhr.send(JSON.stringify({...body, token:sess.token}));
+    xhr.onerror = () => { barDone(); reject(new Error("Erro de conexão.")); };
+    xhr.send(JSON.stringify({...body, token: sess.token}));
   });
 }
 
@@ -251,302 +231,230 @@ async function post(path, body={}){
 //  INICIALIZAÇÃO DO APLICATIVO
 // =================================================================================
 
-function initializeApp(user, status = 'online') {
-    if (status === 'offline') {
-      $('#who').textContent = `${user} (Offline)`;
-    } else if (status === 'error') {
-      $('#who').textContent = `${user} (Erro no Servidor)`;
-    } else {
-      $('#who').textContent = user;
-    }
-    document.body.style.opacity = '1';
+function initializeApp(user, status) {
+    $('#who').textContent = status === 'online' ? user : `${user} (${status})`;
+    document.body.classList.add('ready');
 
     (function initTheme(){
       const saved = localStorage.getItem('theme');
-      if(saved){ setTheme(saved) } else { setTheme(window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark') }
+      if(saved) setTheme(saved);
+      else setTheme(window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark');
     })();
     loadCidades();
     itensDiv.appendChild(itemRow());
     somaTotal();
 
-    $('#btnTheme').onclick = ()=> setTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
-    $('#logout').onclick = async (e)=>{ e.preventDefault(); try{ await post('/logout',{}) }catch(_){ } localStorage.removeItem('rom_session'); location.href= getAbsoluteUrl("index.html"); };
-    ['#cli_tel','#for_tel'].forEach(sel=>{
-      const el=$(sel); el.addEventListener('input',()=>maskPhone(el)); el.addEventListener('blur',()=>tryLookup(sel.includes('cli')?'cliente':'fornecedor'));
+    $('#btnTheme').onclick = () => setTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
+    $('#logout').onclick = async e => {
+      e.preventDefault();
+      try { await post('/logout', {}); } catch(_) {}
+      localStorage.removeItem('rom_session');
+      location.href = getAbsoluteUrl("index.html");
+    };
+    ['#cli_tel','#for_tel'].forEach(sel => {
+      const el=$(sel);
+      el.addEventListener('input', () => maskPhone(el));
+      el.addEventListener('blur', () => tryLookup(sel.includes('cli')?'cliente':'fornecedor'));
     });
-    $('#rom').addEventListener('input', (e) => {
-      if (e.target.value.length > 0 && !$('#data').value) {
-        $('#data').value = todayISO();
-      }
+    $('#rom').addEventListener('input', e => {
+      if (e.target.value.length > 0 && !$('#data').value) $('#data').value = todayISO();
     });
     $('#cli_nome').addEventListener('focus', () => tryLookup('cliente'));
     $('#for_nome').addEventListener('focus', () => tryLookup('fornecedor'));
-    ['#cli_cidade_uf','#for_cidade_uf','#cadCidade'].forEach(sel=>{
-      const el=$(sel); el.addEventListener('input',()=>fillDatalist(el.value));
+    ['#cli_cidade_uf','#for_cidade_uf','#cadCidade'].forEach(sel => {
+      $(sel).addEventListener('input', e => fillDatalist(e.target.value));
     });
-    $('#addItem').onclick = ()=>{ itensDiv.appendChild(itemRow()); somaTotal(); };
+    $('#addItem').onclick = () => { itensDiv.appendChild(itemRow()); somaTotal(); };
     fileInput.onchange = handleFileUpload;
     $('#limpar').onclick = clearForm;
     $('#enviar').onclick = handleSend;
 }
 
-// =================================================================================
-//  LÓGICA PRINCIPAL (executada ao carregar a página)
-// =================================================================================
-
-async function validateSessionWithRetry(retries = 3, delay = 400) {
+async function validateSessionWithRetry(retries = 3, delay = 500) {
     for (let i = 0; i < retries; i++) {
         try {
             const r = await post('/me', {});
-            // Se a sessão for inválida, mas ainda tivermos tentativas, espere e tente novamente.
             if (r.error === 'Sessão inválida' && i < retries - 1) {
-                console.log(`Tentativa ${i + 1} falhou. Tentando novamente em ${delay}ms...`);
-                await new Promise(res => setTimeout(res, delay * (i + 1))); // Aumenta o tempo de espera
+                await new Promise(res => setTimeout(res, delay));
                 continue;
             }
-            // No sucesso ou na falha final, retorna o resultado.
             return r;
         } catch (e) {
-            // Pega erros de conexão/rede.
-            console.error(`Falha de conexão na tentativa ${i + 1}.`, e);
-            if (i === retries - 1) {
-                // Se for a última tentativa, joga o erro para ser pego pelo bloco principal.
-                throw e;
-            }
-            // Espera antes de tentar novamente.
-            await new Promise(res => setTimeout(res, delay * (i + 1)));
+            if (i === retries - 1) throw e;
+            await new Promise(res => setTimeout(res, delay));
         }
     }
 }
 
 (async function start() {
-    document.body.style.opacity = '0';
     $('#who').textContent = 'Verificando...';
+    const sess = JSON.parse(localStorage.getItem('rom_session') || '{}');
 
-    const sess = (function(){
-        try { return JSON.parse(localStorage.getItem('rom_session') || '{}'); }
-        catch(e) { return {}; }
-    })();
-
-    if (!sess.token || !sess.expira_em || new Date(sess.expira_em).getTime() < Date.now()) {
-        localStorage.removeItem('rom_session');
+    if (!sess.token || new Date(sess.expira_em).getTime() < Date.now()) {
         location.href = getAbsoluteUrl("index.html");
         return;
     }
 
     try {
         const r = await validateSessionWithRetry();
-        if (r.error === 'Sessão inválida') {
-            console.error("Sessão inválida após múltiplas tentativas, redirecionando para o login.");
+        if (r.error) {
             localStorage.removeItem('rom_session');
             location.href = getAbsoluteUrl("index.html");
-        } else if (r.error) {
-             console.error("Erro do servidor ao verificar sessão:", r.error);
-             const localUser = sess.usuario || 'Usuário';
-             initializeApp(localUser, 'error');
         } else {
-            initializeApp(r.me, 'online'); // Inicia o app se a sessão for válida
+            initializeApp(r.me, 'online');
         }
     } catch (e) {
-        // Este bloco agora só pega falhas de conexão definitivas.
-        console.error("Falha de conexão definitiva ao verificar sessão. Iniciando em modo offline.", e);
-        const localUser = sess.usuario || 'Usuário';
-        initializeApp(localUser, 'offline');
+        initializeApp(sess.usuario || 'Usuário', 'Offline');
     }
 })();
 
-
 /* ====== Helpers & Funções do App ====== */
-function onlyDigits(s){ return (s||'').replace(/\D+/g,'') }
+function onlyDigits(s){ return (s||'').replace(/\D+/g,''); }
 function maskPhone(el){
   let d = onlyDigits(el.value).slice(0,11);
-  if(d.length<=10){
-    el.value = d.replace(/^(\d{0,2})(\d{0,4})(\d{0,4}).*/, (_,a,b,c)=> (a?`(${a}`:'') + (a&&a.length===2?') ':'') + (b||'') + (b&&c?'-':'') + (c||'') );
-  }else{
-    el.value = d.replace(/^(\d{0,2})(\d{0,5})(\d{0,4}).*/, (_,a,b,c)=> (a?`(${a}`:'') + (a&&a.length===2?') ':'') + (b||'') + (b&&c?'-':'') + (c||'') );
-  }
+  el.value = d.length <= 10 ?
+    d.replace(/^(\d{0,2})(\d{0,4})(\d{0,4}).*/, (_,a,b,c)=> (a?`(${a}`:'') + (a.length===2?') ':'') + b + (b&&c?'-':'') + c) :
+    d.replace(/^(\d{0,2})(\d{0,5})(\d{0,4}).*/, (_,a,b,c)=> (a?`(${a}`:'') + (a.length===2?') ':'') + b + (b&&c?'-':'') + c);
 }
 
-/* ====== Cidades (IBGE) ====== */
 let cidades = [];
 async function loadCidades(){
   try{
     const r = await fetch('https://servicodados.ibge.gov.br/api/v1/localidades/municipios?orderBy=nome');
-    if (!r.ok) throw new Error(`IBGE API falhou com status ${r.status}`);
+    if (!r.ok) throw new Error(`IBGE API falhou`);
     const arr = await r.json();
     cidades = arr.map(x => {
         const uf = x.microrregiao?.mesorregiao?.UF?.sigla || x['regiao-imediata']?.['regiao-intermediaria']?.UF?.sigla || '';
-        return { nome: x.nome, uf: uf, label: `${x.nome}/${uf}` };
+        return { nome: x.nome, uf, label: `${x.nome}/${uf}` };
     });
-    console.log(`${cidades.length} cidades carregadas.`);
-  }catch(e){
-    console.error("Falha ao carregar cidades do IBGE:", e);
-  }
+  }catch(e){ console.error("Falha ao carregar cidades:", e); }
 }
 function fillDatalist(prefix){
   const dl = $('#listaCidades'); dl.innerHTML='';
   const p = (prefix||'').toLowerCase();
-  const take = p.length>=3 ? cidades.filter(c=>c.label.toLowerCase().includes(p)).slice(0,50) : [];
-  take.forEach(c=>{ const o=document.createElement('option'); o.value=c.label; dl.appendChild(o); });
+  if (p.length < 3) return;
+  cidades.filter(c => c.label.toLowerCase().includes(p)).slice(0,50)
+         .forEach(c => { const o=document.createElement('option'); o.value=c.label; dl.appendChild(o); });
 }
 
-/* ====== Itens ====== */
-const tipos = ['Caixa','Saco','Palete','Outros'];
-const tamanhos = ['P','M','G'];
-const itensDiv = $('#itens');
-const totalQtdEl = $('#totalQtd');
-function somaTotal(){ let t=0; document.querySelectorAll('.qtd').forEach(i=> t += Number(i.value||0)); totalQtdEl.textContent = t; }
+const tipos = ['Caixa','Saco','Palete','Outros'], tamanhos = ['P','M','G'];
+const itensDiv = $('#itens'), totalQtdEl = $('#totalQtd');
+function somaTotal(){ let t=0; document.querySelectorAll('.qtd').forEach(i => t += Number(i.value||0)); totalQtdEl.textContent = t; }
 function itemRow(){
   const row = document.createElement('div'); row.className='grid4';
-  const selTipo = document.createElement('select'); tipos.forEach(t=>{ const o=document.createElement('option'); o.value=t; o.textContent=t; selTipo.appendChild(o) });
-  const selTam  = document.createElement('select'); tamanhos.forEach(t=>{ const o=document.createElement('option'); o.value=t; o.textContent=t; selTam.appendChild(o) });
-  const qtd     = document.createElement('input');  qtd.type='number'; qtd.min='1'; qtd.value='1'; qtd.className='qtd'; qtd.oninput=somaTotal;
-  const del     = document.createElement('button'); del.className='btn btn-danger'; del.textContent='x'; del.onclick=()=>{ row.remove(); somaTotal(); };
-  row.appendChild(selTipo); row.appendChild(selTam); row.appendChild(qtd); row.appendChild(del);
+  const createSelect = (opts) => {
+    const sel = document.createElement('select');
+    opts.forEach(t => { const o=document.createElement('option'); o.value=t; o.textContent=t; sel.appendChild(o); });
+    return sel;
+  };
+  const qtd = document.createElement('input'); qtd.type='number'; qtd.min='1'; qtd.value='1'; qtd.className='qtd'; qtd.oninput=somaTotal;
+  const del = document.createElement('button'); del.className='btn btn-danger'; del.textContent='×'; del.onclick=()=>{ row.remove(); somaTotal(); };
+  row.append(createSelect(tipos), createSelect(tamanhos), qtd, del);
   return row;
 }
 
-/* ====== Fotos ====== */
 const fileInput = $('#fotos'), thumbs=$('#thumbs'); let fotosData=[];
 async function handleFileUpload(ev){
-  const files = Array.from(ev.target.files||[]);
-  for(const f of files){
-    if(!f.type.startsWith('image/')) continue;
-    const dataUrl = await fileToDataURL(f);
-    fotosData.push(dataUrl);
+  fotosData = []; // Limpa para nova seleção
+  for(const f of Array.from(ev.target.files||[])){
+    if(f.type.startsWith('image/')) fotosData.push(await fileToDataURL(f));
   }
   renderThumbs();
-};
+}
 function renderThumbs(){
   thumbs.innerHTML='';
   fotosData.forEach((d,i)=>{
     const box=document.createElement('div'); box.className='thumb';
-    const img=new Image(); img.src=d; box.appendChild(img);
+    const img=new Image(); img.src=d;
     const x=document.createElement('button'); x.textContent='×'; x.onclick=()=>{ fotosData.splice(i,1); renderThumbs(); };
-    box.appendChild(x); thumbs.appendChild(box);
+    box.append(img, x); thumbs.appendChild(box);
   });
 }
-function fileToDataURL(file){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); }); }
+function fileToDataURL(file){ return new Promise(res => { const r=new FileReader(); r.onload=()=>res(r.result); r.readAsDataURL(file); }); }
 
-/* ====== Form helpers ====== */
 function todayISO() {
   const d = new Date();
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 function clearForm(){
-  $('#rom').value=''; $('#obs').value=''; $('#data').value = '';
-  ['#cli_tel','#cli_nome','#cli_cidade_uf','#for_tel','#for_nome','#for_cidade_uf'].forEach(s=>$(s).value='');
+  $('#secRom').querySelectorAll('input, select').forEach(el => {
+    if (el.type !== 'file') el.value = '';
+  });
+  fileInput.value = ''; fotosData = []; renderThumbs();
   itensDiv.innerHTML=''; itensDiv.appendChild(itemRow()); somaTotal();
-  fileInput.value=''; fotosData=[]; renderThumbs();
   $('#msg').style.display='none';
+  ['#cli_status', '#for_status'].forEach(s => $(s).style.display = 'none');
 }
 
-/* ====== Lookup por telefone ====== */
 let pendenteCadastro = {cliente:false, fornecedor:false};
 async function tryLookup(tipo){
-  const telEl = tipo==='cliente' ? $('#cli_tel') : $('#for_tel');
-  const nomeEl = tipo==='cliente' ? $('#cli_nome') : $('#for_nome');
-  const cidEl  = tipo==='cliente' ? $('#cli_cidade_uf') : $('#for_cidade_uf');
-  const chip   = tipo==='cliente' ? $('#cli_status') : $('#for_status');
+  const telEl = $(`#${tipo.slice(0,3)}_tel`), nomeEl = $(`#${tipo.slice(0,3)}_nome`), cidEl = $(`#${tipo.slice(0,3)}_cidade_uf`), chip = $(`#${tipo.slice(0,3)}_status`);
   const tel = onlyDigits(telEl.value);
   chip.style.display='none';
-  if(tel.length<10) return;
-
-  try{
+  if(tel.length < 10) return;
+  try {
     const r = await post('/contacts/find', { tipo, tel });
     if(r && r.found){
-      if(r.nome) nomeEl.value = r.nome;
-      if(r.cidade_uf) cidEl.value = r.cidade_uf;
+      nomeEl.value = r.nome || ''; cidEl.value = r.cidade_uf || '';
       chip.textContent='auto'; chip.style.display='inline-block';
-      (tipo==='cliente') ? pendenteCadastro.cliente=false : pendenteCadastro.fornecedor=false;
-      return;
+      pendenteCadastro[tipo] = false;
+    } else {
+      await abrirModalCadastro(tipo, nomeEl.value, cidEl.value);
     }
-    await abrirModalCadastro(tipo, nomeEl.value, cidEl.value);
-  }catch(e){
-    if (e.message !== 'Sessão inválida') {
-        console.error(`Falha ao buscar contato (${tipo}):`, e);
-    }
-  }
+  } catch(e){ console.error(`Falha no lookup (${tipo}):`, e); }
 }
 function abrirModalCadastro(tipo, nomeAtual, cidAtual){
-  return new Promise(res=>{
+  return new Promise(res => {
     $('#cadQuem').textContent = `Cadastro de ${tipo} não encontrado.`;
-    $('#cadNome').value = nomeAtual||'';
-    $('#cadCidade').value = cidAtual||'';
+    $('#cadNome').value = nomeAtual||''; $('#cadCidade').value = cidAtual||'';
     $('#modalCad').style.display='flex';
-    $('#cadCancel').onclick = ()=>{ $('#modalCad').style.display='none'; res(false) };
-    $('#cadOk').onclick = ()=>{
-      const nome = $('#cadNome').value.trim();
-      const cidade = $('#cadCidade').value.trim();
-      if(tipo==='cliente'){ $('#cli_nome').value=nome; $('#cli_cidade_uf').value=cidade; pendenteCadastro.cliente=true; }
-      else { $('#for_nome').value=nome; $('#for_cidade_uf').value=cidade; pendenteCadastro.fornecedor=true; }
-      $('#modalCad').style.display='none';
-      res(true);
+    $('#cadCancel').onclick = () => { $('#modalCad').style.display='none'; res(false); };
+    $('#cadOk').onclick = () => {
+      const nome = $('#cadNome').value.trim(), cidade = $('#cadCidade').value.trim();
+      $(`#${tipo.slice(0,3)}_nome`).value = nome; $(`#${tipo.slice(0,3)}_cidade_uf`).value = cidade;
+      pendenteCadastro[tipo] = true;
+      $('#modalCad').style.display='none'; res(true);
     };
   });
 }
 
-/* ====== Enviar ====== */
 async function handleSend(){
-  const rom = Number($('#rom').value);
-  const data = $('#data').value;
-  const obs  = $('#obs').value.trim();
-
-  const cli_tel  = $('#cli_tel').value.trim();
-  const cli_nome = $('#cli_nome').value.trim();
-  const cli_cid  = $('#cli_cidade_uf').value.trim();
-
-  const for_tel  = $('#for_tel').value.trim();
-  const for_nome = $('#for_nome').value.trim();
-  const for_cid  = $('#for_cidade_uf').value.trim();
-
-  const itens = [];
+  const data = {
+    rom: Number($('#rom').value), data: $('#data').value, obs: $('#obs').value.trim(),
+    cliente: {tel:$('#cli_tel').value, nome:$('#cli_nome').value, local:$('#cli_cidade_uf').value, cadastrar:pendenteCadastro.cliente},
+    fornecedor: {tel:$('#for_tel').value, nome:$('#for_nome').value, local:$('#for_cidade_uf').value, cadastrar:pendenteCadastro.fornecedor},
+    itens: [], fotos: fotosData.map(d=>({data:d}))
+  };
   itensDiv.querySelectorAll('.grid4').forEach(row=>{
     const [t,s,q] = row.querySelectorAll('select, input');
-    const qtd = Number(q.value||0);
-    if(qtd>0) itens.push({tipo:t.value,tamanho:s.value,qtd});
+    if(Number(q.value||0)>0) data.itens.push({tipo:t.value,tamanho:s.value,qtd:Number(q.value)});
   });
 
-  if(!rom || !data || !cli_tel || !cli_nome || !cli_cid || !for_tel || !for_nome || !for_cid){ msg('err','Campos obrigatórios ausentes'); return }
-  if(!itens.length){ msg('err','Adicione ao menos um item'); return }
+  if(!data.rom || !data.data || !data.cliente.tel || !data.cliente.nome || !data.cliente.local || !data.fornecedor.tel || !data.fornecedor.nome || !data.fornecedor.local || !data.itens.length){
+    return msg('err','Campos obrigatórios (*) ausentes ou nenhum item adicionado.');
+  }
 
   try{
-    const body = {
-      rom, data, obs,
-      cliente: {tel:cli_tel, nome:cli_nome, local:cli_cid, cadastrar:pendenteCadastro.cliente},
-      fornecedor: {tel:for_tel, nome:for_nome, local:for_cid, cadastrar:pendenteCadastro.fornecedor},
-      itens,
-      fotos: fotosData.map(d=>({data:d}))
-    };
-    const r = await post('/rom/create', body);
-    if(r.error){ msg('err', r.error); return }
+    const r = await post('/rom/create', data);
+    if(r.error){ return msg('err', r.error); }
 
-    const codigo = r.cod || r.codigo || r.id || '';
-    $('#codChave').textContent = `cod ${codigo}`;
-    const pdfUrl = r.pdfUrl || r.pdf || r.driveUrl || '';
-    $('#btnPdf').onclick = ()=>{ if(pdfUrl) window.open(pdfUrl,'_blank') };
-
+    $('#codChave').textContent = `cod ${r.id}`;
+    $('#btnPdf').onclick = () => window.open(r.pdfUrl,'_blank');
     const wmsg = (alvo) => {
-      const tel = onlyDigits(alvo==='cli' ? cli_tel : for_tel);
-      if(!tel){ return }
-      const texto = `Romaneio ${rom} (cod ${codigo})%0ACliente: ${cli_nome}%0AFornecedor: ${for_nome}%0AData: ${data}%0AItens: ${itens.map(i=>`${i.qtd} ${i.tipo} ${i.tamanho}`).join(', ')}${pdfUrl?`%0AComprovante: ${pdfUrl}`:''}`;
-      window.open(`https.wa.me/55${tel}?text=${texto}`,'_blank');
+      const d = alvo === 'cli' ? data.cliente : data.fornecedor;
+      const tel = onlyDigits(d.tel);
+      if(!tel) return;
+      const texto = `Romaneio ${data.rom} (cod ${r.id})%0ACliente: ${data.cliente.nome}%0AFornecedor: ${data.fornecedor.nome}%0AData: ${data.data}%0AItens: ${data.itens.map(i=>`${i.qtd} ${i.tipo} ${i.tamanho}`).join(', ')}${r.pdfUrl?`%0AComprovante: ${r.pdfUrl}`:''}`;
+      window.open(`https://wa.me/55${tel}?text=${texto}`,'_blank');
     };
-    $('#btnWappCli').onclick = ()=>wmsg('cli');
-    $('#btnWappFor').onclick = ()=>wmsg('for');
+    $('#btnWappCli').onclick = () => wmsg('cli');
+    $('#btnWappFor').onclick = () => wmsg('for');
+    $('#btnOkClose').onclick = () => $('#modalOk').style.display='none';
     $('#modalOk').style.display='flex';
-    $('#btnOkClose').onclick = ()=>{ $('#modalOk').style.display='none'; };
 
     clearForm();
-    msg('ok', `Enviado! Código: ${codigo}`);
-  }catch(e){
-    if (e.message !== 'Sessão inválida') {
-        msg('err','Erro de rede: '+e);
-    }
-  }
+    msg('ok', `Enviado com sucesso! Código: ${r.id}`);
+  }catch(e){ msg('err','Erro de rede: '+e.message); }
 };
 </script>
 
