@@ -19,7 +19,7 @@
       --bar:#3b82f6; --line:#e5e7eb;
     }
     *{box-sizing:border-box} html,body{height:100%}
-    body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto}
+    body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto; transition: opacity .3s;}
     header{position:sticky;top:0;background:var(--card);border-bottom:1px solid var(--line);display:flex;gap:14px;align-items:center;justify-content:space-between;padding:12px 18px;z-index:10}
     nav a{color:var(--text);text-decoration:none;padding:10px 14px;border-radius:999px;background:var(--chip);border:1px solid var(--line)}
     nav{display:flex;gap:8px;flex-wrap:wrap}
@@ -208,81 +208,15 @@ function msg(kind, text){
   el.textContent = text; el.style.display='block';
 }
 function setTheme(t){ document.documentElement.setAttribute('data-theme',t); localStorage.setItem('theme',t) }
-(function initTheme(){
-  const saved = localStorage.getItem('theme');
-  if(saved){ setTheme(saved) } else { setTheme(window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark') }
-})();
-$('#btnTheme').onclick = ()=> setTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
-
 function getAbsoluteUrl(page) {
     const currentUrl = window.location.href;
     const directoryPath = currentUrl.substring(0, currentUrl.lastIndexOf('/') + 1);
     return directoryPath + page;
 }
 
-/* ====== Sessão ====== */
-const sess = (function(){
-    try { return JSON.parse(localStorage.getItem('rom_session') || '{}'); }
-    catch(e) { return {}; }
-})();
-
-// CORREÇÃO: Lógica de sessão mais robusta para evitar loop de redirect.
-// 1. Validação inicial no cliente: se não há token ou se a sessão expirou, redireciona.
-if (!sess.token || !sess.expira_em || new Date(sess.expira_em).getTime() < Date.now()) {
-    localStorage.removeItem('rom_session');
-    // Atraso mínimo para garantir que o LS foi limpo antes do redirect
-    setTimeout(() => { location.href = getAbsoluteUrl("index.html"); }, 50);
-} else {
-    // 2. Se a sessão parece válida no cliente, tenta verificar no servidor para mostrar o nome do usuário.
-    (async () => {
-        try {
-            const r = await post('/me', {}); // Pede ao backend para confirmar o usuário da sessão
-            if (r.error) {
-                // 3. Se o backend diz que a sessão é inválida, limpa e redireciona.
-                localStorage.removeItem('rom_session');
-                location.href = getAbsoluteUrl("index.html");
-            } else {
-                // Se tudo estiver ok, mostra o nome do usuário.
-                $('#who').textContent = r.me;
-            }
-        } catch (e) {
-            // 4. Em caso de erro de rede, assume-se que está offline mas não desloga.
-            $('#who').textContent = 'Offline';
-            console.error("Falha ao verificar sessão:", e);
-        }
-    })();
-}
-
-
-/* ====== Logout ====== */
-$('#logout').onclick = async (e)=>{ e.preventDefault(); try{ await post('/logout',{}) }catch(_){ } localStorage.removeItem('rom_session'); location.href= getAbsoluteUrl("index.html"); };
-
-/* ====== Helpers ====== */
-function onlyDigits(s){ return (s||'').replace(/\D+/g,'') }
-function maskPhone(el){
-  let d = onlyDigits(el.value).slice(0,11); // 10 ou 11
-  if(d.length<=10){ // fixo (2+8)
-    el.value = d.replace(/^(\d{0,2})(\d{0,4})(\d{0,4}).*/, (_,a,b,c)=> (a?`(${a}`:'') + (a&&a.length===2?') ':'') + (b||'') + (b&&c?'-':'') + (c||'') );
-  }else{ // celular (2+9)
-    el.value = d.replace(/^(\d{0,2})(\d{0,5})(\d{0,4}).*/, (_,a,b,c)=> (a?`(${a}`:'') + (a&&a.length===2?') ':'') + (b||'') + (b&&c?'-':'') + (c||'') );
-  }
-}
-['#cli_tel','#for_tel'].forEach(sel=>{
-  const el=$(sel); el.addEventListener('input',()=>maskPhone(el)); el.addEventListener('blur',()=>tryLookup(sel.includes('cli')?'cliente':'fornecedor'));
-});
-
-// Auto-preenchimento da data
-$('#rom').addEventListener('input', (e) => {
-  if (e.target.value.length > 0 && !$('#data').value) {
-    $('#data').value = todayISO();
-  }
-});
-// Busca por nome ao focar
-$('#cli_nome').addEventListener('focus', () => tryLookup('cliente'));
-$('#for_nome').addEventListener('focus', () => tryLookup('fornecedor'));
-
 /* ====== API ====== */
 async function post(path, body={}){
+  const sess = (function(){ try { return JSON.parse(localStorage.getItem('rom_session') || '{}'); } catch(e) { return {}; } })();
   return new Promise((resolve, reject) => {
     if(API_BASE.includes("COLE_A_URL")){
         return reject(new Error("Configure a URL da API na constante API_BASE."));
@@ -318,14 +252,109 @@ async function post(path, body={}){
   });
 }
 
+// =================================================================================
+//  INICIALIZAÇÃO DO APLICATIVO
+// =================================================================================
+
+// Esta função só será chamada APÓS a sessão ser validada com sucesso.
+function initializeApp(user) {
+    $('#who').textContent = user;
+    document.body.style.opacity = '1'; // Torna a página visível
+
+    // INICIALIZAÇÃO DOS COMPONENTES
+    (function initTheme(){
+      const saved = localStorage.getItem('theme');
+      if(saved){ setTheme(saved) } else { setTheme(window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark') }
+    })();
+    loadCidades();
+    itensDiv.appendChild(itemRow());
+    somaTotal();
+
+    // LISTENERS DE EVENTOS
+    $('#btnTheme').onclick = ()=> setTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
+    $('#logout').onclick = async (e)=>{ e.preventDefault(); try{ await post('/logout',{}) }catch(_){ } localStorage.removeItem('rom_session'); location.href= getAbsoluteUrl("index.html"); };
+
+    ['#cli_tel','#for_tel'].forEach(sel=>{
+      const el=$(sel); el.addEventListener('input',()=>maskPhone(el)); el.addEventListener('blur',()=>tryLookup(sel.includes('cli')?'cliente':'fornecedor'));
+    });
+    $('#rom').addEventListener('input', (e) => {
+      if (e.target.value.length > 0 && !$('#data').value) {
+        $('#data').value = todayISO();
+      }
+    });
+    $('#cli_nome').addEventListener('focus', () => tryLookup('cliente'));
+    $('#for_nome').addEventListener('focus', () => tryLookup('fornecedor'));
+
+    ['#cli_cidade_uf','#for_cidade_uf','#cadCidade'].forEach(sel=>{
+      const el=$(sel); el.addEventListener('input',()=>fillDatalist(el.value));
+    });
+
+    $('#addItem').onclick = ()=>{ itensDiv.appendChild(itemRow()); somaTotal(); };
+    fileInput.onchange = handleFileUpload;
+    $('#limpar').onclick = clearForm;
+    $('#enviar').onclick = handleSend;
+}
+
+
+// =================================================================================
+//  LÓGICA PRINCIPAL (executada ao carregar a página)
+// =================================================================================
+
+(async function start() {
+    document.body.style.opacity = '0'; // Esconde a página até a sessão ser validada
+    $('#who').textContent = 'Verificando...';
+
+    const sess = (function(){
+        try { return JSON.parse(localStorage.getItem('rom_session') || '{}'); }
+        catch(e) { return {}; }
+    })();
+
+    if (!sess.token || !sess.expira_em || new Date(sess.expira_em).getTime() < Date.now()) {
+        localStorage.removeItem('rom_session');
+        location.href = getAbsoluteUrl("index.html");
+        return;
+    }
+
+    try {
+        const r = await post('/me', {});
+        if (r.error) {
+            localStorage.removeItem('rom_session');
+            location.href = getAbsoluteUrl("index.html");
+        } else {
+            initializeApp(r.me); // Inicia o app se a sessão for válida
+        }
+    } catch (e) {
+        if (e.message !== 'Sessão inválida') {
+            $('#who').textContent = 'Erro de conexão';
+            document.body.style.opacity = '1';
+            console.error("Falha ao verificar sessão:", e);
+        }
+    }
+})();
+
+
+/* ====== Helpers & Funções do App ====== */
+function onlyDigits(s){ return (s||'').replace(/\D+/g,'') }
+function maskPhone(el){
+  let d = onlyDigits(el.value).slice(0,11);
+  if(d.length<=10){
+    el.value = d.replace(/^(\d{0,2})(\d{0,4})(\d{0,4}).*/, (_,a,b,c)=> (a?`(${a}`:'') + (a&&a.length===2?') ':'') + (b||'') + (b&&c?'-':'') + (c||'') );
+  }else{
+    el.value = d.replace(/^(\d{0,2})(\d{0,5})(\d{0,4}).*/, (_,a,b,c)=> (a?`(${a}`:'') + (a&&a.length===2?') ':'') + (b||'') + (b&&c?'-':'') + (c||'') );
+  }
+}
+
 /* ====== Cidades (IBGE) ====== */
-let cidades = []; // [{nome, uf, label}]
+let cidades = [];
 async function loadCidades(){
   try{
     const r = await fetch('https://servicodados.ibge.gov.br/api/v1/localidades/municipios?orderBy=nome');
     if (!r.ok) throw new Error(`IBGE API falhou com status ${r.status}`);
     const arr = await r.json();
-    cidades = arr.map(x=>({nome:x.nome, uf:x.microrregiao.mesorregiao.UF.sigla, label:`${x.nome}/${x.microrregiao.mesorregiao.UF.sigla}`}));
+    cidades = arr.map(x => {
+        const uf = x.microrregiao?.mesorregiao?.UF?.sigla || x['regiao-imediata']?.['regiao-intermediaria']?.UF?.sigla || '';
+        return { nome: x.nome, uf: uf, label: `${x.nome}/${uf}` };
+    });
     console.log(`${cidades.length} cidades carregadas.`);
   }catch(e){
     console.error("Falha ao carregar cidades do IBGE:", e);
@@ -335,14 +364,8 @@ function fillDatalist(prefix){
   const dl = $('#listaCidades'); dl.innerHTML='';
   const p = (prefix||'').toLowerCase();
   const take = p.length>=3 ? cidades.filter(c=>c.label.toLowerCase().includes(p)).slice(0,50) : [];
-  take.forEach(c=>{
-    const o=document.createElement('option'); o.value=c.label; dl.appendChild(o);
-  });
+  take.forEach(c=>{ const o=document.createElement('option'); o.value=c.label; dl.appendChild(o); });
 }
-['#cli_cidade_uf','#for_cidade_uf','#cadCidade'].forEach(sel=>{
-  const el=$(sel); el.addEventListener('input',()=>fillDatalist(el.value));
-});
-loadCidades();
 
 /* ====== Itens ====== */
 const tipos = ['Caixa','Saco','Palete','Outros'];
@@ -351,8 +374,7 @@ const itensDiv = $('#itens');
 const totalQtdEl = $('#totalQtd');
 function somaTotal(){ let t=0; document.querySelectorAll('.qtd').forEach(i=> t += Number(i.value||0)); totalQtdEl.textContent = t; }
 function itemRow(){
-  const row = document.createElement('div');
-  row.className='grid4';
+  const row = document.createElement('div'); row.className='grid4';
   const selTipo = document.createElement('select'); tipos.forEach(t=>{ const o=document.createElement('option'); o.value=t; o.textContent=t; selTipo.appendChild(o) });
   const selTam  = document.createElement('select'); tamanhos.forEach(t=>{ const o=document.createElement('option'); o.value=t; o.textContent=t; selTam.appendChild(o) });
   const qtd     = document.createElement('input');  qtd.type='number'; qtd.min='1'; qtd.value='1'; qtd.className='qtd'; qtd.oninput=somaTotal;
@@ -360,12 +382,10 @@ function itemRow(){
   row.appendChild(selTipo); row.appendChild(selTam); row.appendChild(qtd); row.appendChild(del);
   return row;
 }
-$('#addItem').onclick = ()=>{ itensDiv.appendChild(itemRow()); somaTotal(); };
-itensDiv.appendChild(itemRow()); somaTotal();
 
 /* ====== Fotos ====== */
 const fileInput = $('#fotos'), thumbs=$('#thumbs'); let fotosData=[];
-fileInput.onchange = async (ev)=>{
+async function handleFileUpload(ev){
   const files = Array.from(ev.target.files||[]);
   for(const f of files){
     if(!f.type.startsWith('image/')) continue;
@@ -386,7 +406,6 @@ function renderThumbs(){
 function fileToDataURL(file){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); }); }
 
 /* ====== Form helpers ====== */
-// CORREÇÃO: Usa a data local para evitar problemas de fuso horário.
 function todayISO() {
   const d = new Date();
   const year = d.getFullYear();
@@ -394,8 +413,6 @@ function todayISO() {
   const day = String(d.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 }
-
-$('#limpar').onclick = clearForm;
 function clearForm(){
   $('#rom').value=''; $('#obs').value=''; $('#data').value = '';
   ['#cli_tel','#cli_nome','#cli_cidade_uf','#for_tel','#for_nome','#for_cidade_uf'].forEach(s=>$(s).value='');
@@ -424,7 +441,6 @@ async function tryLookup(tipo){
       (tipo==='cliente') ? pendenteCadastro.cliente=false : pendenteCadastro.fornecedor=false;
       return;
     }
-    // não encontrado → pedir nome/cidade
     await abrirModalCadastro(tipo, nomeEl.value, cidEl.value);
   }catch(e){
     if (e.message !== 'Sessão inválida') {
@@ -451,7 +467,7 @@ function abrirModalCadastro(tipo, nomeAtual, cidAtual){
 }
 
 /* ====== Enviar ====== */
-$('#enviar').onclick = async ()=>{
+async function handleSend(){
   const rom = Number($('#rom').value);
   const data = $('#data').value;
   const obs  = $('#obs').value.trim();
@@ -471,7 +487,6 @@ $('#enviar').onclick = async ()=>{
     if(qtd>0) itens.push({tipo:t.value,tamanho:s.value,qtd});
   });
 
-  // validações
   if(!rom || !data || !cli_tel || !cli_nome || !cli_cid || !for_tel || !for_nome || !for_cid){ msg('err','Campos obrigatórios ausentes'); return }
   if(!itens.length){ msg('err','Adicione ao menos um item'); return }
 
@@ -486,7 +501,6 @@ $('#enviar').onclick = async ()=>{
     const r = await post('/rom/create', body);
     if(r.error){ msg('err', r.error); return }
 
-    // Mostra modal de sucesso
     const codigo = r.cod || r.codigo || r.id || '';
     $('#codChave').textContent = `cod ${codigo}`;
     const pdfUrl = r.pdfUrl || r.pdf || r.driveUrl || '';
@@ -503,7 +517,6 @@ $('#enviar').onclick = async ()=>{
     $('#modalOk').style.display='flex';
     $('#btnOkClose').onclick = ()=>{ $('#modalOk').style.display='none'; };
 
-    // limpa form para novo envio
     clearForm();
     msg('ok', `Enviado! Código: ${codigo}`);
   }catch(e){
