@@ -39,6 +39,7 @@
     .row .btn{flex:1}
     .ok{color:var(--success)} .err{color:var(--danger)}
     .ver{margin-top:8px; color:#8aa4ff; font-size:12px}
+    /* progress */
     .progress{height:4px; width:100%; background:#0f1729; border-radius:999px; overflow:hidden; margin:14px 0 4px}
     .bar{height:100%; width:0%; background:linear-gradient(90deg,#63a4ff,#4c8dff); transition:width .2s}
   </style>
@@ -77,8 +78,9 @@
 
 <script>
 /* ====== CONFIG ====== */
-// A URL da API é injetada pelo backend (Google Apps Script)
-const API_BASE = "<?= API_BASE ?>";
+// URL da API atualizada com o seu link
+const API_BASE = "https://script.google.com/macros/s/AKfycbyrDoEP82oJDj2wTIX491414Qf5e-YaDZJHYMAgmWfiddVKCw7WP4oQwrVtEouYxL-NvQ/exec";
+
 
 /* ====== UI helpers ====== */
 const qs = s=>document.querySelector(s);
@@ -98,39 +100,53 @@ const prog = (v)=>{ qs("#prog").style.display="block"; qs("#bar").style.width = 
 qs("#btnReload").onclick=()=>{ location.href = location.pathname + "?v=" + Date.now(); };
 
 /* ====== API ====== */
-async function apiPost(path, data){
-  const r = await fetch(API_BASE + "?path=" + encodeURIComponent(path), {
-    method:"POST", headers:{ "Content-Type":"text/plain;charset=utf-8" },
-    body: JSON.stringify(data||{}), mode:"cors", credentials:"omit",
-  });
-  if(!r.ok) throw new Error("HTTP "+r.status);
-  return await r.json();
+// Função de API corrigida para evitar o erro 405
+function apiPost(path, data) {
+    return new Promise((resolve, reject) => {
+        if(API_BASE.includes("COLE_A_URL")){
+            return reject(new Error("Configure a URL da API na constante API_BASE."));
+        }
+        const xhr = new XMLHttpRequest();
+        const url = API_BASE + "?path=" + encodeURIComponent(path);
+        xhr.open('POST', url, true);
+        xhr.setRequestHeader('Content-Type', 'text/plain;charset=utf-8');
+        xhr.onload = function () {
+            if (xhr.status >= 200 && xhr.status < 400) {
+                try {
+                    resolve(JSON.parse(xhr.responseText));
+                } catch(e) {
+                    reject(new Error("Erro ao processar resposta do servidor."));
+                }
+            } else {
+                reject(new Error("HTTP " + xhr.status));
+            }
+        };
+        xhr.onerror = () => reject(new Error("Erro de conexão."));
+        xhr.send(JSON.stringify(data || {}));
+    });
 }
+
 
 /* ====== PING ON LOAD ====== */
 (async()=>{
   try{
     const r = await apiPost("/ping", {});
-    setConn(true, new Date().toLocaleTimeString());
+    setConn(true, new Date().toLocaleString());
   }catch(e){
-    setConn(false,"Falha ao conectar");
+    setConn(false,"Falha ao conectar: " + e.message);
   }
 })();
 
 /* ====== Ações ====== */
 qs("#btnPing").onclick = async ()=>{
-  try{ prog(.2); await apiPost("/ping",{}); prog(1); msg("Conexão OK ✓","ok"); }
-  catch(e){ prog(1); msg("Falha ao conectar","err"); }
+  try{ prog(.2); const r=await apiPost("/ping",{}); prog(1); msg("Conexão OK ✓","ok"); }
+  catch(e){ prog(1); msg(e.message,"err"); }
 };
 
 qs("#btnLogin").onclick = async ()=>{
   const usuario = qs("#user").value.trim() || "admin";
   const senha   = qs("#pass").value.trim();
   if(!senha){ msg("Informe a senha","err"); return; }
-  
-  qs("#btnLogin").disabled = true;
-  msg("Autenticando...");
-
   try{
     prog(.2);
     const r = await apiPost("/login",{usuario,senha});
@@ -141,13 +157,14 @@ qs("#btnLogin").onclick = async ()=>{
     prog(1);
     msg("Login OK. Redirecionando…","ok");
     
-    // CORREÇÃO: Redireciona para a URL servida pelo script, passando a view 'app'
-    location.href = API_BASE + "?view=app&v="+Date.now();
-
+    // CORREÇÃO: Constrói uma URL absoluta para evitar o erro de 'Location'.
+    const currentUrl = window.location.href;
+    const directoryPath = currentUrl.substring(0, currentUrl.lastIndexOf('/') + 1);
+    const nextUrl = directoryPath + 'app.html?v=' + Date.now();
+    location.href = nextUrl;
+    
   }catch(e){
     prog(1); msg("Erro: "+e.message,"err");
-  } finally {
-    qs("#btnLogin").disabled = false;
   }
 };
 </script>
