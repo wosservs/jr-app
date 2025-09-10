@@ -215,8 +215,6 @@ function getAbsoluteUrl(page) {
 }
 
 /* ====== API ====== */
-// CORREÇÃO: A função post foi simplificada. Ela não redireciona mais.
-// Ela apenas entrega a resposta do servidor ou um erro de conexão.
 async function post(path, body={}){
   const sess = (function(){ try { return JSON.parse(localStorage.getItem('rom_session') || '{}'); } catch(e) { return {}; } })();
   return new Promise((resolve, reject) => {
@@ -253,7 +251,6 @@ async function post(path, body={}){
 //  INICIALIZAÇÃO DO APLICATIVO
 // =================================================================================
 
-// Esta função só será chamada APÓS a sessão ser validada com sucesso.
 function initializeApp(user, status = 'online') {
     if (status === 'offline') {
       $('#who').textContent = `${user} (Offline)`;
@@ -293,12 +290,35 @@ function initializeApp(user, status = 'online') {
     $('#enviar').onclick = handleSend;
 }
 
-
 // =================================================================================
 //  LÓGICA PRINCIPAL (executada ao carregar a página)
 // =================================================================================
 
-// CORREÇÃO: Lógica de inicialização robusta para evitar loops.
+async function validateSessionWithRetry(retries = 3, delay = 400) {
+    for (let i = 0; i < retries; i++) {
+        try {
+            const r = await post('/me', {});
+            // Se a sessão for inválida, mas ainda tivermos tentativas, espere e tente novamente.
+            if (r.error === 'Sessão inválida' && i < retries - 1) {
+                console.log(`Tentativa ${i + 1} falhou. Tentando novamente em ${delay}ms...`);
+                await new Promise(res => setTimeout(res, delay * (i + 1))); // Aumenta o tempo de espera
+                continue;
+            }
+            // No sucesso ou na falha final, retorna o resultado.
+            return r;
+        } catch (e) {
+            // Pega erros de conexão/rede.
+            console.error(`Falha de conexão na tentativa ${i + 1}.`, e);
+            if (i === retries - 1) {
+                // Se for a última tentativa, joga o erro para ser pego pelo bloco principal.
+                throw e;
+            }
+            // Espera antes de tentar novamente.
+            await new Promise(res => setTimeout(res, delay * (i + 1)));
+        }
+    }
+}
+
 (async function start() {
     document.body.style.opacity = '0';
     $('#who').textContent = 'Verificando...';
@@ -315,9 +335,9 @@ function initializeApp(user, status = 'online') {
     }
 
     try {
-        const r = await post('/me', {});
+        const r = await validateSessionWithRetry();
         if (r.error === 'Sessão inválida') {
-            console.error("Sessão inválida, redirecionando para o login.");
+            console.error("Sessão inválida após múltiplas tentativas, redirecionando para o login.");
             localStorage.removeItem('rom_session');
             location.href = getAbsoluteUrl("index.html");
         } else if (r.error) {
@@ -328,8 +348,8 @@ function initializeApp(user, status = 'online') {
             initializeApp(r.me, 'online'); // Inicia o app se a sessão for válida
         }
     } catch (e) {
-        // Este bloco agora só pega falhas de conexão/rede.
-        console.error("Falha de conexão ao verificar sessão. Iniciando em modo offline.", e);
+        // Este bloco agora só pega falhas de conexão definitivas.
+        console.error("Falha de conexão definitiva ao verificar sessão. Iniciando em modo offline.", e);
         const localUser = sess.usuario || 'Usuário';
         initializeApp(localUser, 'offline');
     }
@@ -513,7 +533,7 @@ async function handleSend(){
       const tel = onlyDigits(alvo==='cli' ? cli_tel : for_tel);
       if(!tel){ return }
       const texto = `Romaneio ${rom} (cod ${codigo})%0ACliente: ${cli_nome}%0AFornecedor: ${for_nome}%0AData: ${data}%0AItens: ${itens.map(i=>`${i.qtd} ${i.tipo} ${i.tamanho}`).join(', ')}${pdfUrl?`%0AComprovante: ${pdfUrl}`:''}`;
-      window.open(`https://wa.me/55${tel}?text=${texto}`,'_blank');
+      window.open(`https.wa.me/55${tel}?text=${texto}`,'_blank');
     };
     $('#btnWappCli').onclick = ()=>wmsg('cli');
     $('#btnWappFor').onclick = ()=>wmsg('for');
