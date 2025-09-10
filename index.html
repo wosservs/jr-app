@@ -15,15 +15,7 @@
       background:linear-gradient(180deg,#0b1320 0%, #0d1528 100%); color:var(--text);
       display:flex; align-items:center; justify-content:center; padding:24px;
     }
-    .wrap{width:100%; max-width:560px}
-    .row-top{display:flex; gap:10px; justify-content:flex-end; margin-bottom:14px}
-    .btn{
-      appearance:none; border:0; border-radius:12px; padding:10px 14px;
-      background:#1a2340; color:#dfe8ff; cursor:pointer; box-shadow:var(--shadow);
-      display:inline-flex; align-items:center; gap:8px; font-weight:600
-    }
-    .btn:hover{filter:brightness(1.06)}
-    .btn-primary{background:var(--primary)}
+    .wrap{width:100%; max-width:400px}
     .card{
       background:var(--card); border:1px solid rgba(255,255,255,.06);
       border-radius:18px; padding:26px; box-shadow:var(--shadow);
@@ -35,137 +27,172 @@
       background:#0f1729; color:var(--text); border:1px solid rgba(255,255,255,.08);
       border-radius:12px; padding:12px 14px; font-size:16px; outline:none
     }
+    .fld input:focus{border-color:var(--primary)}
     .row{display:flex; gap:10px; margin-top:16px}
-    .row .btn{flex:1}
+    .btn{
+      appearance:none; border:0; border-radius:12px; padding:12px 14px; width:100%;
+      background:#1a2340; color:#dfe8ff; cursor:pointer; box-shadow:var(--shadow);
+      display:inline-flex; align-items:center; justify-content:center; gap:8px; font-weight:600;
+      transition: background .2s;
+    }
+    .btn:hover{background:var(--primary-600)}
+    .btn-primary{background:var(--primary)}
+    .btn:disabled{opacity:.5; cursor:not-allowed;}
     .ok{color:var(--success)} .err{color:var(--danger)}
     .ver{margin-top:8px; color:#8aa4ff; font-size:12px}
-    /* progress */
-    .progress{height:4px; width:100%; background:#0f1729; border-radius:999px; overflow:hidden; margin:14px 0 4px}
-    .bar{height:100%; width:0%; background:linear-gradient(90deg,#63a4ff,#4c8dff); transition:width .2s}
+    .footer-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px solid #1a2340;
+      font-size: 12px;
+    }
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid #1a2340;
+      color: var(--muted);
+      width: auto; /* Override the 100% width */
+      padding: 8px 12px;
+    }
+    .btn-ghost:hover {
+      background: #1a2340;
+      color: var(--text);
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="row-top">
-      <button id="btnTheme" class="btn" title="Tema">🌙/🌞</button>
-      <button id="btnReload" class="btn" title="Forçar atualização">⟳ Atualizar</button>
-    </div>
-
     <div class="card">
       <h1>🚚 Romaneio</h1>
       <div id="conn" class="muted">…</div>
 
-      <div class="fld">
-        <label>Usuário</label>
-        <input id="user" placeholder="admin" autocomplete="username"/>
-      </div>
-      <div class="fld">
-        <label>Senha</label>
-        <input id="pass" type="password" placeholder="••••••" autocomplete="current-password"/>
-      </div>
+      <form id="loginForm">
+        <div class="fld">
+          <label for="user">Usuário</label>
+          <input id="user" placeholder="admin" autocomplete="username" required/>
+        </div>
+        <div class="fld">
+          <label for="pass">Senha</label>
+          <input id="pass" type="password" placeholder="••••••" autocomplete="current-password" required/>
+        </div>
 
-      <div class="row">
-        <button id="btnLogin" class="btn btn-primary">Entrar</button>
-        <button id="btnPing" class="btn">Testar conexão</button>
+        <div class="row">
+          <button id="btnLogin" type="submit" class="btn btn-primary">Entrar</button>
+        </div>
+      </form>
+
+      <div id="msg" class="muted" style="min-height:22px;margin-top:10px"></div>
+
+      <div class="footer-info">
+        <div id="timestamp" class="muted"></div>
+        <button id="btnReload" class="btn btn-ghost">Atualizar</button>
       </div>
-
-      <div class="progress" style="display:none" id="prog"><div class="bar" id="bar"></div></div>
-      <div id="msg" class="muted" style="min-height:22px;margin-top:6px"></div>
-
-      <div class="ver">v1.1.0</div>
     </div>
   </div>
 
 <script>
-/* ====== CONFIG ====== */
-// URL da API atualizada com o seu link
 const API_BASE = "https://script.google.com/macros/s/AKfycbyrDoEP82oJDj2wTIX491414Qf5e-YaDZJHYMAgmWfiddVKCw7WP4oQwrVtEouYxL-NvQ/exec";
 
+const qs = s => document.querySelector(s);
+const msgEl = qs("#msg");
+const btnLogin = qs("#btnLogin");
+const connEl = qs("#conn");
+const timestampEl = qs("#timestamp");
 
-/* ====== UI helpers ====== */
-const qs = s=>document.querySelector(s);
-const msg = (t, cls="muted") => { qs("#msg").className=cls; qs("#msg").textContent=t||""; };
-const setConn = (ok, txt) => qs("#conn").innerHTML = ok ? `Conectado • <span class="ok">${txt}</span>` : `<span class="err">${txt}</span>`;
-const prog = (v)=>{ qs("#prog").style.display="block"; qs("#bar").style.width = (v*100).toFixed(0)+"%"; if(v>=1) setTimeout(()=>qs("#prog").style.display="none",350); };
-
-/* ====== THEME ====== */
-(function(){
-  const key="rom_theme";
-  const apply=()=>{ document.documentElement.dataset.theme=localStorage.getItem(key)||"dark"; };
-  apply();
-  qs("#btnTheme").onclick=()=>{ localStorage.setItem(key, (localStorage.getItem(key)==="dark"?"light":"dark")); apply(); };
-})();
-
-/* ====== RELOAD ====== */
-qs("#btnReload").onclick=()=>{ location.href = location.pathname + "?v=" + Date.now(); };
-
-/* ====== API ====== */
-// Função de API corrigida para evitar o erro 405
-function apiPost(path, data) {
-    return new Promise((resolve, reject) => {
-        if(API_BASE.includes("COLE_A_URL")){
-            return reject(new Error("Configure a URL da API na constante API_BASE."));
-        }
-        const xhr = new XMLHttpRequest();
-        const url = API_BASE + "?path=" + encodeURIComponent(path);
-        xhr.open('POST', url, true);
-        xhr.setRequestHeader('Content-Type', 'text/plain;charset=utf-8');
-        xhr.onload = function () {
-            if (xhr.status >= 200 && xhr.status < 400) {
-                try {
-                    resolve(JSON.parse(xhr.responseText));
-                } catch(e) {
-                    reject(new Error("Erro ao processar resposta do servidor."));
-                }
-            } else {
-                reject(new Error("HTTP " + xhr.status));
-            }
-        };
-        xhr.onerror = () => reject(new Error("Erro de conexão."));
-        xhr.send(JSON.stringify(data || {}));
-    });
+function setMsg(text, type = "muted") {
+  msgEl.textContent = text || "";
+  msgEl.className = `${type} muted`;
 }
 
+function setLoading(isLoading) {
+  btnLogin.disabled = isLoading;
+  btnLogin.textContent = isLoading ? "Entrando..." : "Entrar";
+}
 
-/* ====== PING ON LOAD ====== */
-(async()=>{
-  try{
-    const r = await apiPost("/ping", {});
-    setConn(true, new Date().toLocaleString());
-  }catch(e){
-    setConn(false,"Falha ao conectar: " + e.message);
-  }
+function getAbsoluteUrl(page) {
+    const currentUrl = window.location.href;
+    const isGithubPages = currentUrl.includes('github.io');
+    
+    // Se for GitHub Pages e já tem 'index.html', substitui por 'app.html'
+    if (isGithubPages && currentUrl.endsWith('index.html')) {
+        return currentUrl.replace('index.html', page);
+    }
+    // Se for GitHub Pages e não tem 'index.html', adiciona 'app.html'
+    if (isGithubPages && !currentUrl.endsWith('/')) {
+        return currentUrl + '/' + page;
+    }
+
+    // Lógica padrão para outros ambientes
+    const directoryPath = currentUrl.substring(0, currentUrl.lastIndexOf('/') + 1);
+    return directoryPath + page;
+}
+
+async function apiPost(path, data) {
+    const r = await fetch(API_BASE + "?path=" + encodeURIComponent(path), {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(data || {}),
+        mode: "cors",
+        redirect: 'follow'
+    });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    return await r.json();
+}
+
+// Ping de conexão ao carregar
+(async () => {
+    try {
+        await apiPost("/ping");
+        connEl.innerHTML = `Conectado • <span class="ok">Online</span>`;
+        timestampEl.innerHTML = `<span class="ok">${new Date().toLocaleString('pt-BR')}</span>`;
+    } catch (e) {
+        connEl.innerHTML = `<span class="err">Falha na conexão</span>`;
+        timestampEl.textContent = 'Não foi possível verificar.';
+        setMsg("Verifique sua internet e tente novamente.", "err");
+    }
 })();
 
-/* ====== Ações ====== */
-qs("#btnPing").onclick = async ()=>{
-  try{ prog(.2); const r=await apiPost("/ping",{}); prog(1); msg("Conexão OK ✓","ok"); }
-  catch(e){ prog(1); msg(e.message,"err"); }
+// Ação de Login
+qs("#loginForm").onsubmit = async (e) => {
+    e.preventDefault();
+    const usuario = qs("#user").value.trim();
+    const senha = qs("#pass").value.trim();
+
+    if (!usuario || !senha) {
+        setMsg("Usuário e senha são obrigatórios.", "err");
+        return;
+    }
+
+    setLoading(true);
+    setMsg("Autenticando...");
+
+    try {
+        const r = await apiPost("/login", { usuario, senha });
+        
+        if (r.error) {
+            setMsg(r.error, "err");
+            setLoading(false);
+            return;
+        }
+        
+        localStorage.setItem("rom_session", JSON.stringify(r.session));
+        setMsg("Login OK. Redirecionando...", "ok");
+        
+        // Redirecionamento robusto
+        window.location.href = getAbsoluteUrl("app.html?v=" + Date.now());
+
+    } catch (e) {
+        console.error("Erro de login:", e);
+        setMsg("Erro de conexão: " + e.message, "err");
+        setLoading(false);
+    }
 };
 
-qs("#btnLogin").onclick = async ()=>{
-  const usuario = qs("#user").value.trim() || "admin";
-  const senha   = qs("#pass").value.trim();
-  if(!senha){ msg("Informe a senha","err"); return; }
-  try{
-    prog(.2);
-    const r = await apiPost("/login",{usuario,senha});
-    prog(.6);
-    if(r.error){ prog(1); msg(r.error,"err"); return; }
-    
-    localStorage.setItem("rom_session", JSON.stringify(r.session));
-    prog(1);
-    msg("Login OK. Redirecionando…","ok");
-    
-    // CORREÇÃO: Constrói uma URL absoluta para evitar o erro de 'Location'.
-    const currentUrl = window.location.href;
-    const directoryPath = currentUrl.substring(0, currentUrl.lastIndexOf('/') + 1);
-    const nextUrl = directoryPath + 'app.html?v=' + Date.now();
-    location.href = nextUrl;
-    
-  }catch(e){
-    prog(1); msg("Erro: "+e.message,"err");
-  }
+// Ação do botão de atualizar
+qs("#btnReload").onclick = () => {
+  window.location.href = window.location.pathname + '?v=' + Date.now();
 };
 </script>
 </body>
