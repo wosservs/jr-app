@@ -202,14 +202,11 @@ function msg(kind, text){
 }
 function setTheme(t){ document.documentElement.setAttribute('data-theme',t); localStorage.setItem('theme',t) }
 
-// **NOVA FUNÇÃO DE URL DEFINITIVA**
 function getAbsoluteUrl(page) {
     const loc = window.location;
-    const origin = loc.origin; // Ex: "https://wosservs.github.io"
-    const pathname = loc.pathname; // Ex: "/jr-app/app.html"
-    // Pega o caminho do diretório, ex: "/jr-app/"
+    const origin = loc.origin;
+    const pathname = loc.pathname;
     const dirpath = pathname.substring(0, pathname.lastIndexOf('/') + 1);
-    // Monta a URL final e limpa
     return `${origin}${dirpath}${page}`;
 }
 
@@ -282,35 +279,40 @@ function initializeApp(user, session) {
     const urlParams = new URLSearchParams(window.location.search);
     const loginToken = urlParams.get('login_token');
     
-    let session = null;
-    let user = null;
-
-    try {
-        if (loginToken) {
-            const response = await post('/me', {}, loginToken);
-            if (response.error) throw new Error(response.error);
-            user = response.me;
-            session = { token: loginToken, usuario: user, expira_em: new Date(Date.now() + 24*60*60*1000).toISOString() };
-
-        } else {
-            let localSession;
-            try {
-                localSession = JSON.parse(localStorage.getItem('rom_session') || 'null');
-            } catch {
-                localSession = null;
+    let tokenToValidate = loginToken;
+    let localSessionForInfo = null;
+    
+    if (!tokenToValidate) {
+        try {
+            const session = JSON.parse(localStorage.getItem('rom_session') || 'null');
+            if (session && session.token && session.expira_em && new Date(session.expira_em).getTime() >= Date.now()) {
+                tokenToValidate = session.token;
+                localSessionForInfo = session;
             }
-
-            if (!localSession || !localSession.token || !localSession.expira_em || new Date(localSession.expira_em).getTime() < Date.now()) {
-                throw new Error("Sessão local inválida ou expirada");
-            }
-            
-            const response = await post('/me', {}, localSession.token);
-            if (response.error) throw new Error(response.error);
-            user = response.me;
-            session = localSession;
+        } catch {
+            // localStorage corrompido, ignora
         }
+    }
 
-        // Limpa o token da URL para não ficar visível
+    if (!tokenToValidate) {
+        localStorage.removeItem('rom_session');
+        location.href = getAbsoluteUrl("index.html");
+        return;
+    }
+    
+    try {
+        const response = await post('/me', {}, tokenToValidate);
+        if (response.error) {
+            throw new Error(response.error);
+        }
+        
+        const user = response.me;
+        const session = {
+            token: tokenToValidate,
+            usuario: user,
+            expira_em: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+        };
+
         window.history.replaceState({}, document.title, getAbsoluteUrl("app.html"));
         initializeApp(user, session);
 
