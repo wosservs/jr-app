@@ -100,7 +100,6 @@ function getAbsoluteUrl(page) {
     const loc = window.location;
     const origin = loc.origin;
     const pathname = loc.pathname;
-    // Important for GitHub Pages: find the correct base directory
     const dirpath = pathname.substring(0, pathname.lastIndexOf('/') + 1);
     return `${origin}${dirpath}${page}`;
 }
@@ -144,12 +143,14 @@ $('#loginForm').onsubmit = async (e) => {
     const { session } = r;
     showMsg(`Login OK, ${session.usuario}. Redirecionando...`, "ok");
     
-    // Salva a sessão completa para o app.html usar
+    // Salva a sessão para visitas futuras (F5)
     localStorage.setItem("rom_session", JSON.stringify(session));
     
-    // Redireciona para o app.html. A lógica lá vai cuidar da validação.
+    // Codifica a sessão para passar na URL, evitando problemas de timing com o localStorage.
+    const sessionParam = btoa(JSON.stringify(session));
+    
     setTimeout(() => {
-        location.href = getAbsoluteUrl(`app.html?login_token=${session.token}`);
+        location.href = getAbsoluteUrl(`app.html?session=${encodeURIComponent(sessionParam)}`);
     }, 500);
 
   } catch (e) {
