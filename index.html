@@ -15,197 +15,158 @@
       background:linear-gradient(180deg,#0b1320 0%, #0d1528 100%); color:var(--text);
       display:flex; align-items:center; justify-content:center; padding:24px;
     }
-    .wrap{width:100%; max-width:400px}
+    .wrap{width:100%; max-width:420px}
     .card{
       background:var(--card); border:1px solid rgba(255,255,255,.06);
-      border-radius:18px; padding:26px; box-shadow:var(--shadow);
+      border-radius:18px; padding:28px; box-shadow:var(--shadow);
     }
     h1{margin:0 0 10px; font-size:28px; display:flex; gap:10px; align-items:center}
     .muted{color:var(--muted); font-size:14px}
-    .fld{display:flex; flex-direction:column; gap:6px; margin-top:14px}
+    .fld{display:flex; flex-direction:column; gap:6px; margin-top:16px}
     .fld input{
       background:#0f1729; color:var(--text); border:1px solid rgba(255,255,255,.08);
       border-radius:12px; padding:12px 14px; font-size:16px; outline:none
     }
     .fld input:focus{border-color:var(--primary)}
-    .row{display:flex; gap:10px; margin-top:16px}
+    .row-btn{margin-top:20px;}
     .btn{
-      appearance:none; border:0; border-radius:12px; padding:12px 14px; width:100%;
-      background:#1a2340; color:#dfe8ff; cursor:pointer; box-shadow:var(--shadow);
-      display:inline-flex; align-items:center; justify-content:center; gap:8px; font-weight:600;
-      transition: background .2s;
+      appearance:none; border:0; border-radius:12px; padding:12px 16px; width:100%;
+      background:var(--primary); color:#fff; cursor:pointer;
+      display:inline-flex; align-items:center; justify-content:center; gap:8px; font-weight:600; font-size: 16px;
     }
     .btn:hover{background:var(--primary-600)}
-    .btn-primary{background:var(--primary)}
-    .btn:disabled{opacity:.5; cursor:not-allowed;}
+    .btn:disabled{background:var(--muted); cursor:not-allowed;}
     .ok{color:var(--success)} .err{color:var(--danger)}
-    .footer-info {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 16px;
-      padding-top: 12px;
-      border-top: 1px solid #1a2340;
-      font-size: 12px;
-    }
-    .btn-ghost {
-      background: transparent;
-      border: 1px solid #1a2340;
-      color: var(--muted);
-      width: auto;
-      padding: 8px 12px;
-    }
-    .btn-ghost:hover {
-      background: #1a2340;
-      color: var(--text);
-    }
-    .progress{height:4px; width:100%; background:rgba(0,0,0,.2); border-radius:999px; overflow:hidden; margin:14px 0 4px; display: none;}
-    .bar{height:100%; width:0%; background:linear-gradient(90deg,#63a4ff,#4c8dff); transition:width .2s}
+    .footer{margin-top:16px; color:var(--muted); font-size:12px; text-align: center; min-height: 40px; display: flex; flex-direction: column; justify-content: center; align-items: center;}
+    .footer button{ background:none; border:1px solid var(--line); color: var(--muted); padding: 4px 8px; cursor: pointer; border-radius: 6px; margin-top: 5px;}
+    .loader { width: 16px; height: 16px; border: 2px solid #FFF; border-bottom-color: transparent; border-radius: 50%; display: inline-block; box-sizing: border-box; animation: rotation 1s linear infinite; }
+    @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="card">
       <h1>🚚 Romaneio</h1>
-      <div id="conn" class="muted">Verificando conexão...</div>
+      <div id="conn" class="muted">Conectando...</div>
 
       <form id="loginForm">
         <div class="fld">
           <label for="user">Usuário</label>
-          <input id="user" placeholder="admin" autocomplete="username" required/>
+          <input id="user" value="admin" autocomplete="username" required/>
         </div>
         <div class="fld">
           <label for="pass">Senha</label>
-          <input id="pass" type="password" placeholder="••••••" autocomplete="current-password" required/>
+          <input id="pass" type="password" autocomplete="current-password" required/>
         </div>
 
-        <div class="row">
-          <button id="btnLogin" type="submit" class="btn btn-primary">Entrar</button>
+        <div class="row-btn">
+          <button id="btnLogin" class="btn">
+            <span id="btnText">Entrar</span>
+            <div id="btnLoader" class="loader" style="display:none"></div>
+          </button>
         </div>
       </form>
       
-      <div class="progress" id="prog"><div class="bar" id="bar"></div></div>
-      <div id="msg" class="muted" style="min-height:22px;margin-top:10px"></div>
-
-      <div class="footer-info">
-        <div id="timestamp" class="muted"></div>
-        <button id="btnReload" class="btn btn-ghost">Atualizar</button>
-      </div>
+      <div id="msg" class="muted" style="text-align:center; min-height:22px; margin-top:16px"></div>
+    </div>
+    <div class="footer">
+      <div id="footer-info"></div>
+      <button id="btnReload" title="Forçar atualização">Atualizar Versão</button>
     </div>
   </div>
 
 <script>
+/* ====== CONFIG ====== */
 const API_BASE = "https://script.google.com/macros/s/AKfycbyrDoEP82oJDj2wTIX491414Qf5e-YaDZJHYMAgmWfiddVKCw7WP4oQwrVtEouYxL-NvQ/exec";
 
-const qs = s => document.querySelector(s);
-const msgEl = qs("#msg");
-const btnLogin = qs("#btnLogin");
-const connEl = qs("#conn");
-const timestampEl = qs("#timestamp");
-const progEl = qs('#prog');
-const barEl = qs('#bar');
+/* ====== UI helpers ====== */
+const $ = s => document.querySelector(s);
+const btnLogin = $('#btnLogin'), btnText = $('#btnText'), btnLoader = $('#btnLoader');
+const msgEl = $('#msg'), connEl = $('#conn'), footerInfoEl = $('#footer-info');
 
-function setProgress(val) {
-    progEl.style.display = 'block';
-    barEl.style.width = `${val * 100}%`;
-    if (val >= 1) {
-        setTimeout(() => { progEl.style.display = 'none'; barEl.style.width = '0%'; }, 500);
-    }
-}
-
-function setMsg(text, type = "muted") {
-  msgEl.textContent = text || "";
-  msgEl.className = `${type} muted`;
-}
-
-function setLoading(isLoading) {
-  btnLogin.disabled = isLoading;
-  if (isLoading) {
-    btnLogin.textContent = "Autenticando...";
-    setProgress(0.3);
-  } else {
-    btnLogin.textContent = "Entrar";
-    setProgress(1);
+const setConn = (ok, ts) => {
+  connEl.innerHTML = ok ? `Conectado • <span class="ok">Online</span>` : `<span class="err">Offline</span>`;
+  if (ok) {
+    footerInfoEl.innerHTML = `Verificado em: ${new Date(ts).toLocaleString()}`;
   }
-}
-
-// **NOVA FUNÇÃO DE URL DEFINITIVA**
+};
+const showMsg = (txt, cls="muted") => { msgEl.className = cls; msgEl.textContent = txt || ""; };
+const setButtonLoading = (isLoading) => {
+  btnLogin.disabled = isLoading;
+  btnText.style.display = isLoading ? 'none' : 'inline';
+  btnLoader.style.display = isLoading ? 'inline-block' : 'none';
+};
 function getAbsoluteUrl(page) {
     const loc = window.location;
-    const origin = loc.origin; // Ex: "https://wosservs.github.io"
-    const pathname = loc.pathname; // Ex: "/jr-app/index.html" ou "/jr-app/"
-    // Pega o caminho do diretório, ex: "/jr-app/"
+    const origin = loc.origin;
+    const pathname = loc.pathname;
+    // Important for GitHub Pages: find the correct base directory
     const dirpath = pathname.substring(0, pathname.lastIndexOf('/') + 1);
-    // Monta a URL final e limpa
     return `${origin}${dirpath}${page}`;
 }
 
-async function apiPost(path, data) {
-    const r = await fetch(API_BASE + "?path=" + encodeURIComponent(path), {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify(data || {}),
-        mode: "cors",
-        redirect: 'follow'
-    });
-    if (!r.ok) throw new Error("HTTP " + r.status);
-    return await r.json();
+/* ====== API ====== */
+async function post(path, data){
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${API_BASE}?path=${encodeURIComponent(path)}`, true);
+    xhr.setRequestHeader('Content-Type', 'text/plain;charset=utf-8');
+    xhr.onload = () => {
+        try { resolve(JSON.parse(xhr.responseText)); } 
+        catch (e) { reject(new Error("Resposta inválida do servidor.")); }
+    };
+    xhr.onerror = () => reject(new Error("Erro de conexão."));
+    xhr.send(JSON.stringify(data || {}));
+  });
 }
 
+/* ====== Ações ====== */
+$('#btnReload').onclick = () => { location.href = `${location.pathname}?v=${Date.now()}`; };
+
+$('#loginForm').onsubmit = async (e) => {
+  e.preventDefault();
+  const usuario = $('#user').value.trim();
+  const senha = $('#pass').value.trim();
+  if (!usuario || !senha) {
+    showMsg("Usuário e senha são obrigatórios", "err");
+    return;
+  }
+  
+  setButtonLoading(true);
+  showMsg("Autenticando...");
+
+  try {
+    const r = await post("/login", { usuario, senha });
+    if (r.error || !r.session) {
+      throw new Error(r.error || "Sessão não recebida.");
+    }
+
+    const { session } = r;
+    showMsg(`Login OK, ${session.usuario}. Redirecionando...`, "ok");
+    
+    // Salva a sessão completa para o app.html usar
+    localStorage.setItem("rom_session", JSON.stringify(session));
+    
+    // Redireciona para o app.html. A lógica lá vai cuidar da validação.
+    setTimeout(() => {
+        location.href = getAbsoluteUrl(`app.html?login_token=${session.token}`);
+    }, 500);
+
+  } catch (e) {
+    showMsg(`Erro: ${e.message}`, "err");
+    setButtonLoading(false);
+  }
+};
+
+/* ====== PING ON LOAD ====== */
 (async () => {
-    try {
-        await apiPost("/ping");
-        connEl.innerHTML = `Conectado • <span class="ok">Online</span>`;
-        timestampEl.innerHTML = `<span class="ok">${new Date().toLocaleString('pt-BR')}</span>`;
-    } catch (e) {
-        connEl.innerHTML = `<span class="err">Falha na conexão</span>`;
-        timestampEl.textContent = 'Não foi possível verificar.';
-        setMsg("Verifique sua internet e tente novamente.", "err");
-    }
+  try {
+    const r = await post("/ping");
+    setConn(true, r.ts);
+  } catch (e) {
+    setConn(false);
+  }
 })();
-
-qs("#loginForm").onsubmit = async (e) => {
-    e.preventDefault();
-    const usuario = qs("#user").value.trim();
-    const senha = qs("#pass").value.trim();
-
-    if (!usuario || !senha) {
-        setMsg("Usuário e senha são obrigatórios.", "err");
-        return;
-    }
-
-    setLoading(true);
-    setMsg("");
-
-    try {
-        setProgress(0.6);
-        const r = await apiPost("/login", { usuario, senha });
-        setProgress(0.9);
-        
-        if (r.error || !r.session || !r.session.token) {
-            setMsg(r.error || "Falha ao obter sessão.", "err");
-            setLoading(false);
-            return;
-        }
-        
-        setMsg("Login OK. Redirecionando...", "ok");
-        setProgress(1);
-        
-        setTimeout(() => {
-            // A URL gerada aqui agora é 100% confiável
-            window.location.href = getAbsoluteUrl(`app.html?login_token=${r.session.token}&v=${Date.now()}`);
-        }, 300);
-
-    } catch (e) {
-        console.error("Erro de login:", e);
-        setMsg("Erro de conexão: " + e.message, "err");
-        setLoading(false);
-    }
-};
-
-qs("#btnReload").onclick = () => {
-  window.location.href = window.location.pathname + '?v=' + Date.now();
-};
 </script>
 </body>
 </html>
