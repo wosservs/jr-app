@@ -132,14 +132,12 @@ function setLoading(isLoading) {
 // **NOVA FUNÇÃO DE URL DEFINITIVA**
 function getAbsoluteUrl(page) {
     const loc = window.location;
-    // Ex: "https://wosservs.github.io"
-    const origin = loc.origin;
-    // Ex: "/jr-app/index.html"
-    const pathname = loc.pathname;
-    // Pega o caminho do diretório, ex: "/jr-app"
-    const dirpath = pathname.substring(0, pathname.lastIndexOf('/'));
+    const origin = loc.origin; // Ex: "https://wosservs.github.io"
+    const pathname = loc.pathname; // Ex: "/jr-app/index.html" ou "/jr-app/"
+    // Pega o caminho do diretório, ex: "/jr-app/"
+    const dirpath = pathname.substring(0, pathname.lastIndexOf('/') + 1);
     // Monta a URL final e limpa
-    return `${origin}${dirpath}/${page}`;
+    return `${origin}${dirpath}${page}`;
 }
 
 async function apiPost(path, data) {
@@ -194,6 +192,7 @@ qs("#loginForm").onsubmit = async (e) => {
         setProgress(1);
         
         setTimeout(() => {
+            // A URL gerada aqui agora é 100% confiável
             window.location.href = getAbsoluteUrl(`app.html?login_token=${r.session.token}&v=${Date.now()}`);
         }, 300);
 
