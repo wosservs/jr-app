@@ -201,17 +201,19 @@ function msg(kind, text){
   el.textContent = text; el.style.display='block';
 }
 function setTheme(t){ document.documentElement.setAttribute('data-theme',t); localStorage.setItem('theme',t) }
+
+// **NOVA FUNÇÃO DE URL DEFINITIVA**
 function getAbsoluteUrl(page) {
-    const currentUrl = window.location.href;
-    const isGithubPages = currentUrl.includes('github.io');
-    if (isGithubPages && currentUrl.endsWith('app.html')) return currentUrl.replace('app.html', page);
-    if (isGithubPages && !currentUrl.endsWith('/')) return currentUrl + '/' + page;
-    const directoryPath = currentUrl.substring(0, currentUrl.lastIndexOf('/') + 1);
-    return directoryPath + page;
+    const loc = window.location;
+    const origin = loc.origin; // Ex: "https://wosservs.github.io"
+    const pathname = loc.pathname; // Ex: "/jr-app/app.html"
+    // Pega o caminho do diretório, ex: "/jr-app/"
+    const dirpath = pathname.substring(0, pathname.lastIndexOf('/') + 1);
+    // Monta a URL final e limpa
+    return `${origin}${dirpath}${page}`;
 }
 
-async function post(path, body={}){
-  const sess = JSON.parse(localStorage.getItem('rom_session') || '{}');
+async function post(path, body={}, token){
   return new Promise((resolve, reject) => {
     barStart();
     const xhr = new XMLHttpRequest();
@@ -223,7 +225,7 @@ async function post(path, body={}){
         catch(e) { reject(new Error("Resposta inválida do servidor.")); }
     };
     xhr.onerror = () => { barDone(); reject(new Error("Erro de conexão.")); };
-    xhr.send(JSON.stringify({...body, token: sess.token}));
+    xhr.send(JSON.stringify({...body, token: token}));
   });
 }
 
@@ -231,8 +233,10 @@ async function post(path, body={}){
 //  INICIALIZAÇÃO DO APLICATIVO
 // =================================================================================
 
-function initializeApp(user, status) {
-    $('#who').textContent = status === 'online' ? user : `${user} (${status})`;
+function initializeApp(user, session) {
+    localStorage.setItem('rom_session', JSON.stringify(session));
+    
+    $('#who').textContent = user;
     document.body.classList.add('ready');
 
     (function initTheme(){
@@ -243,68 +247,77 @@ function initializeApp(user, status) {
     loadCidades();
     itensDiv.appendChild(itemRow());
     somaTotal();
+    
+    const postAuthenticated = (path, body) => post(path, body, session.token);
 
     $('#btnTheme').onclick = () => setTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
     $('#logout').onclick = async e => {
       e.preventDefault();
-      try { await post('/logout', {}); } catch(_) {}
+      try { await postAuthenticated('/logout', {}); } catch(_) {}
       localStorage.removeItem('rom_session');
       location.href = getAbsoluteUrl("index.html");
     };
     ['#cli_tel','#for_tel'].forEach(sel => {
       const el=$(sel);
       el.addEventListener('input', () => maskPhone(el));
-      el.addEventListener('blur', () => tryLookup(sel.includes('cli')?'cliente':'fornecedor'));
+      el.addEventListener('blur', () => tryLookup(sel.includes('cli')?'cliente':'fornecedor', postAuthenticated));
     });
     $('#rom').addEventListener('input', e => {
       if (e.target.value.length > 0 && !$('#data').value) $('#data').value = todayISO();
     });
-    $('#cli_nome').addEventListener('focus', () => tryLookup('cliente'));
-    $('#for_nome').addEventListener('focus', () => tryLookup('fornecedor'));
+    $('#cli_nome').addEventListener('focus', () => tryLookup('cliente', postAuthenticated));
+    $('#for_nome').addEventListener('focus', () => tryLookup('fornecedor', postAuthenticated));
     ['#cli_cidade_uf','#for_cidade_uf','#cadCidade'].forEach(sel => {
       $(sel).addEventListener('input', e => fillDatalist(e.target.value));
     });
     $('#addItem').onclick = () => { itensDiv.appendChild(itemRow()); somaTotal(); };
     fileInput.onchange = handleFileUpload;
     $('#limpar').onclick = clearForm;
-    $('#enviar').onclick = handleSend;
+    $('#enviar').onclick = () => handleSend(postAuthenticated);
 }
 
-async function validateSessionWithRetry(retries = 3, delay = 500) {
-    for (let i = 0; i < retries; i++) {
-        try {
-            const r = await post('/me', {});
-            if (r.error === 'Sessão inválida' && i < retries - 1) {
-                await new Promise(res => setTimeout(res, delay));
-                continue;
-            }
-            return r;
-        } catch (e) {
-            if (i === retries - 1) throw e;
-            await new Promise(res => setTimeout(res, delay));
-        }
-    }
-}
 
 (async function start() {
-    $('#who').textContent = 'Verificando...';
-    const sess = JSON.parse(localStorage.getItem('rom_session') || '{}');
-
-    if (!sess.token || new Date(sess.expira_em).getTime() < Date.now()) {
-        location.href = getAbsoluteUrl("index.html");
-        return;
-    }
+    $('#who').textContent = 'Validando sessão...';
+    const urlParams = new URLSearchParams(window.location.search);
+    const loginToken = urlParams.get('login_token');
+    
+    let session = null;
+    let user = null;
 
     try {
-        const r = await validateSessionWithRetry();
-        if (r.error) {
-            localStorage.removeItem('rom_session');
-            location.href = getAbsoluteUrl("index.html");
+        if (loginToken) {
+            const response = await post('/me', {}, loginToken);
+            if (response.error) throw new Error(response.error);
+            user = response.me;
+            session = { token: loginToken, usuario: user, expira_em: new Date(Date.now() + 24*60*60*1000).toISOString() };
+
         } else {
-            initializeApp(r.me, 'online');
+            let localSession;
+            try {
+                localSession = JSON.parse(localStorage.getItem('rom_session') || 'null');
+            } catch {
+                localSession = null;
+            }
+
+            if (!localSession || !localSession.token || !localSession.expira_em || new Date(localSession.expira_em).getTime() < Date.now()) {
+                throw new Error("Sessão local inválida ou expirada");
+            }
+            
+            const response = await post('/me', {}, localSession.token);
+            if (response.error) throw new Error(response.error);
+            user = response.me;
+            session = localSession;
         }
+
+        // Limpa o token da URL para não ficar visível
+        window.history.replaceState({}, document.title, getAbsoluteUrl("app.html"));
+        initializeApp(user, session);
+
     } catch (e) {
-        initializeApp(sess.usuario || 'Usuário', 'Offline');
+        console.error("Falha na validação da sessão:", e.message);
+        localStorage.removeItem('rom_session');
+        location.href = getAbsoluteUrl("index.html");
     }
 })();
 
@@ -355,7 +368,7 @@ function itemRow(){
 
 const fileInput = $('#fotos'), thumbs=$('#thumbs'); let fotosData=[];
 async function handleFileUpload(ev){
-  fotosData = []; // Limpa para nova seleção
+  fotosData = [];
   for(const f of Array.from(ev.target.files||[])){
     if(f.type.startsWith('image/')) fotosData.push(await fileToDataURL(f));
   }
@@ -377,9 +390,7 @@ function todayISO() {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 function clearForm(){
-  $('#secRom').querySelectorAll('input, select').forEach(el => {
-    if (el.type !== 'file') el.value = '';
-  });
+  $('#secRom').querySelectorAll('input, select').forEach(el => { if (el.type !== 'file') el.value = ''; });
   fileInput.value = ''; fotosData = []; renderThumbs();
   itensDiv.innerHTML=''; itensDiv.appendChild(itemRow()); somaTotal();
   $('#msg').style.display='none';
@@ -387,13 +398,13 @@ function clearForm(){
 }
 
 let pendenteCadastro = {cliente:false, fornecedor:false};
-async function tryLookup(tipo){
+async function tryLookup(tipo, postFn){
   const telEl = $(`#${tipo.slice(0,3)}_tel`), nomeEl = $(`#${tipo.slice(0,3)}_nome`), cidEl = $(`#${tipo.slice(0,3)}_cidade_uf`), chip = $(`#${tipo.slice(0,3)}_status`);
   const tel = onlyDigits(telEl.value);
   chip.style.display='none';
   if(tel.length < 10) return;
   try {
-    const r = await post('/contacts/find', { tipo, tel });
+    const r = await postFn('/contacts/find', { tipo, tel });
     if(r && r.found){
       nomeEl.value = r.nome || ''; cidEl.value = r.cidade_uf || '';
       chip.textContent='auto'; chip.style.display='inline-block';
@@ -418,7 +429,7 @@ function abrirModalCadastro(tipo, nomeAtual, cidAtual){
   });
 }
 
-async function handleSend(){
+async function handleSend(postFn){
   const data = {
     rom: Number($('#rom').value), data: $('#data').value, obs: $('#obs').value.trim(),
     cliente: {tel:$('#cli_tel').value, nome:$('#cli_nome').value, local:$('#cli_cidade_uf').value, cadastrar:pendenteCadastro.cliente},
@@ -435,7 +446,7 @@ async function handleSend(){
   }
 
   try{
-    const r = await post('/rom/create', data);
+    const r = await postFn('/rom/create', data);
     if(r.error){ return msg('err', r.error); }
 
     $('#codChave').textContent = `cod ${r.id}`;
@@ -445,7 +456,7 @@ async function handleSend(){
       const tel = onlyDigits(d.tel);
       if(!tel) return;
       const texto = `Romaneio ${data.rom} (cod ${r.id})%0ACliente: ${data.cliente.nome}%0AFornecedor: ${data.fornecedor.nome}%0AData: ${data.data}%0AItens: ${data.itens.map(i=>`${i.qtd} ${i.tipo} ${i.tamanho}`).join(', ')}${r.pdfUrl?`%0AComprovante: ${r.pdfUrl}`:''}`;
-      window.open(`https://wa.me/55${tel}?text=${texto}`,'_blank');
+      window.open(`https.wa.me/55${tel}?text=${texto}`,'_blank');
     };
     $('#btnWappCli').onclick = () => wmsg('cli');
     $('#btnWappFor').onclick = () => wmsg('for');
