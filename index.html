@@ -63,7 +63,6 @@
       </div>
 
       <button id="btnLogin" class="btn">Entrar</button>
-      
       <div id="msg" class="muted"></div>
     </div>
     <div class="footer">
@@ -79,20 +78,14 @@ const API_BASE = "https://script.google.com/macros/s/AKfycbyrDoEP82oJDj2wTIX4914
 const $ = s => document.querySelector(s);
 const connEl = $('#conn'), msgEl = $('#msg'), btnLogin = $('#btnLogin'), userEl = $('#user'), passEl = $('#pass');
 
-function getAbsoluteUrl(page) {
-    const loc = window.location;
-    const path = loc.pathname.substring(0, loc.pathname.lastIndexOf('/'));
-    return `${loc.origin}${path}/${page}`;
-}
-
 async function post(path, data){
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `${API_BASE}?path=${encodeURIComponent(path)}`, true);
     xhr.setRequestHeader('Content-Type', 'text/plain;charset=utf-8');
     xhr.onload = () => {
-        try { resolve(JSON.parse(xhr.responseText)); }
-        catch(e) { reject(new Error("Resposta inválida do servidor.")); }
+      try { resolve(JSON.parse(xhr.responseText)); }
+      catch(e) { reject(new Error("Resposta inválida do servidor.")); }
     };
     xhr.onerror = () => reject(new Error("Erro de conexão."));
     xhr.send(JSON.stringify(data || {}));
@@ -100,23 +93,23 @@ async function post(path, data){
 }
 
 function setStatus(type, text) {
-    connEl.className = `conn-status ${type}`;
-    connEl.textContent = text;
+  connEl.className = `conn-status ${type}`;
+  connEl.textContent = text;
 }
 function showMessage(type, text) {
-    msgEl.className = type;
-    msgEl.textContent = text;
+  msgEl.className = type;
+  msgEl.textContent = text;
 }
 function setLoading(isLoading) {
-    btnLogin.disabled = isLoading;
-    btnLogin.textContent = isLoading ? 'Autenticando...' : 'Entrar';
+  btnLogin.disabled = isLoading;
+  btnLogin.textContent = isLoading ? 'Autenticando...' : 'Entrar';
 }
 
 /* ====== AÇÕES ====== */
 $('#btnReload').onclick = () => location.reload(true);
 
 const handleLogin = async () => {
-  const usuario = userEl.value.trim();
+  const usuario = userEl.value.trim() || 'admin';
   const senha = passEl.value.trim();
 
   if (!senha) {
@@ -129,26 +122,22 @@ const handleLogin = async () => {
 
   try {
     const response = await post("/login", { usuario, senha });
-    
-    if (response.error) {
-      throw new Error(response.error);
-    }
-    
+    if (response.error) throw new Error(response.error);
+
     localStorage.setItem("rom_session", JSON.stringify(response.session));
-    
     showMessage("ok", "Login OK. Redirecionando...");
-    window.location.href = getAbsoluteUrl(`app.html`);
+
+    // Importante: view=app para Apps Script servir a view correta
+    window.location.href = `${API_BASE}?view=app`;
 
   } catch (e) {
     setLoading(false);
-    showMessage("err", e.message);
+    showMessage("err", e.message || "Falha no login.");
   }
 };
 
 btnLogin.onclick = handleLogin;
-passEl.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') handleLogin();
-});
+passEl.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleLogin(); });
 
 /* ====== PING ON LOAD ====== */
 (async () => {
@@ -160,8 +149,6 @@ passEl.addEventListener('keypress', (e) => {
     setStatus('err', 'Falha na conexão');
   }
 })();
-
 </script>
 </body>
 </html>
-
