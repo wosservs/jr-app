@@ -1,190 +1,58 @@
 <!doctype html>
 <html lang="pt-BR" data-theme="dark">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Romaneio • Painel</title>
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
-  <meta http-equiv="Pragma" content="no-cache"/>
-  <meta http-equiv="Expires" content="0"/>
   <style>
     :root{
-      --bg:#0f172a; --card:#0b1220; --text:#e5e7eb; --muted:#94a3b8;
-      --primary:#2563eb; --danger:#ef4444; --ok:#16a3a; --chip:#111827;
-      --bar:#60a5fa; --line:#1f2937;
+      --bg:#0b1320; --card:#121b2e; --muted:#7b8aa1; --text:#eaf1ff;
+      --primary:#4c8dff; --primary-600:#3a74d6; --success:#19c37d; --danger:#ff6b6b;
+      --shadow:0 18px 40px rgba(0,0,0,.35);
     }
-    [data-theme="light"]{
-      --bg:#f8fafc; --card:#ffffff; --text:#0f172a; --muted:#475569;
-      --primary:#1d4ed8; --danger:#dc2626; --ok:#16a3a; --chip:#eef2ff;
-      --bar:#3b82f6; --line:#e5e7eb;
+    html,body{height:100%}
+    body{
+      margin:0; font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto;
+      background:var(--bg); color:var(--text);
+      display:flex; align-items:center; justify-content:center; padding:24px;
     }
-    *{box-sizing:border-box} html,body{height:100%}
-    body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto; transition: opacity .3s; opacity: 0;}
-    body.ready{opacity:1;}
-    header{position:sticky;top:0;background:var(--card);border-bottom:1px solid var(--line);display:flex;gap:14px;align-items:center;justify-content:space-between;padding:12px 18px;z-index:10}
-    nav a{color:var(--text);text-decoration:none;padding:10px 14px;border-radius:999px;background:var(--chip);border:1px solid var(--line)}
-    nav{display:flex;gap:8px;flex-wrap:wrap}
-    .theme{background:transparent;border:1px solid var(--line);color:var(--text);padding:8px 10px;border-radius:10px;cursor:pointer}
-    .container{max-width:1100px;margin:18px auto;padding:0 16px}
-    .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
-    h2{margin:0 0 12px}
-    label{display:block;font-size:13px;color:var(--muted);margin:8px 0 6px}
-    input,select{width:100%;padding:10px 12px;border:1px solid var(--line);background:transparent;border-radius:10px;color:var(--text)}
-    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    .grid4{display:grid;grid-template-columns:1.2fr .8fr .8fr 110px;gap:10px;align-items:center}
-    .btn{cursor:pointer;border:0;border-radius:10px;padding:10px 14px;font-weight:600}
-    .btn-primary{background:var(--primary);color:#fff}
-    .btn-ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
-    .btn-danger{background:var(--danger);color:#fff}
-    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-    .muted{color:var(--muted)}
-    .thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-    .thumb{position:relative}
-    .thumb img{width:84px;height:84px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
-    .thumb button{position:absolute;top:-8px;right:-8px;width:22px;height:22px;border-radius:50%;border:0;background:var(--danger);color:#fff;cursor:pointer}
-    .msg{margin-top:12px;padding:12px;border-radius:10px}
-    .ok{background:#064e3b;color:#a7f3d0}
-    .err{background:#7f1d1d;color:#fecaca}
-    .topbar{position:fixed;inset:0 0 auto 0;height:3px;background:transparent;z-index:20}
-    .bar{height:100%;width:0;background:var(--bar);transition:width .2s linear}
-    .section{margin-bottom:16px}
-    .modal-back{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:30}
-    .modal{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;max-width:520px;width:96%}
-    .modal h3{margin:0 0 8px}
-    .modal .row{justify-content:flex-end}
-    .chip-ok{padding:2px 8px;border-radius:999px;background:#064e3b;color:#a7f3d0;font-size:12px}
-    datalist option{color:#000}
+    .wrap{width:100%; max-width:720px}
+    .card{
+      background:var(--card); border:1px solid rgba(255,255,255,.06);
+      border-radius:18px; padding:28px; box-shadow:var(--shadow);
+    }
+    h1{margin:0 0 12px; font-size:28px; display:flex; gap:12px; align-items:center}
+    .sub{color:var(--muted); margin-bottom:16px}
+    .row{display:flex; gap:12px; flex-wrap:wrap; margin-top:16px}
+    .btn{
+      appearance:none; border:0; border-radius:12px; padding:12px 14px;
+      background:var(--primary); color:var(--text); cursor:pointer;
+      display:inline-flex; align-items:center; justify-content:center; gap:8px; font-weight:600;
+      font-size:14px;
+    }
+    .btn.sec{ background:#223255 }
+    .badge{padding:6px 10px; border-radius:999px; background:#0f1729; border:1px solid rgba(255,255,255,.08); font-size:12px}
+    pre{
+      background:#0f1729; border:1px solid rgba(255,255,255,.08);
+      padding:12px; border-radius:12px; overflow:auto; max-height:220px;
+    }
   </style>
 </head>
 <body>
-  <div class="topbar"><div id="bar" class="bar"></div></div>
+  <div class="wrap">
+    <div class="card">
+      <h1>🚚 Romaneio • Painel</h1>
+      <div class="sub">Área autenticada</div>
 
-  <header>
-    <div class="row">
-      <strong>🚚 Romaneio</strong>
-      <span id="who" class="muted"></span>
-    </div>
-    <nav class="row">
-      <a href="#rom">Enviar Romaneio</a>
-      <a href="#list">Romaneios</a>
-      <a href="#clientes">Clientes</a>
-      <a href="#users">Usuários</a>
-      <button id="btnTheme" class="theme">🌙/☀️</button>
-      <a href="#" id="logout" class="btn-ghost">Sair</a>
-    </nav>
-  </header>
+      <div id="userInfo" class="badge">Validando sessão...</div>
 
-  <div class="container">
-    <div class="card section" id="secRom">
-      <h2>Enviar Romaneio</h2>
-
-      <div class="grid2">
-        <div>
-          <label>ROM *</label>
-          <input id="rom" type="number" placeholder="Ex.: 21" required>
-        </div>
-        <div>
-          <label>Data *</label>
-          <input id="data" type="date" required>
-        </div>
+      <div class="row" style="margin-top:20px">
+        <button id="btnLogout" class="btn">Sair</button>
+        <button id="btnPing" class="btn sec">Ping API</button>
       </div>
 
-      <h3 class="muted" style="margin-top:12px">Cliente & Fornecedor</h3>
-      <div class="grid2">
-        <div>
-          <label>Cliente • Telefone *</label>
-          <input id="cli_tel" inputmode="numeric" placeholder="(85) 9 8888-8888" maxlength="16">
-        </div>
-        <div>
-          <label>Cliente • Nome *</label>
-          <input id="cli_nome" placeholder="Nome do cliente">
-        </div>
-      </div>
-      <div class="grid2">
-        <div>
-          <label>Cliente • Cidade/UF *</label>
-          <input id="cli_cidade_uf" list="listaCidades" placeholder="Fortaleza/CE">
-        </div>
-        <div class="row" style="align-items:end;gap:8px">
-          <span id="cli_status" class="chip-ok" style="display:none">auto</span>
-        </div>
-      </div>
-
-      <div class="grid2" style="margin-top:8px">
-        <div>
-          <label>Fornecedor • Telefone *</label>
-          <input id="for_tel" inputmode="numeric" placeholder="(85) 3333-3333" maxlength="16">
-        </div>
-        <div>
-          <label>Fornecedor • Nome *</label>
-          <input id="for_nome" placeholder="Nome do fornecedor">
-        </div>
-      </div>
-      <div class="grid2">
-        <div>
-          <label>Fornecedor • Cidade/UF *</label>
-          <input id="for_cidade_uf" list="listaCidades" placeholder="Maracanaú/CE">
-        </div>
-        <div class="row" style="align-items:end;gap:8px">
-          <span id="for_status" class="chip-ok" style="display:none">auto</span>
-        </div>
-      </div>
-
-      <label style="margin-top:8px">Obs.</label>
-      <input id="obs" type="text" placeholder="Ex.: Doca 3, até 16h">
-
-      <h3 class="muted" style="margin:14px 0 6px">Itens</h3>
-      <div id="itens"></div>
-      <div class="row" style="margin-top:8px">
-        <button id="addItem" class="btn-ghost">+ Adicionar item</button>
-        <span class="muted">Total: <b id="totalQtd">0</b></span>
-      </div>
-
-      <h3 class="muted" style="margin-top:12px">Fotos</h3>
-      <input id="fotos" type="file" accept="image/*" capture="environment" multiple>
-      <div id="thumbs" class="thumbs"></div>
-
-      <div class="row" style="margin-top:14px">
-        <button id="enviar" class="btn btn-primary">Enviar</button>
-        <button id="limpar" class="btn btn-ghost">Limpar</button>
-      </div>
-
-      <div id="msg" style="display:none"></div>
-    </div>
-
-    <div class="card section">
-      <h2>Romaneios</h2>
-      <p class="muted">Lista/relatórios numa próxima etapa.</p>
-    </div>
-  </div>
-
-  <datalist id="listaCidades"></datalist>
-
-  <div id="modalCad" class="modal-back">
-    <div class="modal">
-      <h3>Cadastro não encontrado</h3>
-      <p class="muted" id="cadQuem">Preencha nome e cidade/UF.</p>
-      <label>Nome</label>
-      <input id="cadNome" placeholder="Nome">
-      <label style="margin-top:8px">Cidade/UF</label>
-      <input id="cadCidade" list="listaCidades" placeholder="Cidade/UF">
-      <div class="row" style="margin-top:12px">
-        <button id="cadCancel" class="btn btn-ghost">Cancelar</button>
-        <button id="cadOk" class="btn btn-primary">Usar e cadastrar</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="modalOk" class="modal-back">
-    <div class="modal">
-      <h3>Romaneio enviado com sucesso <span id="codChave" class="chip-ok"></span></h3>
-      <p class="muted">Você pode abrir o PDF ou enviar pelo WhatsApp.</p>
-      <div class="row">
-        <button id="btnPdf" class="btn btn-ghost">Abrir PDF</button>
-        <button id="btnWappCli" class="btn btn-primary">WhatsApp Cliente</button>
-        <button id="btnWappFor" class="btn btn-primary">WhatsApp Fornecedor</button>
-        <button id="btnOkClose" class="btn btn-ghost">Fechar</button>
-      </div>
+      <h3 style="margin-top:24px">Sessão</h3>
+      <pre id="sessDump">sem dados</pre>
     </div>
   </div>
 
@@ -192,285 +60,65 @@
 /* ====== CONFIG ====== */
 const API_BASE = "https://script.google.com/macros/s/AKfycbyrDoEP82oJDj2wTIX491414Qf5e-YaDZJHYMAgmWfiddVKCw7WP4oQwrVtEouYxL-NvQ/exec";
 
-/* ====== Infra UI & API ====== */
+/* ====== HELPERS ====== */
 const $ = s => document.querySelector(s);
-function barStart(){ $('#bar').style.width='20%'; }
-function barDone(){ $('#bar').style.width='100%'; setTimeout(()=>$('#bar').style.width='0',300); }
-function msg(kind, text){
-  const el = $('#msg'); el.className = 'msg ' + (kind==='err'?'err':'ok');
-  el.textContent = text; el.style.display='block';
-}
-function setTheme(t){ document.documentElement.setAttribute('data-theme',t); localStorage.setItem('theme',t) }
-
-function getAbsoluteUrl(page) {
-    const loc = window.location;
-    const origin = loc.origin;
-    const pathname = loc.pathname;
-    const dirpath = pathname.substring(0, pathname.lastIndexOf('/') + 1);
-    return `${origin}${dirpath}${page}`;
-}
-
-async function post(path, body={}, token){
+async function post(path, data){
   return new Promise((resolve, reject) => {
-    barStart();
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `${API_BASE}?path=${encodeURIComponent(path)}`, true);
     xhr.setRequestHeader('Content-Type', 'text/plain;charset=utf-8');
     xhr.onload = () => {
-        barDone();
-        try { resolve(JSON.parse(xhr.responseText)); }
-        catch(e) { reject(new Error("Resposta inválida do servidor.")); }
+      try { resolve(JSON.parse(xhr.responseText)); }
+      catch(e) { reject(new Error("Resposta inválida do servidor.")); }
     };
-    xhr.onerror = () => { barDone(); reject(new Error("Erro de conexão.")); };
-    xhr.send(JSON.stringify({...body, token: token}));
+    xhr.onerror = () => reject(new Error("Erro de conexão."));
+    xhr.send(JSON.stringify(data || {}));
   });
 }
+function gotoLogin(){ window.location.href = API_BASE; }
 
-// =================================================================================
-//  INICIALIZAÇÃO DO APLICATIVO
-// =================================================================================
+/* ====== STATE ====== */
+let session = null;
 
-function initializeApp(user, session) {
-    localStorage.setItem('rom_session', JSON.stringify(session));
-    
-    $('#who').textContent = user;
-    document.body.classList.add('ready');
+/* ====== PAGE LOAD ====== */
+(async () => {
+  try {
+    const raw = localStorage.getItem("rom_session");
+    session = raw ? JSON.parse(raw) : null;
+    $('#sessDump').textContent = JSON.stringify(session, null, 2);
 
-    (function initTheme(){
-      const saved = localStorage.getItem('theme');
-      if(saved) setTheme(saved);
-      else setTheme(window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark');
-    })();
-    loadCidades();
-    itensDiv.appendChild(itemRow());
-    somaTotal();
-    
-    const postAuthenticated = (path, body) => post(path, body, session.token);
-
-    $('#btnTheme').onclick = () => setTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
-    $('#logout').onclick = async e => {
-      e.preventDefault();
-      try { await postAuthenticated('/logout', {}); } catch(_) {}
-      localStorage.removeItem('rom_session');
-      location.href = getAbsoluteUrl("index.html");
-    };
-    ['#cli_tel','#for_tel'].forEach(sel => {
-      const el=$(sel);
-      el.addEventListener('input', () => maskPhone(el));
-      el.addEventListener('blur', () => tryLookup(sel.includes('cli')?'cliente':'fornecedor', postAuthenticated));
-    });
-    $('#rom').addEventListener('input', e => {
-      if (e.target.value.length > 0 && !$('#data').value) $('#data').value = todayISO();
-    });
-    $('#cli_nome').addEventListener('focus', () => tryLookup('cliente', postAuthenticated));
-    $('#for_nome').addEventListener('focus', () => tryLookup('fornecedor', postAuthenticated));
-    ['#cli_cidade_uf','#for_cidade_uf','#cadCidade'].forEach(sel => {
-      $(sel).addEventListener('input', e => fillDatalist(e.target.value));
-    });
-    $('#addItem').onclick = () => { itensDiv.appendChild(itemRow()); somaTotal(); };
-    fileInput.onchange = handleFileUpload;
-    $('#limpar').onclick = clearForm;
-    $('#enviar').onclick = () => handleSend(postAuthenticated);
-}
-
-
-(async function start() {
-    $('#who').textContent = 'Validando sessão...';
-    const urlParams = new URLSearchParams(window.location.search);
-    const loginToken = urlParams.get('login_token');
-    
-    let tokenToValidate = loginToken;
-    let localSessionForInfo = null;
-    
-    if (!tokenToValidate) {
-        try {
-            const session = JSON.parse(localStorage.getItem('rom_session') || 'null');
-            if (session && session.token && session.expira_em && new Date(session.expira_em).getTime() >= Date.now()) {
-                tokenToValidate = session.token;
-                localSessionForInfo = session;
-            }
-        } catch {
-            // localStorage corrompido, ignora
-        }
+    if (!session?.token) {
+      $('#userInfo').textContent = "Sessão inexistente. Redirecionando para login...";
+      return setTimeout(gotoLogin, 800);
     }
 
-    if (!tokenToValidate) {
-        localStorage.removeItem('rom_session');
-        location.href = getAbsoluteUrl("index.html");
-        return;
+    const me = await post("/me", { token: session.token });
+    if (me?.ok) {
+      $('#userInfo').textContent = `Logado como: ${me.me}`;
+    } else {
+      $('#userInfo').textContent = "Sessão inválida/expirada. Redirecionando...";
+      setTimeout(gotoLogin, 800);
     }
-    
-    try {
-        const response = await post('/me', {}, tokenToValidate);
-        if (response.error) {
-            throw new Error(response.error);
-        }
-        
-        const user = response.me;
-        const session = {
-            token: tokenToValidate,
-            usuario: user,
-            expira_em: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-        };
-
-        window.history.replaceState({}, document.title, getAbsoluteUrl("app.html"));
-        initializeApp(user, session);
-
-    } catch (e) {
-        console.error("Falha na validação da sessão:", e.message);
-        localStorage.removeItem('rom_session');
-        location.href = getAbsoluteUrl("index.html");
-    }
+  } catch (e) {
+    $('#userInfo').textContent = "Erro ao validar sessão. Redirecionando...";
+    setTimeout(gotoLogin, 800);
+  }
 })();
 
-/* ====== Helpers & Funções do App ====== */
-function onlyDigits(s){ return (s||'').replace(/\D+/g,''); }
-function maskPhone(el){
-  let d = onlyDigits(el.value).slice(0,11);
-  el.value = d.length <= 10 ?
-    d.replace(/^(\d{0,2})(\d{0,4})(\d{0,4}).*/, (_,a,b,c)=> (a?`(${a}`:'') + (a.length===2?') ':'') + b + (b&&c?'-':'') + c) :
-    d.replace(/^(\d{0,2})(\d{0,5})(\d{0,4}).*/, (_,a,b,c)=> (a?`(${a}`:'') + (a.length===2?') ':'') + b + (b&&c?'-':'') + c);
-}
-
-let cidades = [];
-async function loadCidades(){
-  try{
-    const r = await fetch('https://servicodados.ibge.gov.br/api/v1/localidades/municipios?orderBy=nome');
-    if (!r.ok) throw new Error(`IBGE API falhou`);
-    const arr = await r.json();
-    cidades = arr.map(x => {
-        const uf = x.microrregiao?.mesorregiao?.UF?.sigla || x['regiao-imediata']?.['regiao-intermediaria']?.UF?.sigla || '';
-        return { nome: x.nome, uf, label: `${x.nome}/${uf}` };
-    });
-  }catch(e){ console.error("Falha ao carregar cidades:", e); }
-}
-function fillDatalist(prefix){
-  const dl = $('#listaCidades'); dl.innerHTML='';
-  const p = (prefix||'').toLowerCase();
-  if (p.length < 3) return;
-  cidades.filter(c => c.label.toLowerCase().includes(p)).slice(0,50)
-         .forEach(c => { const o=document.createElement('option'); o.value=c.label; dl.appendChild(o); });
-}
-
-const tipos = ['Caixa','Saco','Palete','Outros'], tamanhos = ['P','M','G'];
-const itensDiv = $('#itens'), totalQtdEl = $('#totalQtd');
-function somaTotal(){ let t=0; document.querySelectorAll('.qtd').forEach(i => t += Number(i.value||0)); totalQtdEl.textContent = t; }
-function itemRow(){
-  const row = document.createElement('div'); row.className='grid4';
-  const createSelect = (opts) => {
-    const sel = document.createElement('select');
-    opts.forEach(t => { const o=document.createElement('option'); o.value=t; o.textContent=t; sel.appendChild(o); });
-    return sel;
-  };
-  const qtd = document.createElement('input'); qtd.type='number'; qtd.min='1'; qtd.value='1'; qtd.className='qtd'; qtd.oninput=somaTotal;
-  const del = document.createElement('button'); del.className='btn btn-danger'; del.textContent='×'; del.onclick=()=>{ row.remove(); somaTotal(); };
-  row.append(createSelect(tipos), createSelect(tamanhos), qtd, del);
-  return row;
-}
-
-const fileInput = $('#fotos'), thumbs=$('#thumbs'); let fotosData=[];
-async function handleFileUpload(ev){
-  fotosData = [];
-  for(const f of Array.from(ev.target.files||[])){
-    if(f.type.startsWith('image/')) fotosData.push(await fileToDataURL(f));
-  }
-  renderThumbs();
-}
-function renderThumbs(){
-  thumbs.innerHTML='';
-  fotosData.forEach((d,i)=>{
-    const box=document.createElement('div'); box.className='thumb';
-    const img=new Image(); img.src=d;
-    const x=document.createElement('button'); x.textContent='×'; x.onclick=()=>{ fotosData.splice(i,1); renderThumbs(); };
-    box.append(img, x); thumbs.appendChild(box);
-  });
-}
-function fileToDataURL(file){ return new Promise(res => { const r=new FileReader(); r.onload=()=>res(r.result); r.readAsDataURL(file); }); }
-
-function todayISO() {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-}
-function clearForm(){
-  $('#secRom').querySelectorAll('input, select').forEach(el => { if (el.type !== 'file') el.value = ''; });
-  fileInput.value = ''; fotosData = []; renderThumbs();
-  itensDiv.innerHTML=''; itensDiv.appendChild(itemRow()); somaTotal();
-  $('#msg').style.display='none';
-  ['#cli_status', '#for_status'].forEach(s => $(s).style.display = 'none');
-}
-
-let pendenteCadastro = {cliente:false, fornecedor:false};
-async function tryLookup(tipo, postFn){
-  const telEl = $(`#${tipo.slice(0,3)}_tel`), nomeEl = $(`#${tipo.slice(0,3)}_nome`), cidEl = $(`#${tipo.slice(0,3)}_cidade_uf`), chip = $(`#${tipo.slice(0,3)}_status`);
-  const tel = onlyDigits(telEl.value);
-  chip.style.display='none';
-  if(tel.length < 10) return;
+/* ====== AÇÕES ====== */
+$('#btnLogout').onclick = async () => {
+  try { await post("/logout", { token: session?.token }); } catch(e){}
+  localStorage.removeItem("rom_session");
+  gotoLogin();
+};
+$('#btnPing').onclick = async () => {
   try {
-    const r = await postFn('/contacts/find', { tipo, tel });
-    if(r && r.found){
-      nomeEl.value = r.nome || ''; cidEl.value = r.cidade_uf || '';
-      chip.textContent='auto'; chip.style.display='inline-block';
-      pendenteCadastro[tipo] = false;
-    } else {
-      await abrirModalCadastro(tipo, nomeEl.value, cidEl.value);
-    }
-  } catch(e){ console.error(`Falha no lookup (${tipo}):`, e); }
-}
-function abrirModalCadastro(tipo, nomeAtual, cidAtual){
-  return new Promise(res => {
-    $('#cadQuem').textContent = `Cadastro de ${tipo} não encontrado.`;
-    $('#cadNome').value = nomeAtual||''; $('#cadCidade').value = cidAtual||'';
-    $('#modalCad').style.display='flex';
-    $('#cadCancel').onclick = () => { $('#modalCad').style.display='none'; res(false); };
-    $('#cadOk').onclick = () => {
-      const nome = $('#cadNome').value.trim(), cidade = $('#cadCidade').value.trim();
-      $(`#${tipo.slice(0,3)}_nome`).value = nome; $(`#${tipo.slice(0,3)}_cidade_uf`).value = cidade;
-      pendenteCadastro[tipo] = true;
-      $('#modalCad').style.display='none'; res(true);
-    };
-  });
-}
-
-async function handleSend(postFn){
-  const data = {
-    rom: Number($('#rom').value), data: $('#data').value, obs: $('#obs').value.trim(),
-    cliente: {tel:$('#cli_tel').value, nome:$('#cli_nome').value, local:$('#cli_cidade_uf').value, cadastrar:pendenteCadastro.cliente},
-    fornecedor: {tel:$('#for_tel').value, nome:$('#for_nome').value, local:$('#for_cidade_uf').value, cadastrar:pendenteCadastro.fornecedor},
-    itens: [], fotos: fotosData.map(d=>({data:d}))
-  };
-  itensDiv.querySelectorAll('.grid4').forEach(row=>{
-    const [t,s,q] = row.querySelectorAll('select, input');
-    if(Number(q.value||0)>0) data.itens.push({tipo:t.value,tamanho:s.value,qtd:Number(q.value)});
-  });
-
-  if(!data.rom || !data.data || !data.cliente.tel || !data.cliente.nome || !data.cliente.local || !data.fornecedor.tel || !data.fornecedor.nome || !data.fornecedor.local || !data.itens.length){
-    return msg('err','Campos obrigatórios (*) ausentes ou nenhum item adicionado.');
+    const r = await post("/ping");
+    alert(`Ping OK: ${r.ts}`);
+  } catch (e) {
+    alert('Falha no ping');
   }
-
-  try{
-    const r = await postFn('/rom/create', data);
-    if(r.error){ return msg('err', r.error); }
-
-    $('#codChave').textContent = `cod ${r.id}`;
-    $('#btnPdf').onclick = () => window.open(r.pdfUrl,'_blank');
-    const wmsg = (alvo) => {
-      const d = alvo === 'cli' ? data.cliente : data.fornecedor;
-      const tel = onlyDigits(d.tel);
-      if(!tel) return;
-      const texto = `Romaneio ${data.rom} (cod ${r.id})%0ACliente: ${data.cliente.nome}%0AFornecedor: ${data.fornecedor.nome}%0AData: ${data.data}%0AItens: ${data.itens.map(i=>`${i.qtd} ${i.tipo} ${i.tamanho}`).join(', ')}${r.pdfUrl?`%0AComprovante: ${r.pdfUrl}`:''}`;
-      window.open(`https.wa.me/55${tel}?text=${texto}`,'_blank');
-    };
-    $('#btnWappCli').onclick = () => wmsg('cli');
-    $('#btnWappFor').onclick = () => wmsg('for');
-    $('#btnOkClose').onclick = () => $('#modalOk').style.display='none';
-    $('#modalOk').style.display='flex';
-
-    clearForm();
-    msg('ok', `Enviado com sucesso! Código: ${r.id}`);
-  }catch(e){ msg('err','Erro de rede: '+e.message); }
 };
 </script>
-
 </body>
 </html>
-
