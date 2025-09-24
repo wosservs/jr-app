@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Romaneio • Painel</title>
+  <title>Romaneio • Login</title>
   <style>
     :root{
       --bg:#0b1320; --card:#121b2e; --muted:#7b8aa1; --text:#eaf1ff;
@@ -16,50 +16,74 @@
       background:var(--bg); color:var(--text);
       display:flex; align-items:center; justify-content:center; padding:24px;
     }
-    .wrap{width:100%; max-width:720px}
+    .wrap{width:100%; max-width:420px}
     .card{
       background:var(--card); border:1px solid rgba(255,255,255,.06);
       border-radius:18px; padding:28px; box-shadow:var(--shadow);
     }
-    h1{margin:0 0 12px; font-size:28px; display:flex; gap:12px; align-items:center}
-    .sub{color:var(--muted); margin-bottom:16px}
-    .row{display:flex; gap:12px; flex-wrap:wrap; margin-top:16px}
+    h1{margin:0 0 8px; font-size:28px; display:flex; gap:12px; align-items:center}
+    .conn-status{font-size:14px; min-height:21px;}
+    .ok{color:var(--success)} .err{color:var(--danger)} .muted{color:var(--muted)}
+    .fld{display:flex; flex-direction:column; gap:8px; margin-top:16px}
+    .fld label{font-size:14px; color:var(--muted)}
+    .fld input{
+      background:#0f1729; color:var(--text); border:1px solid rgba(255,255,255,.08);
+      border-radius:12px; padding:12px 14px; font-size:16px; outline:none
+    }
+    .fld input:focus{border-color:var(--primary)}
     .btn{
-      appearance:none; border:0; border-radius:12px; padding:12px 14px;
+      width:100%; appearance:none; border:0; border-radius:12px; padding:12px 14px;
       background:var(--primary); color:var(--text); cursor:pointer;
       display:inline-flex; align-items:center; justify-content:center; gap:8px; font-weight:600;
-      font-size:14px;
+      font-size:16px; margin-top:20px;
     }
-    .btn.sec{ background:#223255 }
-    .badge{padding:6px 10px; border-radius:999px; background:#0f1729; border:1px solid rgba(255,255,255,.08); font-size:12px}
-    pre{
-      background:#0f1729; border:1px solid rgba(255,255,255,.08);
-      padding:12px; border-radius:12px; overflow:auto; max-height:220px;
+    .btn:hover{filter:brightness(1.1)}
+    .btn:disabled{background:var(--muted); color:var(--bg); cursor:not-allowed;}
+    #msg{min-height:22px; margin-top:14px; font-size:14px; text-align:center;}
+    .footer{margin-top:16px; text-align:center; font-size:12px; color:var(--muted);}
+    .footer button{
+      background:none; border:none; color:var(--primary-600); cursor:pointer;
+      text-decoration:underline; padding:4px;
     }
+    .alert{border:1px solid rgba(255,255,255,.1); border-radius:10px; padding:10px; margin-top:12px}
+    .alert.err{border-color:#ff6b6b22; background:#ff6b6b11}
+    .alert.ok{border-color:#19c37d22; background:#19c37d11}
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="card">
-      <h1>🚚 Romaneio • Painel</h1>
-      <div class="sub">Área autenticada</div>
+      <h1>🚚 Romaneio • Login</h1>
+      <div id="conn" class="conn-status muted">Conectando…</div>
 
-      <div id="userInfo" class="badge">Validando sessão…</div>
-
-      <div class="row" style="margin-top:20px">
-        <button id="btnLogout" class="btn">Sair</button>
-        <button id="btnPing" class="btn sec">Ping API</button>
+      <div class="fld">
+        <label for="user">Usuário</label>
+        <input id="user" placeholder="admin" autocomplete="username"/>
+      </div>
+      <div class="fld">
+        <label for="pass">Senha</label>
+        <input id="pass" type="password" placeholder="••••••" autocomplete="current-password"/>
       </div>
 
-      <h3 style="margin-top:24px">Sessão</h3>
-      <pre id="sessDump">sem dados</pre>
+      <button id="btnLogin" class="btn">Entrar</button>
+      <div id="msg" class="muted"></div>
+
+      <div id="netAlert" class="alert" style="display:none"></div>
+    </div>
+    <div class="footer">
+      <span id="last-check"></span> · <button id="btnReload">Atualizar</button>
     </div>
   </div>
 
 <script>
 const API_BASE = "https://script.google.com/macros/s/AKfycbyrDoEP82oJDj2wTIX491414Qf5e-YaDZJHYMAgmWfiddVKCw7WP4oQwrVtEouYxL-NvQ/exec";
 const $ = s => document.querySelector(s);
-function goToLogin(){ const base = location.pathname.replace(/[^/]+$/, ''); location.assign(base + 'index.html'); }
+const connEl = $('#conn'), msgEl = $('#msg'), btnLogin = $('#btnLogin'), userEl = $('#user'), passEl = $('#pass'), netAlert = $('#netAlert');
+
+function setStatus(type, text){ connEl.className = `conn-status ${type}`; connEl.textContent = text; }
+function showMessage(type, text){ msgEl.className = type; msgEl.textContent = text; }
+function setLoading(x){ btnLogin.disabled = x; btnLogin.textContent = x ? 'Autenticando…' : 'Entrar'; }
+function goToApp(){ const base = location.pathname.replace(/[^/]+$/, ''); location.assign(base + 'app.html'); }
 function xhrPost(path, data, timeoutMs=8000){
   return new Promise((resolve, reject)=>{
     const xhr = new XMLHttpRequest();
@@ -73,37 +97,38 @@ function xhrPost(path, data, timeoutMs=8000){
   });
 }
 
-let session = null;
+$('#btnReload').onclick = ()=> location.reload(true);
+
+async function handleLogin(){
+  const usuario = userEl.value.trim() || 'admin';
+  const senha = passEl.value.trim();
+  if(!senha){ showMessage('err','Por favor, informe a senha.'); return; }
+  setLoading(true); showMessage('', '');
+  try{
+    const r = await xhrPost('/login', {usuario, senha});
+    if(r.error) throw new Error(r.error);
+    localStorage.setItem('rom_session', JSON.stringify(r.session));
+    showMessage('ok','Login OK. Redirecionando…');
+    goToApp();
+  }catch(e){
+    setLoading(false);
+    showMessage('err', e.message || 'Falha no login.');
+  }
+}
+btnLogin.onclick = handleLogin;
+passEl.addEventListener('keydown', e=>{ if(e.key==='Enter') handleLogin(); });
 
 (async ()=>{
   try{
-    const raw = localStorage.getItem('rom_session');
-    session = raw ? JSON.parse(raw) : null;
-    $('#sessDump').textContent = JSON.stringify(session, null, 2);
-
-    if(!session?.token){
-      $('#userInfo').textContent = 'Sessão inexistente. Redirecionando para login…';
-      return setTimeout(goToLogin, 800);
-    }
-
-    const me = await xhrPost('/me', {token: session.token}, 8000);
-    if(me?.ok){ $('#userInfo').textContent = `Logado como: ${me.me}`; }
-    else { $('#userInfo').textContent = 'Sessão inválida/expirada. Redirecionando…'; setTimeout(goToLogin, 800); }
+    const r = await xhrPost('/ping', {}, 5000);
+    setStatus('ok','Conectado • Online'); $('#last-check').textContent = `Verificado: ${new Date().toLocaleTimeString()}`;
+    netAlert.style.display = 'none';
   }catch(e){
-    $('#userInfo').textContent = 'Erro ao validar sessão. Redirecionando…';
-    setTimeout(goToLogin, 1000);
+    setStatus('err','Sem resposta da API');
+    netAlert.textContent = 'Não foi possível verificar a API agora. Você ainda pode tentar logar.';
+    netAlert.className = 'alert err'; netAlert.style.display = 'block';
   }
 })();
-
-$('#btnLogout').onclick = async ()=>{
-  try{ await xhrPost('/logout', {token: session?.token}, 5000); }catch(e){}
-  localStorage.removeItem('rom_session');
-  goToLogin();
-};
-$('#btnPing').onclick = async ()=>{
-  try{ const r = await xhrPost('/ping', {}, 5000); alert('Ping OK: ' + r.ts); }
-  catch(e){ alert('Falha no ping: ' + e.message); }
-};
 </script>
 </body>
 </html>
