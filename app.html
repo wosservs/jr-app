@@ -5,38 +5,19 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Romaneio • Painel</title>
   <style>
-    :root{
-      --bg:#0b1320; --card:#121b2e; --muted:#7b8aa1; --text:#eaf1ff;
-      --primary:#4c8dff; --primary-600:#3a74d6; --success:#19c37d; --danger:#ff6b6b;
-      --shadow:0 18px 40px rgba(0,0,0,.35);
-    }
+    :root{ --bg:#0b1320; --card:#121b2e; --muted:#7b8aa1; --text:#eaf1ff; --primary:#4c8dff; --primary-600:#3a74d6; --success:#19c37d; --danger:#ff6b6b; --shadow:0 18px 40px rgba(0,0,0,.35); }
     html,body{height:100%}
-    body{
-      margin:0; font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto;
-      background:var(--bg); color:var(--text);
-      display:flex; align-items:center; justify-content:center; padding:24px;
-    }
+    body{ margin:0; font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto; background:var(--bg); color:var(--text); display:flex; align-items:center; justify-content:center; padding:24px; }
     .wrap{width:100%; max-width:720px}
-    .card{
-      background:var(--card); border:1px solid rgba(255,255,255,.06);
-      border-radius:18px; padding:28px; box-shadow:var(--shadow);
-    }
+    .card{ background:var(--card); border:1px solid rgba(255,255,255,.06); border-radius:18px; padding:28px; box-shadow:var(--shadow); }
     h1{margin:0 0 12px; font-size:28px; display:flex; gap:12px; align-items:center}
     .sub{color:var(--muted); margin-bottom:16px}
     .row{display:flex; gap:12px; flex-wrap:wrap; margin-top:16px}
-    .btn{
-      appearance:none; border:0; border-radius:12px; padding:12px 14px;
-      background:var(--primary); color:var(--text); cursor:pointer;
-      display:inline-flex; align-items:center; justify-content:center; gap:8px; font-weight:600;
-      font-size:14px;
-    }
+    .btn{ appearance:none; border:0; border-radius:12px; padding:12px 14px; background:var(--primary); color:var(--text); cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:8px; font-weight:600; font-size:14px; }
     .btn.sec{ background:#223255 }
     .badge{padding:6px 10px; border-radius:999px; background:#0f1729; border:1px solid rgba(255,255,255,.08); font-size:12px}
     .warn{background:#5b2d2d; border:1px solid #ff6b6b55}
-    pre{
-      background:#0f1729; border:1px solid rgba(255,255,255,.08);
-      padding:12px; border-radius:12px; overflow:auto; max-height:220px;
-    }
+    pre{ background:#0f1729; border:1px solid rgba(255,255,255,.08); padding:12px; border-radius:12px; overflow:auto; max-height:220px; }
   </style>
 </head>
 <body>
@@ -97,15 +78,13 @@ async function validateSession(){
     const me = await xhrPost('/me', {token: session.token}, 8000);
     if(me?.ok){
       $('#userInfo').textContent = `Logado como: ${me.me}`;
-      triedOnce = false; // reset
+      triedOnce = false;
     }else{
-      // resposta explícita do servidor dizendo inválida
       $('#userInfo').className = 'badge warn';
       $('#userInfo').textContent = 'Sessão inválida/expirada. Voltando ao login…';
       setTimeout(goToLogin, 1000);
     }
   }catch(e){
-    console.warn('[ME] Falha na validação:', e);
     if(!triedOnce){
       triedOnce = true;
       $('#userInfo').className = 'badge';
