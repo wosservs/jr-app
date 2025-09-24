@@ -44,7 +44,7 @@
       <h1>🚚 Romaneio • Painel</h1>
       <div class="sub">Área autenticada</div>
 
-      <div id="userInfo" class="badge">Validando sessão...</div>
+      <div id="userInfo" class="badge">Validando sessão…</div>
 
       <div class="row" style="margin-top:20px">
         <button id="btnLogout" class="btn">Sair</button>
@@ -62,62 +62,67 @@ const API_BASE = "https://script.google.com/macros/s/AKfycbyrDoEP82oJDj2wTIX4914
 
 /* ====== HELPERS ====== */
 const $ = s => document.querySelector(s);
-async function post(path, data){
-  return new Promise((resolve, reject) => {
+function goToLogin(){
+  const base = location.pathname.replace(/[^/]+$/, '');
+  location.assign(base + 'index.html');
+}
+function xhrPost(path, data, timeoutMs=8000){
+  return new Promise((resolve, reject)=>{
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `${API_BASE}?path=${encodeURIComponent(path)}`, true);
     xhr.setRequestHeader('Content-Type', 'text/plain;charset=utf-8');
+    xhr.timeout = timeoutMs;
     xhr.onload = () => {
       try { resolve(JSON.parse(xhr.responseText)); }
-      catch(e) { reject(new Error("Resposta inválida do servidor.")); }
+      catch(e){ reject(new Error('Resposta inválida do servidor.')); }
     };
-    xhr.onerror = () => reject(new Error("Erro de conexão."));
+    xhr.ontimeout = ()=> reject(new Error('Tempo de resposta excedido.'));
+    xhr.onerror = ()=> reject(new Error('Erro de conexão.'));
     xhr.send(JSON.stringify(data || {}));
   });
 }
-function gotoLogin(){ window.location.href = API_BASE; }
 
 /* ====== STATE ====== */
 let session = null;
 
 /* ====== PAGE LOAD ====== */
-(async () => {
-  try {
-    const raw = localStorage.getItem("rom_session");
+(async ()=>{
+  try{
+    const raw = localStorage.getItem('rom_session');
     session = raw ? JSON.parse(raw) : null;
     $('#sessDump').textContent = JSON.stringify(session, null, 2);
 
-    if (!session?.token) {
-      $('#userInfo').textContent = "Sessão inexistente. Redirecionando para login...";
-      return setTimeout(gotoLogin, 800);
+    if(!session?.token){
+      $('#userInfo').textContent = 'Sessão inexistente. Redirecionando para login…';
+      return setTimeout(goToLogin, 800);
     }
 
-    const me = await post("/me", { token: session.token });
-    if (me?.ok) {
+    console.debug('[ME] Validando token…');
+    const me = await xhrPost('/me', {token: session.token}, 8000);
+    console.debug('[ME] Resposta:', me);
+
+    if(me?.ok){
       $('#userInfo').textContent = `Logado como: ${me.me}`;
-    } else {
-      $('#userInfo').textContent = "Sessão inválida/expirada. Redirecionando...";
-      setTimeout(gotoLogin, 800);
+    }else{
+      $('#userInfo').textContent = 'Sessão inválida/expirada. Redirecionando…';
+      setTimeout(goToLogin, 800);
     }
-  } catch (e) {
-    $('#userInfo').textContent = "Erro ao validar sessão. Redirecionando...";
-    setTimeout(gotoLogin, 800);
+  }catch(e){
+    console.error('[ME] Falha:', e);
+    $('#userInfo').textContent = 'Erro ao validar sessão. Redirecionando…';
+    setTimeout(goToLogin, 1000);
   }
 })();
 
 /* ====== AÇÕES ====== */
-$('#btnLogout').onclick = async () => {
-  try { await post("/logout", { token: session?.token }); } catch(e){}
-  localStorage.removeItem("rom_session");
-  gotoLogin();
+$('#btnLogout').onclick = async ()=>{
+  try{ await xhrPost('/logout', {token: session?.token}, 5000); }catch(e){}
+  localStorage.removeItem('rom_session');
+  goToLogin();
 };
-$('#btnPing').onclick = async () => {
-  try {
-    const r = await post("/ping");
-    alert(`Ping OK: ${r.ts}`);
-  } catch (e) {
-    alert('Falha no ping');
-  }
+$('#btnPing').onclick = async ()=>{
+  try{ const r = await xhrPost('/ping', {}, 5000); alert('Ping OK: ' + r.ts); }
+  catch(e){ alert('Falha no ping: ' + e.message); }
 };
 </script>
 </body>
