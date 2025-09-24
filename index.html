@@ -22,7 +22,7 @@
       border-radius:18px; padding:28px; box-shadow:var(--shadow);
     }
     h1{margin:0 0 4px; font-size:28px; display:flex; gap:12px; align-items:center}
-    .conn-status{font-size:14px; min-height: 21px;}
+    .conn-status{font-size:14px; min-height:21px;}
     .ok{color:var(--success)} .err{color:var(--danger)}
     .fld{display:flex; flex-direction:column; gap:8px; margin-top:16px}
     .fld label{font-size:14px; color:var(--muted)}
@@ -32,19 +32,20 @@
     }
     .fld input:focus{border-color:var(--primary)}
     .btn{
-      width: 100%; appearance:none; border:0; border-radius:12px; padding:12px 14px;
+      width:100%; appearance:none; border:0; border-radius:12px; padding:12px 14px;
       background:var(--primary); color:var(--text); cursor:pointer;
       display:inline-flex; align-items:center; justify-content:center; gap:8px; font-weight:600;
-      font-size:16px; margin-top: 20px;
+      font-size:16px; margin-top:20px;
     }
     .btn:hover{filter:brightness(1.1)}
     .btn:disabled{background:var(--muted); color:var(--bg); cursor:not-allowed;}
-    #msg{min-height:22px; margin-top:14px; font-size: 14px; text-align: center;}
+    #msg{min-height:22px; margin-top:14px; font-size:14px; text-align:center;}
     .footer{margin-top:16px; text-align:center; font-size:12px; color:var(--muted);}
     .footer button{
-        background:none; border:none; color:var(--primary-600); cursor:pointer;
-        text-decoration: underline; padding: 4px;
+      background:none; border:none; color:var(--primary-600); cursor:pointer;
+      text-decoration:underline; padding:4px;
     }
+    .hint{margin-top:12px; font-size:12px; text-align:center; color:var(--muted);}
   </style>
 </head>
 <body>
@@ -64,6 +65,9 @@
 
       <button id="btnLogin" class="btn">Entrar</button>
       <div id="msg" class="muted"></div>
+      <div id="fallback" class="hint" style="display:none">
+        Se não redirecionar, <a id="goNow" href="#">clique aqui para abrir o painel</a>.
+      </div>
     </div>
     <div class="footer">
       <span id="last-check"></span> <button id="btnReload">Atualizar</button>
@@ -72,83 +76,4 @@
 
 <script>
 /* ====== CONFIG ====== */
-const API_BASE = "https://script.google.com/macros/s/AKfycbyrDoEP82oJDj2wTIX491414Qf5e-YaDZJHYMAgmWfiddVKCw7WP4oQwrVtEouYxL-NvQ/exec";
-
-/* ====== UI & API ====== */
-const $ = s => document.querySelector(s);
-const connEl = $('#conn'), msgEl = $('#msg'), btnLogin = $('#btnLogin'), userEl = $('#user'), passEl = $('#pass');
-
-async function post(path, data){
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', `${API_BASE}?path=${encodeURIComponent(path)}`, true);
-    xhr.setRequestHeader('Content-Type', 'text/plain;charset=utf-8');
-    xhr.onload = () => {
-      try { resolve(JSON.parse(xhr.responseText)); }
-      catch(e) { reject(new Error("Resposta inválida do servidor.")); }
-    };
-    xhr.onerror = () => reject(new Error("Erro de conexão."));
-    xhr.send(JSON.stringify(data || {}));
-  });
-}
-
-function setStatus(type, text) {
-  connEl.className = `conn-status ${type}`;
-  connEl.textContent = text;
-}
-function showMessage(type, text) {
-  msgEl.className = type;
-  msgEl.textContent = text;
-}
-function setLoading(isLoading) {
-  btnLogin.disabled = isLoading;
-  btnLogin.textContent = isLoading ? 'Autenticando...' : 'Entrar';
-}
-
-/* ====== AÇÕES ====== */
-$('#btnReload').onclick = () => location.reload(true);
-
-const handleLogin = async () => {
-  const usuario = userEl.value.trim() || 'admin';
-  const senha = passEl.value.trim();
-
-  if (!senha) {
-    showMessage("err", "Por favor, informe a senha.");
-    return;
-  }
-  
-  setLoading(true);
-  showMessage("", "");
-
-  try {
-    const response = await post("/login", { usuario, senha });
-    if (response.error) throw new Error(response.error);
-
-    localStorage.setItem("rom_session", JSON.stringify(response.session));
-    showMessage("ok", "Login OK. Redirecionando...");
-
-    // Importante: view=app para Apps Script servir a view correta
-    window.location.href = `${API_BASE}?view=app`;
-
-  } catch (e) {
-    setLoading(false);
-    showMessage("err", e.message || "Falha no login.");
-  }
-};
-
-btnLogin.onclick = handleLogin;
-passEl.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleLogin(); });
-
-/* ====== PING ON LOAD ====== */
-(async () => {
-  try {
-    await post("/ping");
-    setStatus('ok', 'Conectado • Online');
-    $('#last-check').textContent = `Verificado: ${new Date().toLocaleTimeString()}`;
-  } catch (e) {
-    setStatus('err', 'Falha na conexão');
-  }
-})();
-</script>
-</body>
-</html>
+const API_BASE = "https://script.google.com/macros/s/AKfycbyrDoEP82oJDj2wTIX491414Qf5
