@@ -5,113 +5,382 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Romaneio • Painel</title>
   <style>
-    :root{ --bg:#0b1320; --card:#121b2e; --muted:#7b8aa1; --text:#eaf1ff; --primary:#4c8dff; --primary-600:#3a74d6; --success:#19c37d; --danger:#ff6b6b; --shadow:0 18px 40px rgba(0,0,0,.35); }
+    :root{
+      --bg:#0b1320; --card:#121b2e; --muted:#7b8aa1; --text:#eaf1ff;
+      --primary:#4c8dff; --primary-600:#3a74d6; --success:#19c37d; --danger:#ff6b6b;
+      --shadow:0 18px 40px rgba(0,0,0,.35);
+      --border:1px solid rgba(255,255,255,.08);
+    }
     html,body{height:100%}
-    body{ margin:0; font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto; background:var(--bg); color:var(--text); display:flex; align-items:center; justify-content:center; padding:24px; }
-    .wrap{width:100%; max-width:720px}
-    .card{ background:var(--card); border:1px solid rgba(255,255,255,.06); border-radius:18px; padding:28px; box-shadow:var(--shadow); }
-    h1{margin:0 0 12px; font-size:28px; display:flex; gap:12px; align-items:center}
-    .sub{color:var(--muted); margin-bottom:16px}
-    .row{display:flex; gap:12px; flex-wrap:wrap; margin-top:16px}
-    .btn{ appearance:none; border:0; border-radius:12px; padding:12px 14px; background:var(--primary); color:var(--text); cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:8px; font-weight:600; font-size:14px; }
+    body{
+      margin:0; font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto;
+      background:var(--bg); color:var(--text);
+    }
+    .container{max-width:1000px; margin:0 auto; padding:24px}
+    .topbar{display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:18px}
+    .title{font-size:22px; font-weight:700; display:flex; gap:10px; align-items:center}
+    .chip{font-size:12px; padding:6px 10px; border-radius:999px; background:#0f1729; border:var(--border)}
+    .chip.ok{color:var(--success)} .chip.err{color:var(--danger)}
+    .row{display:flex; gap:14px; flex-wrap:wrap}
+    .card{
+      background:var(--card); border:var(--border);
+      border-radius:18px; padding:18px; box-shadow:var(--shadow);
+      margin-bottom:16px;
+    }
+    .card h3{margin:0 0 10px; font-size:18px}
+    .grid2{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+    .grid3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px}
+    .fld{display:flex; flex-direction:column; gap:6px}
+    .lbl{font-size:13px; color:var(--muted)}
+    .in, .sel, .txt{
+      background:#0f1729; color:var(--text); border:var(--border);
+      border-radius:12px; padding:10px 12px; font-size:15px; outline:none
+    }
+    .txt{min-height:80px; resize:vertical}
+    .btn{
+      appearance:none; border:0; border-radius:12px; padding:10px 14px;
+      background:var(--primary); color:var(--text); cursor:pointer;
+      display:inline-flex; align-items:center; justify-content:center; gap:8px; font-weight:600;
+      font-size:14px;
+    }
     .btn.sec{ background:#223255 }
-    .badge{padding:6px 10px; border-radius:999px; background:#0f1729; border:1px solid rgba(255,255,255,.08); font-size:12px}
-    .warn{background:#5b2d2d; border:1px solid #ff6b6b55}
-    pre{ background:#0f1729; border:1px solid rgba(255,255,255,.08); padding:12px; border-radius:12px; overflow:auto; max-height:220px; }
+    .btn.ghost{ background:transparent; border:var(--border) }
+    .btn:disabled{opacity:.6; cursor:not-allowed}
+    .list{display:flex; flex-direction:column; gap:10px}
+    .item-row{display:grid; grid-template-columns:1.2fr 1fr .6fr auto; gap:10px; align-items:end}
+    .thumbs{display:flex; gap:8px; flex-wrap:wrap}
+    .thumb{width:86px; height:86px; border-radius:12px; overflow:hidden; border:var(--border); background:#0f1729}
+    .thumb img{width:100%; height:100%; object-fit:cover}
+    .alert{border:var(--border); border-radius:12px; padding:10px; font-size:14px}
+    .alert.ok{background:#19c37d18; color:#b6ffdf}
+    .alert.err{background:#ff6b6b18; color:#ffd0d0}
+    .muted{color:var(--muted)}
+    .actions{display:flex; gap:10px; flex-wrap:wrap}
+    .divider{height:1px; background:rgba(255,255,255,.06); margin:12px 0}
+    a.link{color:#9ec1ff; text-decoration:underline}
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="card">
-      <h1>🚚 Romaneio • Painel</h1>
-      <div class="sub">Área autenticada</div>
-
-      <div id="userInfo" class="badge">Validando sessão…</div>
-
-      <div class="row" style="margin-top:20px">
-        <button id="btnRetry" class="btn sec" style="display:none">Tentar validar de novo</button>
+  <div class="container">
+    <div class="topbar">
+      <div class="title">🚚 Romaneio • Painel <span id="meChip" class="chip muted">Validando sessão…</span></div>
+      <div class="actions">
         <button id="btnPing" class="btn sec">Ping API</button>
         <button id="btnLogout" class="btn">Sair</button>
       </div>
+    </div>
 
-      <h3 style="margin-top:24px">Sessão</h3>
-      <pre id="sessDump">sem dados</pre>
+    <div id="msgBox" class="alert" style="display:none"></div>
+
+    <div class="card">
+      <h3>Dados do Romaneio</h3>
+      <div class="grid3">
+        <div class="fld">
+          <label class="lbl">ROM</label>
+          <input id="rom" class="in" placeholder="Ex.: 1234-A"/>
+        </div>
+        <div class="fld">
+          <label class="lbl">Data</label>
+          <input id="data" type="date" class="in"/>
+        </div>
+        <div class="fld">
+          <label class="lbl">Observações</label>
+          <input id="obs" class="in" placeholder="Opcional"/>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="card" style="flex:1 1 420px">
+        <h3>Cliente</h3>
+        <div class="grid2">
+          <div class="fld">
+            <label class="lbl">Telefone</label>
+            <div class="row">
+              <input id="cli_tel" class="in" style="flex:1" placeholder="(xx) xxxxx-xxxx"/>
+              <button id="btnCliFind" class="btn sec">Buscar</button>
+            </div>
+          </div>
+          <div class="fld">
+            <label class="lbl">Cadastrar se não encontrar?</label>
+            <div class="row">
+              <input type="checkbox" id="cli_cad" style="transform:scale(1.2); margin-right:8px"/>
+              <span class="muted">Sim</span>
+            </div>
+          </div>
+          <div class="fld">
+            <label class="lbl">Nome</label>
+            <input id="cli_nome" class="in" placeholder="Nome do cliente"/>
+          </div>
+          <div class="fld">
+            <label class="lbl">Cidade/UF</label>
+            <input id="cli_local" class="in" placeholder="Cidade/UF"/>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="flex:1 1 420px">
+        <h3>Fornecedor</h3>
+        <div class="grid2">
+          <div class="fld">
+            <label class="lbl">Telefone</label>
+            <div class="row">
+              <input id="for_tel" class="in" style="flex:1" placeholder="(xx) xxxxx-xxxx"/>
+              <button id="btnForFind" class="btn sec">Buscar</button>
+            </div>
+          </div>
+          <div class="fld">
+            <label class="lbl">Cadastrar se não encontrar?</label>
+            <div class="row">
+              <input type="checkbox" id="for_cad" style="transform:scale(1.2); margin-right:8px"/>
+              <span class="muted">Sim</span>
+            </div>
+          </div>
+          <div class="fld">
+            <label class="lbl">Nome</label>
+            <input id="for_nome" class="in" placeholder="Nome do fornecedor"/>
+          </div>
+          <div class="fld">
+            <label class="lbl">Cidade/UF</label>
+            <input id="for_local" class="in" placeholder="Cidade/UF"/>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Itens</h3>
+      <div id="itens" class="list"></div>
+      <div class="actions">
+        <button id="btnAddItem" class="btn ghost">+ Adicionar item</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Fotos</h3>
+      <div class="row">
+        <input id="fotos" type="file" accept="image/*" multiple capture="environment" class="in" style="max-width:420px"/>
+      </div>
+      <div id="thumbs" class="thumbs" style="margin-top:10px"></div>
+    </div>
+
+    <div class="card">
+      <div class="actions">
+        <button id="btnSalvar" class="btn">Salvar / Gerar PDF</button>
+        <span id="result" class="muted"></span>
+      </div>
+      <div class="divider"></div>
+      <div class="muted" style="font-size:12px">Dica: confira se os telefones estão corretos; se o contato não existir, marque “Cadastrar”.</div>
     </div>
   </div>
 
 <script>
+/* ====== CONFIG ====== */
 const API_BASE = "https://script.google.com/macros/s/AKfycbyrDoEP82oJDj2wTIX491414Qf5e-YaDZJHYMAgmWfiddVKCw7WP4oQwrVtEouYxL-NvQ/exec";
+
+/* ====== HELPERS/UI ====== */
 const $ = s => document.querySelector(s);
+const onlyDigits = s => (s||'').replace(/\D+/g,'');
+const maskTel = s => {
+  const d = onlyDigits(s).slice(0,11);
+  if(d.length<=10) return d.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3').trim();
+  return d.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3').trim();
+};
+function setChipOk(text){ const c=$('#meChip'); c.className='chip ok'; c.textContent=text; }
+function setChipErr(text){ const c=$('#meChip'); c.className='chip err'; c.textContent=text; }
+function showMsg(type, text){
+  const b = $('#msgBox'); b.style.display='block'; b.className = 'alert ' + (type==='ok'?'ok':'err'); b.textContent = text;
+}
+function clearMsg(){ const b = $('#msgBox'); b.style.display='none'; b.textContent=''; }
+function today(){ const d=new Date(); const m=String(d.getMonth()+1).padStart(2,'0'); const day=String(d.getDate()).padStart(2,'0'); return `${d.getFullYear()}-${m}-${day}`; }
+
+/* ====== STATE ====== */
+let session = null;
+let fotosData = []; // [{data: 'data:image/...'}]
+
+/* ====== SESSION ====== */
 function goToLogin(){ const base = location.pathname.replace(/[^/]+$/, ''); location.assign(base + 'index.html'); }
 
-function xhrPost(path, data, timeoutMs=8000){
+async function apiPost(path, data, timeoutMs=10000){
   return new Promise((resolve, reject)=>{
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `${API_BASE}?path=${encodeURIComponent(path)}`, true);
-    xhr.setRequestHeader('Content-Type', 'text/plain;charset=utf-8');
+    xhr.setRequestHeader('Content-Type','text/plain;charset=utf-8');
     xhr.timeout = timeoutMs;
     xhr.onload = ()=>{ try{ resolve(JSON.parse(xhr.responseText)); }catch(e){ reject(new Error('Resposta inválida do servidor.')); } };
     xhr.ontimeout = ()=> reject(new Error('Tempo de resposta excedido.'));
     xhr.onerror   = ()=> reject(new Error('Erro de conexão.'));
-    xhr.send(JSON.stringify(data || {}));
+    xhr.send(JSON.stringify(data||{}));
   });
 }
 
-let session = null;
-let triedOnce = false;
-
 async function validateSession(){
   try{
-    $('#userInfo').className = 'badge';
-    $('#userInfo').textContent = 'Validando sessão…';
-    $('#btnRetry').style.display = 'none';
-
     const raw = localStorage.getItem('rom_session');
     session = raw ? JSON.parse(raw) : null;
-    $('#sessDump').textContent = JSON.stringify(session, null, 2);
-
-    if(!session?.token){
-      $('#userInfo').textContent = 'Sessão inexistente. Redirecionando para login…';
-      return setTimeout(goToLogin, 800);
-    }
-
-    const me = await xhrPost('/me', {token: session.token}, 8000);
-    if(me?.ok){
-      $('#userInfo').textContent = `Logado como: ${me.me}`;
-      triedOnce = false;
-    }else{
-      $('#userInfo').className = 'badge warn';
-      $('#userInfo').textContent = 'Sessão inválida/expirada. Voltando ao login…';
-      setTimeout(goToLogin, 1000);
-    }
+    if(!session?.token){ setChipErr('Sem sessão'); return goToLogin(); }
+    const me = await apiPost('/me',{token: session.token},8000);
+    if(me?.ok){ setChipOk(`Logado: ${me.me}`); }
+    else { setChipErr('Sessão inválida/expirada'); setTimeout(goToLogin, 900); }
   }catch(e){
-    if(!triedOnce){
-      triedOnce = true;
-      $('#userInfo').className = 'badge';
-      $('#userInfo').textContent = 'Falha de rede. Tentando novamente…';
-      setTimeout(validateSession, 600);
-    }else{
-      $('#userInfo').className = 'badge warn';
-      $('#userInfo').textContent = 'Não foi possível validar agora. Você continua nesta página; tente novamente ou faça logout.';
-      $('#btnRetry').style.display = 'inline-flex';
-    }
+    setChipErr('Falha ao validar (rede)');
+    // fica na página; usuário pode tentar ping/logoff
   }
 }
 
-$('#btnRetry').onclick = ()=> validateSession();
+/* ====== ITENS DINÂMICOS ====== */
+function addItemRow(data={}){
+  const wrap = document.createElement('div'); wrap.className='item-row';
+  wrap.innerHTML = `
+    <div class="fld">
+      <label class="lbl">Tipo</label>
+      <input class="in it-tipo" placeholder="Ex.: Saco, Caixa" value="${data.tipo||''}"/>
+    </div>
+    <div class="fld">
+      <label class="lbl">Tamanho</label>
+      <input class="in it-tam" placeholder="Ex.: M, 50kg, 1m" value="${data.tamanho||''}"/>
+    </div>
+    <div class="fld">
+      <label class="lbl">Qtd</label>
+      <input class="in it-qtd" type="number" min="1" step="1" value="${data.qtd||''}"/>
+    </div>
+    <div class="fld">
+      <label class="lbl">&nbsp;</label>
+      <button class="btn ghost btnDel">Remover</button>
+    </div>
+  `;
+  wrap.querySelector('.btnDel').onclick = ()=> wrap.remove();
+  $('#itens').appendChild(wrap);
+}
 
-$('#btnLogout').onclick = async ()=>{
-  try{ await xhrPost('/logout', {token: session?.token}, 5000); }catch(e){}
-  localStorage.removeItem('rom_session');
-  goToLogin();
-};
+/* ====== CONTACTS ====== */
+async function findContact(tipo){
+  try{
+    clearMsg();
+    const tel = tipo==='cliente' ? $('#cli_tel').value : $('#for_tel').value;
+    const r = await apiPost('/contacts/find', {token: session?.token, tipo: (tipo==='cliente'?'cliente':'fornecedor'), tel});
+    if(r?.found){
+      if(tipo==='cliente'){
+        $('#cli_nome').value = r.nome||''; $('#cli_local').value = r.cidade_uf||'';
+        $('#cli_cad').checked = false;
+      }else{
+        $('#for_nome').value = r.nome||''; $('#for_local').value = r.cidade_uf||'';
+        $('#for_cad').checked = false;
+      }
+      showMsg('ok','Contato encontrado e preenchido.');
+    }else{
+      showMsg('err','Contato não encontrado. Preencha os dados e marque “Cadastrar”.');
+      if(tipo==='cliente'){ $('#cli_cad').checked = true; }
+      else { $('#for_cad').checked = true; }
+    }
+  }catch(e){
+    showMsg('err','Falha na busca do contato.');
+  }
+}
 
+/* ====== FOTOS ====== */
+$('#fotos').addEventListener('change', async (ev)=>{
+  fotosData = [];
+  $('#thumbs').innerHTML = '';
+  const files = Array.from(ev.target.files||[]);
+  for (const f of files){
+    await new Promise((resolve)=>{
+      const fr = new FileReader();
+      fr.onload = e=>{
+        const dataUrl = e.target.result; fotosData.push({data: dataUrl});
+        const d = document.createElement('div'); d.className='thumb'; d.innerHTML = `<img src="${dataUrl}"/>`;
+        $('#thumbs').appendChild(d); resolve();
+      };
+      fr.readAsDataURL(f);
+    });
+  }
+});
+
+/* ====== SAVE / CREATE ROM ====== */
+async function handleSalvar(){
+  try{
+    clearMsg();
+    $('#btnSalvar').disabled = true; $('#btnSalvar').textContent = 'Salvando…';
+
+    // coleta itens
+    const itens = Array.from(document.querySelectorAll('.item-row')).map(r=>{
+      return {
+        tipo: r.querySelector('.it-tipo').value.trim(),
+        tamanho: r.querySelector('.it-tam').value.trim(),
+        qtd: Number(r.querySelector('.it-qtd').value||0)
+      };
+    }).filter(it=> it.tipo || it.tamanho || it.qtd);
+
+    const payload = {
+      token: session?.token,
+      rom: $('#rom').value.trim(),
+      data: $('#data').value,
+      obs: $('#obs').value.trim(),
+      cliente: {
+        tel: $('#cli_tel').value.trim(),
+        nome: $('#cli_nome').value.trim(),
+        local: $('#cli_local').value.trim(),
+        cadastrar: $('#cli_cad').checked === true
+      },
+      fornecedor: {
+        tel: $('#for_tel').value.trim(),
+        nome: $('#for_nome').value.trim(),
+        local: $('#for_local').value.trim(),
+        cadastrar: $('#for_cad').checked === true
+      },
+      itens,
+      fotos: fotosData
+    };
+
+    // valida mínima
+    if(!payload.rom) throw new Error('Informe o ROM.');
+    if(!payload.data) throw new Error('Informe a data.');
+    if(!onlyDigits(payload.cliente.tel)) throw new Error('Telefone do cliente inválido.');
+    if(!onlyDigits(payload.fornecedor.tel)) throw new Error('Telefone do fornecedor inválido.');
+    if(itens.length === 0) throw new Error('Adicione pelo menos 1 item.');
+
+    const r = await apiPost('/rom/create', payload, 30000);
+    if(r?.ok){
+      showMsg('ok', `Romaneio salvo! PDF: `);
+      $('#result').innerHTML = `PDF gerado: <a class="link" href="${r.pdfUrl}" target="_blank" rel="noopener">abrir</a>`;
+      // opcional: reset parcial
+      // document.querySelector('#itens').innerHTML=''; addItemRow();
+      // $('#thumbs').innerHTML=''; fotosData=[];
+    }else{
+      throw new Error(r?.error || 'Falha ao salvar.');
+    }
+  }catch(e){
+    showMsg('err', e.message || 'Erro ao salvar.');
+  }finally{
+    $('#btnSalvar').disabled = false; $('#btnSalvar').textContent = 'Salvar / Gerar PDF';
+  }
+}
+
+/* ====== PING & LOGOUT ====== */
 $('#btnPing').onclick = async ()=>{
-  try{ const r = await xhrPost('/ping', {}, 5000); alert('Ping OK: ' + r.ts); }
-  catch(e){ alert('Falha no ping: ' + e.message); }
+  try{ const r = await apiPost('/ping',{},5000); setChipOk('API Online • '+(r.ts||'')); }
+  catch(e){ setChipErr('API Offline'); }
+};
+$('#btnLogout').onclick = async ()=>{
+  try{ await apiPost('/logout',{token: session?.token},5000); }catch(e){}
+  localStorage.removeItem('rom_session'); goToLogin();
 };
 
-validateSession();
+/* ====== INIT ====== */
+(function init(){
+  $('#data').value = today();
+  // form masks
+  $('#cli_tel').addEventListener('input', e=> e.target.value = maskTel(e.target.value));
+  $('#for_tel').addEventListener('input', e=> e.target.value = maskTel(e.target.value));
+  // buttons
+  $('#btnCliFind').onclick = ()=> findContact('cliente');
+  $('#btnForFind').onclick = ()=> findContact('fornecedor');
+  $('#btnSalvar').onclick = handleSalvar;
+  // start with one item
+  addItemRow();
+  // validate session
+  validateSession();
+})();
 </script>
 </body>
 </html>
